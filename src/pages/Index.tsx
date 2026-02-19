@@ -237,6 +237,9 @@ const PulseApp = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Fixed floating persona switcher for demo */}
+      <RoleToggle fixed />
+      
       <AutomationBanner />
 
       {/* ─── HEADER WITH FILTERS ─── */}
@@ -265,7 +268,7 @@ const PulseApp = () => {
             </span>
           </div>
 
-          {/* Right side — Search icon, Role toggle, Notifications, Avatar */}
+          {/* Right side — Search icon, Notifications, Avatar */}
           <div className="flex items-center gap-2">
             {/* Collapsible search icon */}
             <button
@@ -274,9 +277,6 @@ const PulseApp = () => {
             >
               <Search className="h-4 w-4" />
             </button>
-
-            {/* Role toggle (for demo) */}
-            <RoleToggle />
 
             {/* Notifications */}
             <NotificationDrawer role={activeRole} />

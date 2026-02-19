@@ -266,17 +266,16 @@ const Landing = () => {
   /* ─── Login Flow ─── */
   if (showLogin) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6 py-12">
-        {/* Constrained, elevated card container */}
+      <div className="min-h-screen bg-background flex items-center justify-center px-6 py-12">
+        {/* Constrained, elevated card container - uses app design system */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }} 
-          className="w-full max-w-md bg-white rounded-2xl p-8 md:p-10"
-          style={{ boxShadow: '0 4px 6px hsla(0, 0%, 0%, 0.05), 0 10px 24px hsla(0, 0%, 0%, 0.1)' }}
+          className="w-full max-w-md bg-card rounded-2xl p-8 md:p-10 shadow-elevation-high"
         >
           {/* Friendly 'pulse.' logo */}
           <div className="flex items-center justify-center mb-8">
-            <span className="font-display text-3xl font-bold tracking-tight text-slate-900">
+            <span className="font-display text-3xl font-bold tracking-tight text-foreground">
               pulse<span className="text-hero-coral">.</span>
             </span>
           </div>
@@ -285,14 +284,14 @@ const Landing = () => {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
               {/* Warm welcome headline */}
               <div className="text-center space-y-2">
-                <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">Welcome back.</h1>
-                <p className="text-sm text-slate-500">Sign in to continue to your workspace</p>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Welcome back.</h1>
+                <p className="text-sm text-muted-foreground">Sign in to continue to your workspace</p>
               </div>
               
               <div className="space-y-4">
                 {/* Supercharged email input */}
                 <div className="space-y-1.5">
-                  <label htmlFor="email" className="text-sm font-medium text-slate-700">Email</label>
+                  <label htmlFor="email" className="text-sm font-medium text-foreground">Email</label>
                   <input 
                     id="email"
                     type="email" 
@@ -301,15 +300,15 @@ const Landing = () => {
                     onChange={e => setEmail(e.target.value)} 
                     onKeyDown={e => e.key === 'Enter' && handleEmailNext()} 
                     autoFocus 
-                    className="w-full h-12 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm placeholder:text-slate-400 focus:outline-none focus:border-hero-teal focus:ring-2 focus:ring-hero-teal/20 transition-all"
+                    className="w-full h-12 px-4 py-3 bg-secondary border border-border rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none focus:border-hero-teal focus:ring-2 focus:ring-hero-teal/20 transition-all"
                   />
                 </div>
                 
-                {/* Primary CTA: massive, full-width */}
+                {/* Primary CTA: massive, full-width - uses app primary color */}
                 <button 
                   onClick={handleEmailNext} 
                   disabled={!email}
-                  className="w-full h-14 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all"
+                  className="w-full h-14 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground font-semibold rounded-xl flex items-center justify-center gap-2 transition-all"
                 >
                   Continue <ArrowRight className="h-4 w-4" />
                 </button>
@@ -317,14 +316,14 @@ const Landing = () => {
               
               {/* Divider */}
               <div className="relative">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200" /></div>
-                <div className="relative flex justify-center text-xs"><span className="bg-white px-3 text-slate-400">or</span></div>
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                <div className="relative flex justify-center text-xs"><span className="bg-card px-3 text-muted-foreground">or</span></div>
               </div>
               
               {/* SSO option */}
               <button 
                 onClick={handleDemoAccess}
-                className="w-full h-12 border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium rounded-xl text-sm transition-all"
+                className="w-full h-12 border border-border hover:bg-secondary text-foreground font-medium rounded-xl text-sm transition-all"
               >
                 Continue with SSO
               </button>
@@ -332,7 +331,7 @@ const Landing = () => {
               {/* Back link - de-emphasized */}
               <button 
                 onClick={() => setShowLogin(false)} 
-                className="text-sm text-slate-400 hover:text-slate-600 transition-colors block mx-auto"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors block mx-auto"
               >
                 ← Back to overview
               </button>
@@ -343,14 +342,14 @@ const Landing = () => {
             <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
               {/* Header */}
               <div className="text-center space-y-2">
-                <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">Enter your password</h1>
-                <p className="text-sm text-slate-500">{email}</p>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Enter your password</h1>
+                <p className="text-sm text-muted-foreground">{email}</p>
               </div>
               
               <div className="space-y-4">
                 {/* Supercharged password input with inline error */}
                 <div className="space-y-1.5">
-                  <label htmlFor="password" className="text-sm font-medium text-slate-700">Password</label>
+                  <label htmlFor="password" className="text-sm font-medium text-foreground">Password</label>
                   <div className="relative">
                     <input 
                       id="password"
@@ -360,23 +359,23 @@ const Landing = () => {
                       onChange={e => { setPassword(e.target.value); setLoginError(''); }}
                       onKeyDown={e => e.key === 'Enter' && handleLogin()} 
                       autoFocus 
-                      className={`w-full h-12 px-4 py-3 pr-12 bg-slate-50 border rounded-xl text-sm placeholder:text-slate-400 focus:outline-none transition-all ${
+                      className={`w-full h-12 px-4 py-3 pr-12 bg-secondary border rounded-xl text-sm placeholder:text-muted-foreground focus:outline-none transition-all ${
                         loginError 
-                          ? 'border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100' 
-                          : 'border-slate-200 focus:border-hero-teal focus:ring-2 focus:ring-hero-teal/20'
+                          ? 'border-signal-red focus:border-signal-red focus:ring-2 focus:ring-signal-red/20' 
+                          : 'border-border focus:border-hero-teal focus:ring-2 focus:ring-hero-teal/20'
                       }`}
                     />
                     <button 
                       type="button" 
                       onClick={() => setShowPassword(!showPassword)} 
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
                   {/* Modeless inline error */}
                   {loginError && (
-                    <p className="text-xs text-red-500 mt-1">{loginError}</p>
+                    <p className="text-xs text-signal-red mt-1">{loginError}</p>
                   )}
                 </div>
                 
@@ -388,17 +387,17 @@ const Landing = () => {
                       onClick={() => setRememberMe(!rememberMe)}
                       className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
                         rememberMe 
-                          ? 'bg-slate-900 border-slate-900' 
-                          : 'bg-white border-slate-300 group-hover:border-slate-400'
+                          ? 'bg-primary border-primary' 
+                          : 'bg-card border-border group-hover:border-muted-foreground'
                       }`}
                     >
-                      {rememberMe && <Check className="h-3 w-3 text-white" />}
+                      {rememberMe && <Check className="h-3 w-3 text-primary-foreground" />}
                     </div>
-                    <span className="text-sm text-slate-600">Remember me</span>
+                    <span className="text-sm text-foreground">Remember me</span>
                   </label>
                   
                   {/* Forgot password - aggressively de-emphasized */}
-                  <button className="text-sm text-slate-400 hover:text-slate-600 transition-colors">
+                  <button className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                     Forgot password?
                   </button>
                 </div>
@@ -407,7 +406,7 @@ const Landing = () => {
                 <button 
                   onClick={handleLogin} 
                   disabled={!password}
-                  className="w-full h-14 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all"
+                  className="w-full h-14 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground font-semibold rounded-xl flex items-center justify-center gap-2 transition-all"
                 >
                   Log in
                 </button>
@@ -416,7 +415,7 @@ const Landing = () => {
               {/* Back link - de-emphasized */}
               <button 
                 onClick={() => { setLoginStep('email'); setLoginError(''); }}
-                className="text-sm text-slate-400 hover:text-slate-600 transition-colors block mx-auto"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors block mx-auto"
               >
                 ← Use a different email
               </button>
@@ -427,8 +426,8 @@ const Landing = () => {
             <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
               {/* Header */}
               <div className="text-center space-y-2">
-                <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900">Where are you today?</h1>
-                <p className="text-sm text-slate-500">Select your location to continue</p>
+                <h1 className="font-display text-2xl font-bold tracking-tight text-foreground">Where are you today?</h1>
+                <p className="text-sm text-muted-foreground">Select your location to continue</p>
               </div>
               
               <div className="space-y-3">
@@ -436,10 +435,10 @@ const Landing = () => {
                   <button 
                     key={loc} 
                     onClick={() => handleLocationSelect(loc)} 
-                    className="flex w-full items-center justify-between rounded-xl bg-slate-50 hover:bg-slate-100 px-4 py-4 text-sm font-medium text-slate-700 transition-all group"
+                    className="flex w-full items-center justify-between rounded-xl bg-secondary hover:bg-accent px-4 py-4 text-sm font-medium text-foreground transition-all group"
                   >
                     {loc} 
-                    <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
                   </button>
                 ))}
               </div>

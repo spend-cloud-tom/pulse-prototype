@@ -14,6 +14,8 @@ const RoleToggle = ({ fixed = false }: { fixed?: boolean }) => {
   const handleSwitch = (role: Role) => {
     setActiveRole(role);
     setOpen(false);
+    // Scroll to top on persona switch for clean demo experience
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Fixed floating version for demo purposes

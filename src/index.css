@@ -394,3 +394,117 @@
 .confidence-pulse {
   animation: confidence-pulse 2s ease-in-out infinite;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CALM/ALERT MODE — Environmental UX Shift
+   
+   Tension levels:
+   0 = Calm (no gradient)
+   1 = Active (subtle warm tint)
+   2 = Elevated (noticeable amber glow)
+   3 = High (urgent red undertone)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --tension-level: 0;
+  --tension-opacity: 0;
+}
+
+/* Tension gradient overlay — applied to body background */
+.tension-1 body,
+.tension-2 body,
+.tension-3 body {
+  position: relative;
+}
+
+.tension-1 body::before,
+.tension-2 body::before,
+.tension-3 body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 0.5s ease-out;
+}
+
+/* Level 1: Subtle warm tint */
+.tension-1 body::before {
+  background: radial-gradient(
+    ellipse at top center,
+    hsl(38 80% 60% / 0.03) 0%,
+    transparent 70%
+  );
+}
+
+/* Level 2: Noticeable amber glow */
+.tension-2 body::before {
+  background: radial-gradient(
+    ellipse at top center,
+    hsl(38 80% 55% / 0.06) 0%,
+    transparent 60%
+  );
+}
+
+/* Level 3: Urgent red undertone */
+.tension-3 body::before {
+  background: radial-gradient(
+    ellipse at top center,
+    hsl(0 70% 55% / 0.08) 0%,
+    hsl(38 80% 55% / 0.04) 40%,
+    transparent 70%
+  );
+}
+
+/* Reduced motion: disable tension animations */
+@media (prefers-reduced-motion: reduce) {
+  .tension-1 body::before,
+  .tension-2 body::before,
+  .tension-3 body::before {
+    animation: none;
+    opacity: var(--tension-opacity);
+  }
+  
+  .urgency-glow,
+  .budget-heat-glow,
+  .confidence-pulse,
+  .step-current-pulse {
+    animation: none;
+  }
+}
+
+/* Tension-aware card borders — subtle urgency indication */
+.tension-3 .urgency-glow {
+  animation: urgency-breathe 1.5s ease-in-out infinite;
+}
+
+.tension-2 .urgency-glow {
+  animation: urgency-breathe 2s ease-in-out infinite;
+}
+
+/* Risk ripple animation for anomaly detection */
+@keyframes risk-ripple {
+  0% {
+    box-shadow: 0 0 0 0 hsl(var(--signal-red) / 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px hsl(var(--signal-red) / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 hsl(var(--signal-red) / 0);
+  }
+}
+
+.risk-ripple {
+  animation: risk-ripple 1.5s ease-out infinite;
+}
+
+/* Confidence gradient ring animation */
+@keyframes confidence-gradient-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.confidence-gradient-ring {
+  animation: confidence-gradient-spin 8s linear infinite;
+}

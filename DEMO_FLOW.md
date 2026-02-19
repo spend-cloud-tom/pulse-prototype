@@ -223,6 +223,71 @@
 
 ---
 
+## 🆕 New "Holy Shit" Moments (v2)
+
+These new features create structural wow — not gimmicks, but moments where the system feels *inevitable*.
+
+### 1. System Health Dot (Header)
+**Where**: Next to the Pulse logo
+**What**: Subtle animated dot — green/amber/red based on system state
+**Demo cue**: *"Notice the dot next to the logo? That's the system's heartbeat. Green means calm. If it turns amber, something needs attention somewhere."*
+
+### 2. Cross-Persona Transition
+**Where**: When switching personas via the floating toggle
+**What**: Brief overlay showing "Same signals, different perspective"
+**Demo cue**: *"Watch what happens when I switch to Rohan..."* [switch] *"Same underlying data, different view. That's the orchestration layer."*
+
+### 3. Inline AI Explainability
+**Where**: On any PulseCard, click "Why am I seeing this?"
+**What**: Collapsible bullet points with AI reasoning, confidence score
+**Demo cue**: *"Click here — the AI explains exactly why this was flagged. No mystery. No black box."*
+
+### 4. Auto-Resolve Undo
+**Where**: Hover over any auto-resolved item
+**What**: Undo button appears, shows rule applied + time saved
+**Demo cue**: *"Every auto-resolution is reversible. Hover here — see the rule it applied, the confidence, the time saved. One click to undo if needed."*
+
+### 5. Exception Density Strip (Rohan)
+**Where**: In the Anomaly Heatmap tiles
+**What**: Mini bar chart showing exception rate by hour
+**Demo cue**: *"See this strip? That's exception density over time. The AI predicted a spike at 3pm — and it happened. Pattern detection in action."*
+
+### 6. Timeline Slider (Executive View)
+**Where**: New component — can add to any view
+**What**: "Rewind 24h" scrubber showing signal flow over time
+**Demo cue**: *"Want to see what happened overnight? Drag this back..."* [scrub] *"...and watch the signals flow through the system. This is your operational nervous system."*
+
+### 7. Calm/Alert Mode
+**Where**: Subtle background gradient shift
+**What**: Background tints warm when tension rises (pending decisions + urgency)
+**Demo cue**: Don't call it out explicitly — let them feel it. If asked: *"You might notice the screen feels slightly different. When there's more pending, the environment subtly shifts. It's designed to be felt, not seen."*
+
+---
+
+## 🎯 Updated Key Moments
+
+| Moment | Old | New |
+|--------|-----|-----|
+| **Persona switch** | Instant cut | Animated transition with "same signals" message |
+| **AI reasoning** | Hidden in modal | Inline "Why am I seeing this?" collapsible |
+| **Auto-resolved** | Static list | Undo on hover, rule + time saved visible |
+| **Risk heatmap** | Static tiles | Density strip showing temporal patterns |
+| **System state** | Implicit | Explicit health dot in header |
+
+---
+
+## 🚫 Still Don't Add
+
+- ❌ Confetti
+- ❌ Over-the-top 3D
+- ❌ AI avatar chat
+- ❌ Slack-style command center
+- ❌ Futuristic cyber UI
+
+**Healthcare operations. Trust > spectacle.**
+
+---
+
 ## 💡 The Real WOW
 
 The wow isn't animation.

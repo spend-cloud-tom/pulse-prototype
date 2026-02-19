@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface BudgetRadarProps {
   location: string;
@@ -10,8 +11,8 @@ interface BudgetRadarProps {
 }
 
 /**
- * Circular budget visualization with animated consumption arc.
- * Heat glow when approaching threshold (>75%).
+ * Professional circular budget gauge with gradient arc, 
+ * animated progress, and contextual status indicators.
  */
 const BudgetRadar = ({ 
   location, 
@@ -21,12 +22,12 @@ const BudgetRadar = ({
   size = 'md',
 }: BudgetRadarProps) => {
   const percentage = Math.round((spent / total) * 100);
-  const isHot = percentage >= 75;
-  const isCritical = percentage >= 90;
+  const isWarning = percentage >= 65 && percentage < 85;
+  const isCritical = percentage >= 85;
   
   const sizeConfig = {
-    sm: { width: 64, stroke: 6, fontSize: 'text-sm', labelSize: 'text-[10px]' },
-    md: { width: 80, stroke: 8, fontSize: 'text-lg', labelSize: 'text-xs' },
+    sm: { width: 72, stroke: 7, fontSize: 'text-base', labelSize: 'text-[10px]' },
+    md: { width: 88, stroke: 8, fontSize: 'text-xl', labelSize: 'text-xs' },
   };
   
   const { width, stroke, fontSize, labelSize } = sizeConfig[size];
@@ -34,20 +35,42 @@ const BudgetRadar = ({
   const circumference = 2 * Math.PI * radius;
   const progress = (percentage / 100) * circumference;
   
-  const getColor = () => {
-    if (isCritical) return 'stroke-signal-red text-signal-red';
-    if (isHot) return 'stroke-signal-amber text-signal-amber';
-    return 'stroke-hero-teal text-hero-teal';
+  // Gradient IDs unique per location
+  const gradientId = `budget-gradient-${location.replace(/\s/g, '-')}`;
+  
+  const getGradientColors = () => {
+    if (isCritical) return { start: '#ef4444', end: '#dc2626' }; // red
+    if (isWarning) return { start: '#f59e0b', end: '#d97706' }; // amber
+    return { start: '#14b8a6', end: '#0d9488' }; // teal
+  };
+  
+  const getStatusColor = () => {
+    if (isCritical) return 'text-signal-red';
+    if (isWarning) return 'text-signal-amber';
+    return 'text-hero-teal';
   };
   
   const trendUp = trend?.startsWith('+');
+  const colors = getGradientColors();
 
   return (
-    <div className="flex flex-col items-center">
-      {/* Circular gauge */}
-      <div className={`relative ${isHot ? 'budget-heat-glow' : ''}`}>
+    <div className="flex flex-col items-center group">
+      {/* Circular gauge with shadow and glow effects */}
+      <div className={cn(
+        "relative transition-transform duration-300 group-hover:scale-105",
+        isCritical && "drop-shadow-[0_0_12px_rgba(239,68,68,0.3)]",
+        isWarning && "drop-shadow-[0_0_8px_rgba(245,158,11,0.2)]"
+      )}>
         <svg width={width} height={width} className="transform -rotate-90">
-          {/* Background circle */}
+          <defs>
+            {/* Gradient for the progress arc */}
+            <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stopColor={colors.start} />
+              <stop offset="100%" stopColor={colors.end} />
+            </linearGradient>
+          </defs>
+          
+          {/* Background track */}
           <circle
             cx={width / 2}
             cy={width / 2}
@@ -55,9 +78,10 @@ const BudgetRadar = ({
             fill="none"
             stroke="currentColor"
             strokeWidth={stroke}
-            className="text-muted/20"
+            className="text-secondary"
           />
-          {/* Progress arc — animates when in viewport */}
+          
+          {/* Progress arc with gradient */}
           <motion.circle
             cx={width / 2}
             cy={width / 2}
@@ -65,33 +89,42 @@ const BudgetRadar = ({
             fill="none"
             strokeWidth={stroke}
             strokeLinecap="round"
-            className={getColor()}
+            stroke={`url(#${gradientId})`}
             initial={{ strokeDashoffset: circumference }}
             whileInView={{ strokeDashoffset: circumference - progress }}
             viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
+            transition={{ duration: 1, ease: [0.4, 0, 0.2, 1], delay: 0.2 }}
             style={{ strokeDasharray: circumference }}
           />
         </svg>
         
-        {/* Center content */}
+        {/* Center percentage */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className={`${fontSize} font-bold ${getColor().split(' ')[1]}`}>
+          <motion.span 
+            className={cn(fontSize, "font-bold tabular-nums", getStatusColor())}
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: 0.5 }}
+          >
             {percentage}%
-          </span>
+          </motion.span>
         </div>
       </div>
       
-      {/* Location label */}
-      <p className={`${labelSize} font-medium text-foreground mt-1.5 text-center`}>
+      {/* Location name */}
+      <p className="text-sm font-semibold text-foreground mt-2 text-center">
         {location}
       </p>
       
-      {/* Trend indicator */}
+      {/* Trend badge */}
       {trend && (
-        <div className={`flex items-center gap-0.5 ${labelSize} ${
-          trendUp ? 'text-signal-amber' : 'text-signal-green'
-        }`}>
+        <div className={cn(
+          "flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium mt-1",
+          trendUp 
+            ? "bg-signal-amber-bg text-signal-amber" 
+            : "bg-signal-green-bg text-signal-green"
+        )}>
           {trendUp ? (
             <TrendingUp className="h-3 w-3" />
           ) : (
@@ -101,8 +134,8 @@ const BudgetRadar = ({
         </div>
       )}
       
-      {/* Amount display */}
-      <p className={`${labelSize} text-muted-foreground`}>
+      {/* Amount breakdown */}
+      <p className={cn(labelSize, "text-muted-foreground mt-1 tabular-nums")}>
         €{spent.toLocaleString()} / €{total.toLocaleString()}
       </p>
     </div>

@@ -4,29 +4,135 @@ import { users } from '@/data/mockData';
 import { Role } from '@/data/types';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, ArrowRight } from 'lucide-react';
+
+// Role transition indicator - shows the "handoff" between personas
+const RoleTransitionOverlay = ({ 
+  fromRole, 
+  toRole, 
+  onComplete 
+}: { 
+  fromRole: Role; 
+  toRole: Role; 
+  onComplete: () => void;
+}) => {
+  const fromUser = users.find(u => u.id === fromRole);
+  const toUser = users.find(u => u.id === toRole);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onAnimationComplete={onComplete}
+      className="fixed inset-0 z-[200] flex items-center justify-center bg-background/80 backdrop-blur-sm"
+    >
+      <motion.div
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="flex items-center gap-6 px-8 py-6 rounded-2xl bg-card shadow-elevation-high border border-border"
+      >
+        {/* From persona */}
+        <div className="flex flex-col items-center">
+          <Avatar className="h-14 w-14 ring-2 ring-muted ring-offset-2 ring-offset-card opacity-60">
+            <AvatarImage src={fromUser?.avatar} alt={fromUser?.name} />
+            <AvatarFallback>{fromUser?.name[0]}</AvatarFallback>
+          </Avatar>
+          <p className="text-xs text-muted-foreground mt-2">{fromUser?.name}</p>
+        </div>
+
+        {/* Transition arrow with pulse animation */}
+        <motion.div
+          animate={{ x: [0, 8, 0] }}
+          transition={{ duration: 0.6, repeat: 1 }}
+        >
+          <ArrowRight className="h-6 w-6 text-hero-teal" />
+        </motion.div>
+
+        {/* To persona */}
+        <div className="flex flex-col items-center">
+          <motion.div
+            initial={{ scale: 0.8 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2, type: 'spring', stiffness: 400 }}
+          >
+            <Avatar className="h-14 w-14 ring-2 ring-hero-teal ring-offset-2 ring-offset-card">
+              <AvatarImage src={toUser?.avatar} alt={toUser?.name} />
+              <AvatarFallback>{toUser?.name[0]}</AvatarFallback>
+            </Avatar>
+          </motion.div>
+          <p className="text-xs font-medium text-foreground mt-2">{toUser?.name}</p>
+        </div>
+      </motion.div>
+
+      {/* Subtle message */}
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="absolute bottom-1/3 text-sm text-muted-foreground"
+      >
+        Same signals, different perspective
+      </motion.p>
+    </motion.div>
+  );
+};
 
 const RoleToggle = ({ fixed = false }: { fixed?: boolean }) => {
   const { activeRole, setActiveRole } = useRole();
   const [open, setOpen] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
+  const [transitionRoles, setTransitionRoles] = useState<{ from: Role; to: Role } | null>(null);
   const activeUser = users.find(u => u.id === activeRole)!;
 
   const handleSwitch = (role: Role) => {
-    setActiveRole(role);
+    if (role === activeRole) {
+      setOpen(false);
+      return;
+    }
+
+    // Start transition animation
+    setTransitionRoles({ from: activeRole, to: role });
+    setTransitioning(true);
     setOpen(false);
-    // Scroll to top on persona switch for clean demo experience
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Complete the switch after a brief delay for the animation
+    setTimeout(() => {
+      setActiveRole(role);
+      // Scroll to top on persona switch for clean demo experience
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 400);
+
+    // End transition overlay
+    setTimeout(() => {
+      setTransitioning(false);
+      setTransitionRoles(null);
+    }, 800);
   };
 
   // Fixed floating version for demo purposes
   if (fixed) {
     return (
-      <div className="fixed top-4 right-4 z-[100]">
-        <button
-          onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 rounded-full bg-card border border-border px-3 py-2 shadow-elevation-high transition-all hover:shadow-xl"
-        >
-          <div className="flex -space-x-2">
+      <>
+        {/* Cross-persona transition overlay */}
+        <AnimatePresence>
+          {transitioning && transitionRoles && (
+            <RoleTransitionOverlay
+              fromRole={transitionRoles.from}
+              toRole={transitionRoles.to}
+              onComplete={() => {}}
+            />
+          )}
+        </AnimatePresence>
+
+        <div className="fixed top-4 right-4 z-[100]">
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex items-center gap-2 rounded-full bg-card border border-border px-3 py-2 shadow-elevation-high transition-all hover:shadow-xl"
+          >
+            <div className="flex -space-x-2">
             {users.slice(0, 4).map((user, i) => (
               <Avatar 
                 key={user.id} 
@@ -91,7 +197,8 @@ const RoleToggle = ({ fixed = false }: { fixed?: boolean }) => {
             </>
           )}
         </AnimatePresence>
-      </div>
+        </div>
+      </>
     );
   }
 

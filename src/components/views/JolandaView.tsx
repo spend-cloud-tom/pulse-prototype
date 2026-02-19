@@ -146,10 +146,10 @@ const ExceptionCard = ({
         </div>
       )}
       
-      {/* Actions — hierarchy-driven buttons */}
+      {/* Actions — Unified Pulse verbs */}
       <div className="flex items-center gap-2 pt-1">
         <Button onClick={onApprove} className="gap-1.5 flex-1">
-          <Check className="h-4 w-4" /> Approve
+          <Check className="h-4 w-4" /> Advance Pulse
         </Button>
         <Button variant="outline" onClick={onSelect} className="gap-1.5">
           <MessageSquare className="h-4 w-4" /> Query
@@ -158,7 +158,7 @@ const ExceptionCard = ({
           onClick={onReject}
           className="text-sm text-muted-foreground hover:text-destructive transition-colors px-3"
         >
-          Reject
+          Return
         </button>
       </div>
     </motion.div>
@@ -208,14 +208,14 @@ const JolandaView = () => {
     
     setApprovedIds(prev => new Set([...prev, signal.id]));
     toast({
-      title: "✅ Approved — sent to procurement",
-      description: `€${(signal.amount || 0).toFixed(2)} for "${signal.description?.slice(0, 25)}..." approved. Sarah will process the order.`,
+      title: "✅ Pulse advanced",
+      description: `€${(signal.amount || 0).toFixed(2)} for "${signal.description?.slice(0, 25)}..." is now in motion.`,
     });
     // Show follow-up notification
     setTimeout(() => {
       toast({
-        title: "📦 Order initiated",
-        description: `Sarah has started processing the order with MedSupply NL.`,
+        title: "� Pulse in motion",
+        description: `Sarah is now processing this Pulse.`,
       });
     }, 2500);
   };
@@ -224,7 +224,7 @@ const JolandaView = () => {
   const handleReject = (signal: ClassifiedSignal) => {
     setRejectedIds(prev => new Set([...prev, signal.id]));
     toast({
-      title: "❌ Rejected — notifying submitter",
+      title: "❌ Pulse returned",
       description: `${signal.submitter_name} will be notified with the reason.`,
     });
   };
@@ -270,7 +270,7 @@ const JolandaView = () => {
                 Zonneweide
               </h1>
               <p className="text-muted-foreground mt-1">
-                {allDecisions.length > 0 ? allDecisions.length : 3} decisions need your judgment · €{totalPendingValue > 0 ? totalPendingValue.toLocaleString() : '654'} to review
+                {allDecisions.length > 0 ? allDecisions.length : 3} Pulses awaiting your action · €{totalPendingValue > 0 ? totalPendingValue.toLocaleString() : '654'} to review
               </p>
             </div>
             
@@ -303,10 +303,13 @@ const JolandaView = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left: Decisions feed */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Section header */}
+            {/* Section header — Pulse Pipeline: Needs Action */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <h2 className="font-semibold">Needs your decision</h2>
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full bg-signal-red animate-pulse" />
+                  <h2 className="font-semibold">Pulses Awaiting Your Action</h2>
+                </div>
                 {exceptions.length > 0 && (
                   <Badge className="text-[10px] bg-signal-amber-bg text-signal-amber border-0">
                     {exceptions.length} flagged
@@ -314,7 +317,7 @@ const JolandaView = () => {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                {allDecisions.length} items
+                {allDecisions.length} Pulses
               </p>
             </div>
             
@@ -333,27 +336,27 @@ const JolandaView = () => {
               {allDecisions.length === 0 && (
                 <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
                   <Check className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                  <p className="font-semibold text-signal-green">All clear</p>
+                  <p className="font-semibold text-signal-green">All Pulses handled</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    No decisions pending for Zonneweide
+                    No Pulses awaiting your action
                   </p>
                 </div>
               )}
             </div>
             
-            {/* In progress — collapsed by default */}
+            {/* Pulses In Motion — collapsed by default */}
             {progressPulses.length > 0 && (
               <div className="space-y-3 pt-4">
                 <div className="flex items-center gap-2 text-muted-foreground">
-                  <div className="h-2 w-2 rounded-full bg-hero-teal animate-pulse" />
-                  <span className="text-sm font-medium">In progress</span>
+                  <div className="h-2 w-2 rounded-full bg-signal-amber" />
+                  <span className="text-sm font-medium">Pulses In Motion</span>
                   <span className="text-sm">{progressPulses.length}</span>
                   <span className="text-xs">· €{totalCommitted.toLocaleString()} committed</span>
                 </div>
               </div>
             )}
             
-            {/* Completed — toggle */}
+            {/* Resolved Pulses — toggle */}
             {completedPulses.length > 0 && (
               <div className="space-y-3 pt-2">
                 <button
@@ -361,7 +364,7 @@ const JolandaView = () => {
                   className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Check className="h-4 w-4 text-signal-green" />
-                  <span className="text-sm font-medium">Recently completed</span>
+                  <span className="text-sm font-medium">Resolved Pulses</span>
                   <span className="text-sm">{completedPulses.length}</span>
                   <ChevronRight className={`h-4 w-4 transition-transform ${showCompleted ? 'rotate-90' : ''}`} />
                 </button>

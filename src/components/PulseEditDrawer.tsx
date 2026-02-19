@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Signal } from '@/data/types';
+import { demoImages } from '@/data/mockData';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,6 +10,19 @@ import { Save, Upload, X } from 'lucide-react';
 import { useRole } from '@/context/RoleContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import ImageThumbnail from '@/components/ImageThumbnail';
+
+const getSignalImage = (signal: Signal): string => {
+  const type = signal.signal_type;
+  const title = (signal.title || '').toLowerCase();
+  
+  if (type === 'purchase' || title.includes('groceries') || title.includes('supplies')) return demoImages.receipt;
+  if (type === 'maintenance') return demoImages.leakyFaucet;
+  if (type === 'incident') return demoImages.flood;
+  if (type === 'compliance') return demoImages.medication;
+  if (title.includes('invoice')) return demoImages.invoice;
+  return demoImages.receipt;
+};
 
 interface PulseEditDrawerProps {
   signal: Signal | null;
@@ -80,6 +94,9 @@ const PulseEditDrawer = ({ signal, open, onOpenChange }: PulseEditDrawerProps) =
         </SheetHeader>
 
         <div className="space-y-5">
+          {/* Signal image preview — constrained cover with tap-to-expand */}
+          <ImageThumbnail src={getSignalImage(signal)} alt="Attachment" size="md" />
+
           {/* Current amount */}
           <div className="rounded-xl border border-border bg-card p-3 flex items-center justify-between">
             <span className="text-sm text-muted-foreground">Amount</span>

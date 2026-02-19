@@ -1,12 +1,35 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRole } from '@/context/RoleContext';
-import { teamSignals } from '@/data/mockData';
-import { Package, Truck, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { teamSignals, demoImages } from '@/data/mockData';
+import { Mic, Camera, ChevronRight, Package, Truck, CheckCircle2, AlertCircle, Clock, ShoppingCart, Wrench, Receipt, HelpCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
+import ImageThumbnail from '@/components/ImageThumbnail';
+import { Signal } from '@/data/types';
+import { cn } from '@/lib/utils';
 
+
+const getSignalImage = (signal: Signal): string | null => {
+  const type = signal.signal_type;
+  const title = (signal.title || '').toLowerCase();
+  const desc = (signal.description || '').toLowerCase();
+  
+  if (type === 'purchase' || title.includes('groceries') || title.includes('supplies')) return demoImages.receipt;
+  if (type === 'maintenance') {
+    if (title.includes('light') || title.includes('bulb') || title.includes('lamp')) return demoImages.brokenLightbulb;
+    if (title.includes('wheelchair') || title.includes('chair')) return demoImages.brokenWheelchair;
+    if (title.includes('shower') || desc.includes('shower')) return demoImages.brokenShower;
+    if (title.includes('leak') || title.includes('faucet') || title.includes('tap')) return demoImages.leakyFaucet;
+    if (title.includes('flood')) return demoImages.flood;
+    return demoImages.leakyFaucet;
+  }
+  if (type === 'incident' || title.includes('fall') || title.includes('incident') || desc.includes('fall')) return demoImages.fallIncident;
+  if (type === 'compliance') return demoImages.medication;
+  if (title.includes('delivery') || title.includes('package')) return demoImages.deliveryConfirm;
+  return null;
+};
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PROGRESS TRACKER — Rich Visual Modeless Feedback (RVMF)
@@ -40,7 +63,7 @@ const ProgressTracker = ({ status }: { status: string }) => {
   const currentStep = statusToStep[status] ?? 0;
 
   return (
-    <div className="flex items-center w-full mt-1.5" role="progressbar" aria-valuenow={currentStep} aria-valuemax={steps.length - 1}>
+    <div className="flex items-center w-full mt-3" role="progressbar" aria-valuenow={currentStep} aria-valuemax={steps.length - 1}>
       {steps.map((step, i) => {
         const isComplete = i < currentStep;
         const isCurrent = i === currentStep;
@@ -48,27 +71,26 @@ const ProgressTracker = ({ status }: { status: string }) => {
         const Icon = step.icon;
         
         return (
-          <div key={step.key} className="flex items-center flex-1">
-            {/* Step marker with animated checkmark */}
+          <div key={step.key} className="flex items-center flex-1 last:flex-none">
+            {/* Step marker */}
             <motion.div 
               initial={false}
               animate={{
-                scale: isCurrent ? 1 : isComplete ? 1 : 0.9,
-                opacity: isFuture ? 0.5 : 1,
+                scale: isCurrent ? 1 : 1,
+                opacity: 1,
               }}
               transition={{ 
                 type: 'spring', 
-                stiffness: 500, 
-                damping: 30,
-                delay: isComplete ? i * 0.1 : 0,
+                stiffness: 400, 
+                damping: 25,
+                delay: isComplete ? i * 0.08 : 0,
               }}
-              className={`flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[11px] whitespace-nowrap ${
-                isComplete 
-                  ? 'text-emerald-600' 
-                  : isCurrent 
-                    ? 'bg-slate-800 text-white font-semibold step-current-pulse' 
-                    : 'text-slate-300'
-              }`}
+              className={cn(
+                'flex items-center gap-1.5 text-xs whitespace-nowrap transition-colors',
+                isComplete && 'text-emerald-600',
+                isCurrent && 'bg-slate-900 text-white px-2.5 py-1 rounded-full font-medium shadow-sm',
+                isFuture && 'text-slate-400'
+              )}
               aria-current={isCurrent ? 'step' : undefined}
             >
               {isComplete ? (
@@ -77,32 +99,48 @@ const ProgressTracker = ({ status }: { status: string }) => {
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ 
                     type: 'spring', 
-                    stiffness: 500, 
-                    damping: 25,
-                    delay: i * 0.15,
+                    stiffness: 400, 
+                    damping: 20,
+                    delay: i * 0.12,
                   }}
+                  className="flex items-center justify-center h-4 w-4 rounded-full bg-emerald-100"
                 >
-                  <CheckCircle2 className="h-3 w-3 shrink-0" />
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
                 </motion.div>
               ) : (
-                <Icon className={`h-3 w-3 shrink-0 ${isFuture ? 'opacity-50' : ''}`} />
+                <div className={cn(
+                  'flex items-center justify-center h-4 w-4 rounded-full',
+                  isCurrent && 'bg-white/20',
+                  isFuture && 'bg-slate-100'
+                )}>
+                  <Icon className={cn(
+                    'h-3 w-3',
+                    isCurrent && 'text-white',
+                    isFuture && 'text-slate-400'
+                  )} />
+                </div>
               )}
-              <span className={`hidden sm:inline ${isFuture ? 'font-normal' : isComplete ? 'font-medium' : 'font-semibold'}`}>
+              <span className={cn(
+                'hidden sm:inline',
+                isComplete && 'font-medium',
+                isCurrent && 'font-medium',
+                isFuture && 'font-normal'
+              )}>
                 {step.label}
               </span>
             </motion.div>
             
-            {/* Animated connecting line — triggers when in viewport */}
+            {/* Connecting line */}
             {i < steps.length - 1 && (
-              <div className="flex-1 h-px mx-1 bg-slate-200 overflow-hidden">
+              <div className="flex-1 h-0.5 mx-2 bg-slate-200 rounded-full overflow-hidden min-w-[24px]">
                 <motion.div 
-                  className="h-full bg-emerald-400"
+                  className="h-full bg-emerald-500 rounded-full"
                   initial={{ width: '0%' }}
                   whileInView={{ width: isComplete ? '100%' : '0%' }}
                   viewport={{ once: true }}
                   transition={{ 
-                    duration: 0.4, 
-                    delay: i * 0.15,
+                    duration: 0.5, 
+                    delay: i * 0.12,
                     ease: [0.4, 0, 0.2, 1],
                   }}
                 />
@@ -199,24 +237,31 @@ const StatusCard = ({
         
         {/* Content — tight spacing within, more padding around */}
         <div className="flex-1 min-w-0">
-          {/* Title + meta group — tightly spaced */}
-          <div className="space-y-1">
-            <p className={`text-[15px] font-semibold leading-snug ${
-              isCompleted ? 'text-slate-400' : 'text-slate-800'
-            }`}>
-              {signal.description}
-            </p>
-            
-            {/* Meta row: amount + location */}
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              {signal.amount != null && signal.amount > 0 && (
-                <span className="text-slate-500 tabular-nums font-medium">
-                  €{signal.amount.toFixed(2)}
-                </span>
-              )}
-              <span>·</span>
-              <span>{signal.location}</span>
+          {/* Title + meta + thumbnail row */}
+          <div className="flex items-start gap-3">
+            <div className="flex-1 min-w-0 space-y-1">
+              <p className={`text-[15px] font-semibold leading-snug ${
+                isCompleted ? 'text-slate-400' : 'text-slate-800'
+              }`}>
+                {signal.description}
+              </p>
+              
+              {/* Meta row: amount + location */}
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                {signal.amount != null && signal.amount > 0 && (
+                  <span className="text-slate-500 tabular-nums font-medium">
+                    €{signal.amount.toFixed(2)}
+                  </span>
+                )}
+                <span>·</span>
+                <span>{signal.location}</span>
+              </div>
             </div>
+            
+            {/* Small square thumbnail — visual anchor, tap to expand */}
+            {getSignalImage(signal) && (
+              <ImageThumbnail src={getSignalImage(signal)!} alt="Attachment" size="sm" />
+            )}
           </div>
           
           {/* Progress tracker — tightly coupled to content above (mt-2), not to card edge */}
@@ -309,8 +354,8 @@ const AnoukView = () => {
   const handleResolve = (signalId: string, description: string) => {
     setResolvedIds(prev => new Set([...prev, signalId]));
     toast({
-      title: "✅ Info provided — moving to procurement",
-      description: `"${description?.slice(0, 35)}..." is now being processed by Sarah.`,
+      title: "✅ Pulse advanced",
+      description: `"${description?.slice(0, 35)}..." is now in motion.`,
     });
   };
 
@@ -321,26 +366,26 @@ const AnoukView = () => {
         {/* Constrained width container — max 680px, centered */}
         <div className="max-w-[680px] mx-auto px-5 py-8 space-y-8">
           
-          {/* ─── GREETING ─── */}
+          {/* ─── GREETING — Pulse-centric language ─── */}
           <motion.header 
             initial={{ opacity: 0, y: 16 }} 
             animate={{ opacity: 1, y: 0 }}
             className="space-y-2"
           >
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              {hasNeedsInput ? 'Quick check needed' : 'All sorted'}
+              {hasNeedsInput ? 'Pulses need you' : 'All Pulses handled'}
             </h1>
             <p className="text-base text-slate-500 leading-relaxed">
               {hasNeedsInput 
-                ? `${needsInputPulses.length} ${needsInputPulses.length === 1 ? 'thing needs' : 'things need'} a bit more info.`
+                ? `${needsInputPulses.length} ${needsInputPulses.length === 1 ? 'Pulse needs' : 'Pulses need'} your input.`
                 : inProgressPulses.length > 0 
-                  ? `${inProgressPulses.length} ${inProgressPulses.length === 1 ? 'request is' : 'requests are'} being handled.`
-                  : 'Everything is taken care of. Enjoy your shift!'
+                  ? `${inProgressPulses.length} ${inProgressPulses.length === 1 ? 'Pulse is' : 'Pulses are'} in motion.`
+                  : 'All Pulses resolved. Enjoy your shift!'
               }
             </p>
           </motion.header>
 
-          {/* ─── NEEDS INPUT SECTION ─── */}
+          {/* ─── NEEDS ACTION — Pulses requiring your input ─── */}
           {hasNeedsInput && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -348,8 +393,9 @@ const AnoukView = () => {
               transition={{ delay: 0.1 }}
               className="space-y-4"
             >
-              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                Needs your input
+              <h2 className="text-sm font-semibold text-signal-red uppercase tracking-wider flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-signal-red animate-pulse" />
+                Pulses Awaiting Your Action
               </h2>
               <div className="space-y-4">
                 {needsInputPulses.map((signal) => (
@@ -365,7 +411,7 @@ const AnoukView = () => {
             </motion.section>
           )}
 
-          {/* ─── IN PROGRESS SECTION ─── */}
+          {/* ─── IN MOTION — Pulses being processed ─── */}
           {inProgressPulses.length > 0 && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -373,8 +419,9 @@ const AnoukView = () => {
               transition={{ delay: 0.15 }}
               className="space-y-4"
             >
-              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                Being handled
+              <h2 className="text-sm font-semibold text-signal-amber uppercase tracking-wider flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-signal-amber" />
+                Pulses In Motion
               </h2>
               <div className="space-y-4">
                 {inProgressPulses.map((signal) => (
@@ -384,7 +431,7 @@ const AnoukView = () => {
             </motion.section>
           )}
 
-          {/* ─── COMPLETED SECTION ─── */}
+          {/* ─── RESOLVED — Completed Pulses ─── */}
           {completedPulses.length > 0 && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -392,8 +439,9 @@ const AnoukView = () => {
               transition={{ delay: 0.2 }}
               className="space-y-4"
             >
-              <h2 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
-                Recently completed
+              <h2 className="text-sm font-semibold text-signal-green uppercase tracking-wider flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-signal-green" />
+                Resolved Pulses
               </h2>
               <div className="space-y-4">
                 {completedPulses.slice(0, 5).map((signal) => (

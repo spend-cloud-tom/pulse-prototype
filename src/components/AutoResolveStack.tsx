@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Sparkles, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import { CheckCircle2, Sparkles, ChevronDown, ChevronUp, Zap, RotateCcw, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { toast } from '@/hooks/use-toast';
 
 interface AutoResolvedItem {
   id: string;
   title: string;
   amount?: number;
   resolvedAt: string;
+  ruleApplied?: string;
+  confidence?: number;
+  timeSavedSeconds?: number;
 }
 
 interface AutoResolveStackProps {
@@ -16,20 +20,20 @@ interface AutoResolveStackProps {
   autoDemo?: boolean; // Enable timed demo animation
 }
 
-// Mock items for demo
+// Mock items for demo with extended metadata
 const mockAutoResolved: AutoResolvedItem[] = [
-  { id: '1', title: 'Coffee supplies — Zonneweide', amount: 12.40, resolvedAt: '9:15 AM' },
-  { id: '2', title: 'Bus tickets — De Berk', amount: 15.00, resolvedAt: '9:32 AM' },
-  { id: '3', title: 'Hand soap refill — Zonneweide', amount: 6.80, resolvedAt: '9:45 AM' },
-  { id: '4', title: 'Printer paper — De Berk', amount: 18.90, resolvedAt: '10:02 AM' },
-  { id: '5', title: 'Cleaning supplies — Het Anker', amount: 24.50, resolvedAt: '10:15 AM' },
-  { id: '6', title: 'Office supplies — Zonneweide', amount: 8.20, resolvedAt: '10:28 AM' },
-  { id: '7', title: 'First aid restock — De Berk', amount: 32.00, resolvedAt: '10:41 AM' },
-  { id: '8', title: 'Kitchen supplies — Het Anker', amount: 14.60, resolvedAt: '10:55 AM' },
-  { id: '9', title: 'Stationery — Zonneweide', amount: 9.30, resolvedAt: '11:08 AM' },
-  { id: '10', title: 'Hygiene products — De Berk', amount: 21.40, resolvedAt: '11:22 AM' },
-  { id: '11', title: 'Batteries — Het Anker', amount: 7.50, resolvedAt: '11:35 AM' },
-  { id: '12', title: 'Light bulbs — Zonneweide', amount: 11.20, resolvedAt: '11:48 AM' },
+  { id: '1', title: 'Coffee supplies — Zonneweide', amount: 12.40, resolvedAt: '9:15 AM', ruleApplied: 'Under €50 threshold', confidence: 98, timeSavedSeconds: 120 },
+  { id: '2', title: 'Bus tickets — De Berk', amount: 15.00, resolvedAt: '9:32 AM', ruleApplied: 'Recurring expense pattern', confidence: 95, timeSavedSeconds: 90 },
+  { id: '3', title: 'Hand soap refill — Zonneweide', amount: 6.80, resolvedAt: '9:45 AM', ruleApplied: 'Under €50 threshold', confidence: 99, timeSavedSeconds: 60 },
+  { id: '4', title: 'Printer paper — De Berk', amount: 18.90, resolvedAt: '10:02 AM', ruleApplied: 'Contracted supplier match', confidence: 97, timeSavedSeconds: 150 },
+  { id: '5', title: 'Cleaning supplies — Het Anker', amount: 24.50, resolvedAt: '10:15 AM', ruleApplied: 'Under €50 threshold', confidence: 96, timeSavedSeconds: 120 },
+  { id: '6', title: 'Office supplies — Zonneweide', amount: 8.20, resolvedAt: '10:28 AM', ruleApplied: 'Under €50 threshold', confidence: 99, timeSavedSeconds: 60 },
+  { id: '7', title: 'First aid restock — De Berk', amount: 32.00, resolvedAt: '10:41 AM', ruleApplied: 'Safety supplies auto-approve', confidence: 94, timeSavedSeconds: 180 },
+  { id: '8', title: 'Kitchen supplies — Het Anker', amount: 14.60, resolvedAt: '10:55 AM', ruleApplied: 'Under €50 threshold', confidence: 98, timeSavedSeconds: 90 },
+  { id: '9', title: 'Stationery — Zonneweide', amount: 9.30, resolvedAt: '11:08 AM', ruleApplied: 'Under €50 threshold', confidence: 99, timeSavedSeconds: 60 },
+  { id: '10', title: 'Hygiene products — De Berk', amount: 21.40, resolvedAt: '11:22 AM', ruleApplied: 'Under €50 threshold', confidence: 97, timeSavedSeconds: 120 },
+  { id: '11', title: 'Batteries — Het Anker', amount: 7.50, resolvedAt: '11:35 AM', ruleApplied: 'Under €50 threshold', confidence: 99, timeSavedSeconds: 45 },
+  { id: '12', title: 'Light bulbs — Zonneweide', amount: 11.20, resolvedAt: '11:48 AM', ruleApplied: 'Maintenance supplies auto-approve', confidence: 96, timeSavedSeconds: 90 },
 ];
 
 const AutoResolveStack = ({ 
@@ -160,12 +164,30 @@ const AutoResolveStack = ({
               }}
               className="overflow-hidden"
             >
-              <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-secondary/30 transition-colors">
-                <div className="flex items-center gap-2 min-w-0">
+              <div className="group/item flex items-center justify-between px-3 py-2 rounded-lg hover:bg-secondary/30 transition-colors">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
                   <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0" />
-                  <span className="text-sm truncate">{item.title}</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-sm truncate block">{item.title}</span>
+                    {/* Rule applied + confidence on hover/expand */}
+                    {(isExpanded || item.ruleApplied) && (
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-0.5">
+                        {item.ruleApplied && (
+                          <span className="text-hero-purple">{item.ruleApplied}</span>
+                        )}
+                        {item.confidence && (
+                          <span>· {item.confidence}% conf</span>
+                        )}
+                        {item.timeSavedSeconds && (
+                          <span className="flex items-center gap-0.5">
+                            · <Clock className="h-2.5 w-2.5" /> {Math.round(item.timeSavedSeconds / 60)}m saved
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-3 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   {item.amount && (
                     <span className="text-sm font-medium tabular-nums">
                       €{item.amount.toFixed(2)}
@@ -174,6 +196,22 @@ const AutoResolveStack = ({
                   <span className="text-[10px] text-muted-foreground">
                     {item.resolvedAt}
                   </span>
+                  {/* Undo button - visible on hover */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Remove item from visible list
+                      setVisibleItems(prev => prev.filter(i => i.id !== item.id));
+                      toast({
+                        title: "Reverted to pending",
+                        description: `"${item.title}" moved back to your queue for review.`,
+                      });
+                    }}
+                    className="opacity-0 group-hover/item:opacity-100 h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-signal-amber hover:bg-signal-amber/10 transition-all"
+                    title="Undo auto-approval"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                  </button>
                 </div>
               </div>
             </motion.div>

@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Wrench, User, Phone, Calendar, Check, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 import type { MaintenanceTicket } from '@/hooks/useMaintenanceTickets';
+import { demoImages } from '@/data/mockData';
+import ImageThumbnail from '@/components/ImageThumbnail';
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   open: { label: 'Open', color: 'bg-signal-red-bg text-signal-red', icon: <AlertTriangle className="h-3 w-3" /> },
@@ -16,6 +18,16 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.R
   'in-progress': { label: 'In Progress', color: 'bg-signal-amber-bg text-signal-amber', icon: <Clock className="h-3 w-3" /> },
   completed: { label: 'Completed', color: 'bg-signal-green-bg text-signal-green', icon: <CheckCircle2 className="h-3 w-3" /> },
   cancelled: { label: 'Cancelled', color: 'bg-secondary text-muted-foreground', icon: null },
+};
+
+const getMaintenanceImage = (description: string): string | null => {
+  const desc = description.toLowerCase();
+  if (desc.includes('light') || desc.includes('bulb') || desc.includes('lamp')) return demoImages.brokenLightbulb;
+  if (desc.includes('shower')) return demoImages.brokenShower;
+  if (desc.includes('faucet') || desc.includes('leak') || desc.includes('tap') || desc.includes('water')) return demoImages.leakyFaucet;
+  if (desc.includes('wheelchair') || desc.includes('chair') || desc.includes('mobility')) return demoImages.brokenWheelchair;
+  if (desc.includes('flood') || desc.includes('water damage')) return demoImages.flood;
+  return null;
 };
 
 const MaintenancePanel = () => {
@@ -105,21 +117,25 @@ const MaintenancePanel = () => {
           </p>
           {openTickets.map(ticket => {
             const sc = statusConfig[ticket.status];
+            const ticketImage = getMaintenanceImage(ticket.issue_description);
             return (
               <div key={ticket.id} className="rounded-xl border border-signal-red/20 bg-card p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold">{ticket.issue_description}</p>
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-semibold">{ticket.issue_description}</p>
+                      <Badge className={`text-[11px] border-0 gap-1 shrink-0 ${sc.color}`}>
+                        {sc.icon} {sc.label}
+                      </Badge>
+                    </div>
                     <p className="text-xs text-muted-foreground">{ticket.location} · {ticket.room_or_area}</p>
+                    <Badge className={`text-[10px] border-0 ${ticket.priority === 'critical' ? 'bg-signal-red-bg text-signal-red' : ticket.priority === 'urgent' ? 'bg-signal-amber-bg text-signal-amber' : 'bg-secondary text-muted-foreground'}`}>
+                      {ticket.priority}
+                    </Badge>
                   </div>
-                  <Badge className={`text-[11px] border-0 gap-1 ${sc.color}`}>
-                    {sc.icon} {sc.label}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge className={`text-[10px] border-0 ${ticket.priority === 'critical' ? 'bg-signal-red-bg text-signal-red' : ticket.priority === 'urgent' ? 'bg-signal-amber-bg text-signal-amber' : 'bg-secondary text-muted-foreground'}`}>
-                    {ticket.priority}
-                  </Badge>
+                  {ticketImage && (
+                    <ImageThumbnail src={ticketImage} alt="Issue" size="sm" />
+                  )}
                 </div>
                 <Button size="sm" onClick={() => openAssignDialog(ticket)} className="gap-1.5 text-xs h-8">
                   <User className="h-3.5 w-3.5" /> Assign Contractor

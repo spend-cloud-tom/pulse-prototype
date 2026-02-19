@@ -292,10 +292,10 @@ const SarahView = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="font-display text-3xl font-bold tracking-tight">
-                Procurement
+                Pulse Pipeline
               </h1>
               <p className="text-muted-foreground mt-1">
-                {actionPulses.length} in queue · {activeOrders.filter(o => o.status !== 'delivered').length} orders in transit
+                {actionPulses.length} Pulses awaiting action · {activeOrders.filter(o => o.status !== 'delivered').length} Pulses in motion
               </p>
             </div>
             
@@ -320,12 +320,12 @@ const SarahView = () => {
             </div>
           </div>
           
-          {/* Tabs */}
+          {/* Tabs — Pulse Pipeline states */}
           <div className="flex items-center gap-1 border-b border-border -mb-px">
             {[
-              { key: 'queue', label: 'Order Queue', count: actionPulses.length },
-              { key: 'orders', label: 'Active Orders', count: activeOrders.filter(o => o.status !== 'delivered').length },
-              { key: 'auto', label: 'Auto-PO', count: autoPOCandidates.length },
+              { key: 'queue', label: 'Needs Action', count: actionPulses.length },
+              { key: 'orders', label: 'In Motion', count: activeOrders.filter(o => o.status !== 'delivered').length },
+              { key: 'auto', label: 'Auto-Handled', count: autoPOCandidates.length },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -373,19 +373,19 @@ const SarahView = () => {
                 ) : (
                   <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
                     <CheckCircle2 className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                    <p className="font-semibold text-signal-green">Queue clear</p>
+                    <p className="font-semibold text-signal-green">All Pulses handled</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      All orders have been assigned to suppliers
+                      No Pulses awaiting your action
                     </p>
                   </div>
                 )}
                 
-                {/* Bottlenecks */}
+                {/* Blocked Pulses */}
                 {bottlenecks.length > 0 && (
                   <div className="space-y-3 pt-4">
                     <div className="flex items-center gap-2">
                       <AlertCircle className="h-4 w-4 text-signal-amber" />
-                      <h3 className="text-sm font-semibold">Bottlenecks</h3>
+                      <h3 className="text-sm font-semibold">Blocked Pulses</h3>
                     </div>
                     {bottlenecks.map((b, i) => (
                       <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-signal-amber-bg/30 border border-signal-amber/20">
@@ -401,7 +401,7 @@ const SarahView = () => {
                             className="mt-1 text-xs h-7"
                             onClick={() => handleEscalate(b.item)}
                           >
-                            Escalate
+                            Escalate Pulse
                           </Button>
                         </div>
                       </div>

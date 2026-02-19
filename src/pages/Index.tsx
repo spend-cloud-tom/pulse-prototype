@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { RoleProvider, useRole } from '@/context/RoleContext';
+import { SystemHealthProvider } from '@/context/SystemHealthContext';
 import AutomationBanner from '@/components/AutomationBanner';
 import RoleToggle from '@/components/RoleToggle';
 import { FilterState } from '@/components/GlobalFilters';
@@ -247,26 +248,28 @@ const PulseApp = () => {
       <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md">
         {/* Top row: Logo + Actions */}
         <div className="max-w-[800px] mx-auto flex items-center justify-between px-5 py-3">
-          {/* Logo — friendly typographic "pulse." with Nunito rounded font */}
-          <div className="flex items-baseline">
-            <span 
-              className="text-[26px] font-extrabold tracking-tight lowercase"
-              style={{ 
-                fontFamily: "'Nunito', sans-serif",
-                color: 'hsl(200, 45%, 35%)'  /* Calming deep teal */
-              }}
-            >
-              pulse
-            </span>
-            <span 
-              className="text-[26px] font-extrabold"
-              style={{ 
-                fontFamily: "'Nunito', sans-serif",
-                color: 'hsl(12, 76%, 61%)'  /* Soft coral accent - the "heartbeat" */
-              }}
-            >
-              .
-            </span>
+          {/* Logo — friendly typographic "pulse." with Nunito rounded font + health dot */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-baseline">
+              <span 
+                className="text-[26px] font-extrabold tracking-tight lowercase"
+                style={{ 
+                  fontFamily: "'Nunito', sans-serif",
+                  color: 'hsl(200, 45%, 35%)'  /* Calming deep teal */
+                }}
+              >
+                pulse
+              </span>
+              <span 
+                className="text-[26px] font-extrabold"
+                style={{ 
+                  fontFamily: "'Nunito', sans-serif",
+                  color: 'hsl(12, 76%, 61%)'  /* Soft coral accent - the "heartbeat" */
+                }}
+              >
+                .
+              </span>
+            </div>
           </div>
 
           {/* Right side — Search icon, Notifications, Avatar */}
@@ -377,9 +380,19 @@ const PulseApp = () => {
   );
 };
 
+const IndexWithProviders = () => {
+  const { signals } = useRole();
+  
+  return (
+    <SystemHealthProvider signals={signals}>
+      <PulseApp />
+    </SystemHealthProvider>
+  );
+};
+
 const Index = () => (
   <RoleProvider>
-    <PulseApp />
+    <IndexWithProviders />
   </RoleProvider>
 );
 

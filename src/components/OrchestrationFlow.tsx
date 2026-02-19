@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
   ReactFlow,
+  ReactFlowProvider,
   Node,
   Edge,
   Background,
@@ -89,7 +90,7 @@ const nodeTypes = {
   workflow: WorkflowNode,
 };
 
-const OrchestrationFlow = ({ 
+const OrchestrationFlowInner = ({ 
   activeStage = 1, 
   pulseTitle = "Medical supplies request",
   compact = false 
@@ -284,6 +285,7 @@ const OrchestrationFlow = ({
             transition={{ duration: 0.3 }}
             className="border-t border-border/50"
           >
+            <div style={{ width: '100%', height: 180 }}>
             <ReactFlow
               nodes={nodes}
               edges={edges}
@@ -302,11 +304,18 @@ const OrchestrationFlow = ({
             >
               <Background color="#f1f5f9" gap={16} />
             </ReactFlow>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
 };
+
+const OrchestrationFlow = (props: OrchestrationFlowProps) => (
+  <ReactFlowProvider>
+    <OrchestrationFlowInner {...props} />
+  </ReactFlowProvider>
+);
 
 export default OrchestrationFlow;

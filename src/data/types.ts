@@ -2,6 +2,16 @@ export type Role = 'anouk' | 'rohan' | 'sarah' | 'jolanda';
 
 export type ConfidenceLevel = 'high' | 'medium' | 'low';
 
+// PULSE STATE MODEL — The unified state machine for all Pulses
+// Every item in the system is a Pulse moving through these states
+export type PulseState = 
+  | 'needs-action'      // 🔴 Requires human decision/input
+  | 'in-motion'         // 🟡 Being processed, moving forward
+  | 'blocked'           // ⚫ Stuck, waiting on external factor
+  | 'auto-handled'      // 🟣 AI resolved without human intervention
+  | 'resolved';         // 🟢 Complete, no further action needed
+
+// Legacy status mapping (for DB compatibility)
 export type SignalStatus = 
   | 'pending' 
   | 'approved' 
@@ -13,7 +23,22 @@ export type SignalStatus =
   | 'awaiting-supplier'
   | 'closed';
 
-export type SignalCategory = 
+// Map legacy status to unified PulseState
+export const statusToPulseState: Record<SignalStatus, PulseState> = {
+  'pending': 'needs-action',
+  'needs-clarity': 'needs-action',
+  'approved': 'in-motion',
+  'in-motion': 'in-motion',
+  'awaiting-supplier': 'blocked',
+  'auto-approved': 'auto-handled',
+  'delivered': 'resolved',
+  'closed': 'resolved',
+  'rejected': 'resolved',
+};
+
+// PULSE TYPE — What kind of operational signal is this?
+// All are Pulses, just different flavors
+export type PulseType = 
   | 'purchase'
   | 'maintenance'
   | 'incident'
@@ -22,6 +47,9 @@ export type SignalCategory =
   | 'event'
   | 'resource'
   | 'general';
+
+// Legacy alias for backward compatibility
+export type SignalCategory = PulseType;
 
 export type UrgencyLevel = 'normal' | 'urgent' | 'critical';
 

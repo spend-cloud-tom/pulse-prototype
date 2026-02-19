@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { Signal, ConfidenceLevel } from '@/data/types';
-import { signalTypeConfig } from '@/data/mockData';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Signal, ConfidenceLevel, statusToPulseState, PulseState } from '@/data/types';
+import { signalTypeConfig, pulseStateConfig } from '@/data/mockData';
 import { classifySignal, riskConfig, getWorkflowStage } from '@/lib/decisionTypes';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { HelpCircle, ChevronDown, TrendingUp, AlertTriangle, CheckCircle2, Zap } from 'lucide-react';
 
 interface PulseCardProps {
   signal: Signal;
@@ -33,29 +35,38 @@ const urgencyBadge: Record<string, { label: string; style: string } | null> = {
   normal: null,
 };
 
-// Status labels
-const statusLabels: Record<string, string> = {
-  pending: 'New',
-  'needs-clarity': 'Awaiting info',
-  approved: 'Approved',
-  'in-motion': 'In progress',
-  'awaiting-supplier': 'Awaiting others',
-  'auto-approved': 'Completed',
-  delivered: 'Completed',
-  closed: 'Completed',
-  rejected: 'Rejected',
+// PULSE STATE LABELS — Unified language across the system
+const pulseStateLabels: Record<PulseState, string> = {
+  'needs-action': 'Needs Action',
+  'in-motion': 'In Motion',
+  'blocked': 'Blocked',
+  'auto-handled': 'Auto-Handled',
+  'resolved': 'Resolved',
 };
 
-// Owner labels
+// Legacy status to display label (for backward compat)
+const statusLabels: Record<string, string> = {
+  pending: 'Needs Action',
+  'needs-clarity': 'Needs Action',
+  approved: 'In Motion',
+  'in-motion': 'In Motion',
+  'awaiting-supplier': 'Blocked',
+  'auto-approved': 'Auto-Handled',
+  delivered: 'Resolved',
+  closed: 'Resolved',
+  rejected: 'Resolved',
+};
+
+// Owner/next step labels — Who owns this Pulse now?
 const ownerLabels: Record<string, string> = {
-  pending: 'Awaiting reviewer',
-  'needs-clarity': 'Waiting for you',
-  'in-motion': 'With procurement',
-  'awaiting-supplier': 'With supplier',
-  approved: 'Moving to procurement',
-  'auto-approved': 'Auto-handled',
-  delivered: 'Delivered',
-  closed: 'Completed',
+  pending: 'Awaiting your action',
+  'needs-clarity': 'Awaiting your input',
+  'in-motion': 'Being processed',
+  'awaiting-supplier': 'Waiting on external',
+  approved: 'Moving forward',
+  'auto-approved': 'AI resolved',
+  delivered: 'Complete',
+  closed: 'Complete',
   rejected: 'Returned',
 };
 
@@ -96,8 +107,38 @@ const isActionRequired = (signal: Signal): boolean => {
   return signal.status === 'pending' || signal.status === 'needs-clarity';
 };
 
+// Parse AI reasoning into bullet points for progressive disclosure
+const parseAIReasoning = (reasoning: string | null, flagReason: string | null): string[] => {
+  if (!reasoning && !flagReason) return [];
+  
+  const points: string[] = [];
+  
+  // Add flag reason as first point if present
+  if (flagReason) {
+    points.push(`⚠️ ${flagReason}`);
+  }
+  
+  // Parse reasoning - split on periods or common patterns
+  if (reasoning) {
+    const sentences = reasoning
+      .split(/(?<=[.!?])\s+/)
+      .filter(s => s.trim().length > 10)
+      .slice(0, 3); // Max 3 points
+    
+    sentences.forEach(s => {
+      const cleaned = s.trim();
+      if (cleaned && !points.some(p => p.includes(cleaned.slice(0, 20)))) {
+        points.push(cleaned);
+      }
+    });
+  }
+  
+  return points.slice(0, 4); // Max 4 total points
+};
+
 const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions }: PulseCardProps) => {
   const [expanded, setExpanded] = useState(false);
+  const [showExplain, setShowExplain] = useState(false);
   const typeInfo = signalTypeConfig[signal.signal_type] || signalTypeConfig.general;
   const isCompleted = variant === 'completed';
   const isProgress = variant === 'progress';
@@ -109,6 +150,10 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
   const amt = signal.amount || 0;
   const urgency = urgencyBadge[signal.urgency];
   const needsAction = isActionRequired(signal);
+  
+  // Get unified Pulse state
+  const pulseState = statusToPulseState[signal.status] || 'needs-action';
+  const stateConfig = pulseStateConfig[pulseState];
 
   const handleClick = () => {
     if (onClick) { onClick(); return; }
@@ -126,18 +171,26 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
     >
       <div className={cn('flex items-start gap-3', dense ? 'p-2.5' : 'p-3.5')}>
         <div className="flex-1 min-w-0 space-y-1.5">
-          {/* Header row — type, time, badges */}
+          {/* Header row — PULSE TYPE TAG prominently displayed */}
           <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground min-w-0">
-              <PulseTypeIcon type={signal.signal_type} className="h-3 w-3 shrink-0" />
-              <span className="font-medium uppercase tracking-wide">{typeInfo.label}</span>
-              <span className="text-muted-foreground/60">·</span>
-              <span className="shrink-0">{formatTimeAgo(signal.created_at)}</span>
+            <div className="flex items-center gap-1.5 min-w-0">
+              {/* PULSE TYPE TAG — The key identifier */}
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/80">
+                <Zap className="h-2.5 w-2.5 text-hero-purple" />
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-foreground/80">
+                  {typeInfo.pulseLabel || `${typeInfo.label} Pulse`}
+                </span>
+              </div>
+              <span className="text-[11px] text-muted-foreground/60 shrink-0">{formatTimeAgo(signal.created_at)}</span>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
-              {/* Status badge */}
-              <Badge variant="outline" className="text-[10px] py-0 px-1.5 border-0 bg-secondary text-muted-foreground font-medium">
-                {statusLabels[signal.status] || signal.status}
+              {/* PULSE STATE badge — Unified state language */}
+              <Badge variant="outline" className={cn(
+                'text-[10px] py-0 px-1.5 border-0 font-medium',
+                stateConfig?.bgColor || 'bg-secondary',
+                stateConfig?.color || 'text-muted-foreground'
+              )}>
+                {stateConfig?.label || statusLabels[signal.status] || signal.status}
               </Badge>
               {/* Urgency badge */}
               {urgency && (
@@ -184,9 +237,58 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
             </p>
           )}
 
-          {/* 1-line AI reasoning — expandable */}
-          {isAction && !dense && signal.ai_reasoning && (
-            <p className="text-xs text-muted-foreground line-clamp-1">{signal.ai_reasoning}</p>
+          {/* Inline AI Explainability — "Why am I seeing this?" */}
+          {isAction && !dense && (signal.ai_reasoning || signal.flag_reason) && (
+            <div className="mt-1">
+              <button
+                onClick={(e) => { e.stopPropagation(); setShowExplain(!showExplain); }}
+                className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <HelpCircle className="h-3 w-3" />
+                <span>Why am I seeing this?</span>
+                <ChevronDown className={cn('h-3 w-3 transition-transform', showExplain && 'rotate-180')} />
+              </button>
+              
+              <AnimatePresence>
+                {showExplain && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="mt-2 rounded-lg bg-hero-purple-soft/30 border border-hero-purple/10 px-3 py-2.5 space-y-1.5">
+                      {parseAIReasoning(signal.ai_reasoning, signal.flag_reason).map((point, i) => (
+                        <div key={i} className="flex items-start gap-2 text-xs">
+                          {point.startsWith('⚠️') ? (
+                            <AlertTriangle className="h-3 w-3 text-signal-amber shrink-0 mt-0.5" />
+                          ) : i === 0 ? (
+                            <TrendingUp className="h-3 w-3 text-hero-purple shrink-0 mt-0.5" />
+                          ) : (
+                            <CheckCircle2 className="h-3 w-3 text-muted-foreground shrink-0 mt-0.5" />
+                          )}
+                          <span className="text-muted-foreground leading-relaxed">
+                            {point.replace('⚠️ ', '')}
+                          </span>
+                        </div>
+                      ))}
+                      {signal.confidence && (
+                        <div className="flex items-center gap-2 pt-1 border-t border-border/50 mt-2">
+                          <div className={cn(
+                            'h-1.5 w-1.5 rounded-full',
+                            signal.confidence >= 80 ? 'bg-signal-green' : signal.confidence >= 50 ? 'bg-signal-amber' : 'bg-signal-red'
+                          )} />
+                          <span className="text-[10px] text-muted-foreground">
+                            AI confidence: <span className="font-medium">{signal.confidence}%</span>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           )}
 
           {/* Workflow progress bar */}

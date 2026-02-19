@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ConfidenceDialProps {
   confidence: number;
   reasoning?: string;
   size?: 'sm' | 'md' | 'lg';
   showReasoning?: boolean;
+  hasAnomaly?: boolean; // Triggers risk ripple animation
 }
 
 /**
@@ -18,16 +20,17 @@ const ConfidenceDial = ({
   reasoning, 
   size = 'md',
   showReasoning = true,
+  hasAnomaly = false,
 }: ConfidenceDialProps) => {
   const [expanded, setExpanded] = useState(false);
   
   const sizeConfig = {
-    sm: { width: 40, stroke: 3, fontSize: 'text-xs' },
-    md: { width: 56, stroke: 4, fontSize: 'text-sm' },
-    lg: { width: 72, stroke: 5, fontSize: 'text-base' },
+    sm: { width: 40, stroke: 3, fontSize: 'text-xs', gradientSize: 48 },
+    md: { width: 56, stroke: 4, fontSize: 'text-sm', gradientSize: 64 },
+    lg: { width: 72, stroke: 5, fontSize: 'text-base', gradientSize: 80 },
   };
   
-  const { width, stroke, fontSize } = sizeConfig[size];
+  const { width, stroke, fontSize, gradientSize } = sizeConfig[size];
   const radius = (width - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = (confidence / 100) * circumference;
@@ -37,8 +40,15 @@ const ConfidenceDial = ({
     if (confidence >= 70) return 'text-signal-amber stroke-signal-amber';
     return 'text-signal-red stroke-signal-red';
   };
+
+  const getGradientColors = () => {
+    if (confidence >= 90) return ['#10b981', '#059669', '#10b981'];
+    if (confidence >= 70) return ['#f59e0b', '#d97706', '#f59e0b'];
+    return ['#ef4444', '#dc2626', '#ef4444'];
+  };
   
   const needsAttention = confidence < 80;
+  const gradientColors = getGradientColors();
 
   return (
     <div className="flex flex-col">
@@ -47,9 +57,26 @@ const ConfidenceDial = ({
         className={`flex items-center gap-2 ${reasoning ? 'cursor-pointer' : 'cursor-default'}`}
         disabled={!reasoning}
       >
-        {/* Circular gauge */}
-        <div className={`relative ${needsAttention ? 'confidence-pulse' : ''}`}>
-          <svg width={width} height={width} className="transform -rotate-90">
+        {/* Circular gauge with gradient ring */}
+        <div className={cn(
+          'relative',
+          needsAttention && 'confidence-pulse',
+          hasAnomaly && 'risk-ripple'
+        )}>
+          {/* Animated gradient ring background */}
+          <div 
+            className="absolute inset-0 rounded-full confidence-gradient-ring opacity-30"
+            style={{
+              width: gradientSize,
+              height: gradientSize,
+              left: (width - gradientSize) / 2,
+              top: (width - gradientSize) / 2,
+              background: `conic-gradient(from 0deg, ${gradientColors[0]}, ${gradientColors[1]}, ${gradientColors[2]}, ${gradientColors[0]})`,
+              filter: 'blur(4px)',
+            }}
+          />
+          
+          <svg width={width} height={width} className="relative transform -rotate-90">
             {/* Background circle */}
             <circle
               cx={width / 2}
@@ -76,10 +103,26 @@ const ConfidenceDial = ({
               style={{ strokeDasharray: circumference }}
             />
           </svg>
+          
           {/* Center percentage */}
-          <div className={`absolute inset-0 flex items-center justify-center ${fontSize} font-semibold ${getColor().split(' ')[0]}`}>
+          <div className={cn(
+            'absolute inset-0 flex items-center justify-center font-semibold',
+            fontSize,
+            getColor().split(' ')[0]
+          )}>
             {confidence}
           </div>
+
+          {/* Anomaly indicator */}
+          {hasAnomaly && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-signal-red flex items-center justify-center"
+            >
+              <AlertTriangle className="h-2.5 w-2.5 text-white" />
+            </motion.div>
+          )}
         </div>
         
         {/* Expand indicator */}

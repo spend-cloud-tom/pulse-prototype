@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, AlertTriangle, TrendingUp, ChevronRight } from 'lucide-react';
+import { MapPin, AlertTriangle, TrendingUp, ChevronRight, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LocationRisk {
@@ -11,13 +11,14 @@ interface LocationRisk {
   topAnomaly: string;
   trend: 'up' | 'down' | 'stable';
   spendVariance: number; // percentage
+  hourlyDensity?: number[]; // 24 values for hourly exception density
 }
 
 interface AnomalyHeatmapProps {
   onLocationClick?: (locationId: string) => void;
 }
 
-// Mock risk data for demo
+// Mock risk data for demo with hourly density
 const mockLocationRisks: LocationRisk[] = [
   {
     id: 'zonneweide',
@@ -27,6 +28,7 @@ const mockLocationRisks: LocationRisk[] = [
     topAnomaly: 'Spend 18% above baseline',
     trend: 'up',
     spendVariance: 18,
+    hourlyDensity: [0, 0, 0, 0, 0, 0, 1, 2, 4, 6, 3, 2, 1, 2, 5, 7, 4, 2, 1, 0, 0, 0, 0, 0],
   },
   {
     id: 'de-berk',
@@ -36,6 +38,7 @@ const mockLocationRisks: LocationRisk[] = [
     topAnomaly: 'Unusual supplier pattern',
     trend: 'stable',
     spendVariance: -3,
+    hourlyDensity: [0, 0, 0, 0, 0, 0, 0, 1, 1, 2, 1, 1, 0, 1, 1, 2, 1, 0, 0, 0, 0, 0, 0, 0],
   },
   {
     id: 'het-anker',
@@ -45,20 +48,130 @@ const mockLocationRisks: LocationRisk[] = [
     topAnomaly: 'Budget at 78% mid-month',
     trend: 'up',
     spendVariance: 24,
+    hourlyDensity: [0, 0, 0, 0, 0, 0, 2, 3, 5, 8, 6, 4, 3, 4, 7, 9, 5, 3, 1, 0, 0, 0, 0, 0],
   },
 ];
 
 // Get color based on risk score
 const getRiskColor = (score: number) => {
-  if (score >= 70) return { bg: 'bg-signal-red/20', border: 'border-signal-red/40', text: 'text-signal-red' };
-  if (score >= 40) return { bg: 'bg-signal-amber/20', border: 'border-signal-amber/40', text: 'text-signal-amber' };
-  return { bg: 'bg-signal-green/20', border: 'border-signal-green/40', text: 'text-signal-green' };
+  if (score >= 70) return { 
+    bg: 'bg-card', 
+    border: 'border-signal-red/30', 
+    text: 'text-signal-red',
+    accent: 'bg-signal-red',
+    glow: 'shadow-signal-red/10'
+  };
+  if (score >= 40) return { 
+    bg: 'bg-card', 
+    border: 'border-signal-amber/30', 
+    text: 'text-signal-amber',
+    accent: 'bg-signal-amber',
+    glow: 'shadow-signal-amber/10'
+  };
+  return { 
+    bg: 'bg-card', 
+    border: 'border-signal-green/30', 
+    text: 'text-signal-green',
+    accent: 'bg-signal-green',
+    glow: 'shadow-signal-green/10'
+  };
 };
 
 const getRiskLabel = (score: number) => {
   if (score >= 70) return 'High Risk';
   if (score >= 40) return 'Medium Risk';
   return 'Low Risk';
+};
+
+// Density strip component - shows exception rate over time as smooth wave
+const DensityStrip = ({ 
+  data, 
+  riskScore 
+}: { 
+  data: number[]; 
+  riskScore: number;
+}) => {
+  const maxValue = Math.max(...data, 1);
+  const colors = getRiskColor(riskScore);
+  const slicedData = data.slice(6, 18);
+  
+  // Create SVG path for smooth wave
+  const width = 100;
+  const height = 20;
+  const points = slicedData.map((value, i) => {
+    const x = (i / (slicedData.length - 1)) * width;
+    const y = height - (value / maxValue) * height;
+    return { x, y };
+  });
+  
+  // Create smooth curve path
+  const pathD = points.reduce((path, point, i) => {
+    if (i === 0) return `M ${point.x} ${point.y}`;
+    const prev = points[i - 1];
+    const cpX = (prev.x + point.x) / 2;
+    return `${path} Q ${cpX} ${prev.y} ${point.x} ${point.y}`;
+  }, '');
+  
+  const areaPath = `${pathD} L ${width} ${height} L 0 ${height} Z`;
+  
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-[9px] text-muted-foreground/70">
+        <span>6AM</span>
+        <span className="flex items-center gap-1 opacity-60">
+          <Sparkles className="h-2 w-2" />
+          Exception density (24h)
+        </span>
+        <span>6PM</span>
+      </div>
+      <div className="relative h-5 w-full">
+        <svg 
+          viewBox={`0 0 ${width} ${height}`} 
+          className="w-full h-full" 
+          preserveAspectRatio="none"
+        >
+          <defs>
+            <linearGradient id={`gradient-${riskScore}`} x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop 
+                offset="0%" 
+                className={cn(
+                  riskScore >= 70 ? 'stop-signal-red/40' : 
+                  riskScore >= 40 ? 'stop-signal-amber/40' : 
+                  'stop-signal-green/40'
+                )}
+                style={{ stopColor: riskScore >= 70 ? 'rgb(239 68 68 / 0.4)' : riskScore >= 40 ? 'rgb(245 158 11 / 0.4)' : 'rgb(34 197 94 / 0.4)' }}
+              />
+              <stop 
+                offset="100%" 
+                style={{ stopColor: 'transparent' }}
+              />
+            </linearGradient>
+          </defs>
+          <motion.path
+            d={areaPath}
+            fill={`url(#gradient-${riskScore})`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          />
+          <motion.path
+            d={pathD}
+            fill="none"
+            className={cn(
+              riskScore >= 70 ? 'stroke-signal-red/60' : 
+              riskScore >= 40 ? 'stroke-signal-amber/60' : 
+              'stroke-signal-green/60'
+            )}
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          />
+        </svg>
+      </div>
+    </div>
+  );
 };
 
 const LocationTile = ({ 
@@ -76,55 +189,57 @@ const LocationTile = ({
       onClick={onClick}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.99 }}
       className={cn(
-        "relative p-4 rounded-xl border-2 text-left transition-all w-full",
-        colors.bg,
-        colors.border,
-        "hover:shadow-lg"
+        "relative p-4 rounded-xl border text-left transition-all w-full",
+        "bg-card hover:bg-accent/5",
+        "border-border/60 hover:border-border",
+        "shadow-sm hover:shadow-md",
+        colors.glow && isHovered && `shadow-lg ${colors.glow}`
       )}
     >
-      {/* Risk indicator pulse for high risk */}
-      {location.riskScore >= 70 && (
-        <motion.div
-          className="absolute top-3 right-3 h-3 w-3 rounded-full bg-signal-red"
-          animate={{ scale: [1, 1.2, 1], opacity: [1, 0.7, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      )}
+      {/* Left accent bar */}
+      <div className={cn(
+        "absolute left-0 top-3 bottom-3 w-1 rounded-full",
+        colors.accent
+      )} />
 
       {/* Header */}
-      <div className="flex items-start justify-between mb-3">
+      <div className="flex items-start justify-between mb-2 pl-2">
         <div className="flex items-center gap-2">
-          <MapPin className={cn("h-4 w-4", colors.text)} />
+          <MapPin className="h-4 w-4 text-muted-foreground" />
           <span className="font-semibold text-sm">{location.name}</span>
         </div>
-        <span className={cn("text-2xl font-bold tabular-nums", colors.text)}>
-          {location.riskScore}
-        </span>
+        <div className="text-right">
+          <span className={cn("text-2xl font-bold tabular-nums", colors.text)}>
+            {location.riskScore}
+          </span>
+        </div>
       </div>
 
       {/* Risk label */}
-      <div className={cn(
-        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium mb-3",
-        colors.bg,
-        colors.text
-      )}>
-        <AlertTriangle className="h-3 w-3" />
-        {getRiskLabel(location.riskScore)}
+      <div className="pl-2 mb-3">
+        <div className={cn(
+          "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-medium",
+          "bg-muted/50",
+          colors.text
+        )}>
+          <AlertTriangle className="h-2.5 w-2.5" />
+          {getRiskLabel(location.riskScore)}
+        </div>
       </div>
 
       {/* Stats */}
-      <div className="space-y-2">
+      <div className="space-y-1.5 pl-2">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Anomalies</span>
-          <span className="font-medium">{location.anomalyCount} detected</span>
+          <span className="font-medium tabular-nums">{location.anomalyCount} detected</span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Spend variance</span>
           <span className={cn(
-            "font-medium flex items-center gap-1",
+            "font-medium flex items-center gap-1 tabular-nums",
             location.spendVariance > 0 ? "text-signal-amber" : "text-signal-green"
           )}>
             {location.trend === 'up' && <TrendingUp className="h-3 w-3" />}
@@ -134,11 +249,18 @@ const LocationTile = ({
       </div>
 
       {/* Top anomaly */}
-      <div className="mt-3 pt-3 border-t border-border/50">
-        <p className="text-[11px] text-muted-foreground line-clamp-1">
+      <div className="mt-3 pt-3 border-t border-border/30 pl-2">
+        <p className="text-[11px] text-muted-foreground/80 line-clamp-1">
           {location.topAnomaly}
         </p>
       </div>
+
+      {/* Density strip - temporal exception visualization */}
+      {location.hourlyDensity && (
+        <div className="mt-3 pt-3 border-t border-border/30 pl-2">
+          <DensityStrip data={location.hourlyDensity} riskScore={location.riskScore} />
+        </div>
+      )}
 
       {/* Hover indicator */}
       <motion.div

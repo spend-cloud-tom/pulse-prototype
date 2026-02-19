@@ -60,64 +60,64 @@ const OrchestrationSummary = ({
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {/* Auto-handled */}
+        {/* Pulses Awaiting Action */}
         <div className="text-center">
           <motion.p 
-            className="text-3xl font-bold text-signal-green"
+            className="text-3xl font-bold text-signal-red"
             initial={{ scale: 0.5 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
             transition={{ type: 'spring', delay: 0.1 }}
           >
-            {autoHandledPct}%
+            {decisionsNeeded}
           </motion.p>
-          <p className="text-xs text-muted-foreground mt-1">Auto-handled</p>
-          <p className="text-[10px] text-signal-green">{autoHandled} of {totalPulses} pulses</p>
+          <p className="text-xs font-medium mt-1">Pulses Awaiting</p>
+          <p className="text-[10px] text-signal-red">Your Action</p>
         </div>
 
-        {/* Decisions needed */}
+        {/* Pulses In Motion */}
         <div className="text-center">
           <motion.p 
-            className="text-3xl font-bold"
+            className="text-3xl font-bold text-signal-amber"
             initial={{ scale: 0.5 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
             transition={{ type: 'spring', delay: 0.2 }}
           >
-            {decisionsNeeded}
+            {totalPulses - autoHandled - decisionsNeeded}
           </motion.p>
-          <p className="text-xs text-muted-foreground mt-1">Need your decision</p>
-          <p className="text-[10px] text-hero-purple">Human judgment required</p>
+          <p className="text-xs font-medium mt-1">Pulses In Motion</p>
+          <p className="text-[10px] text-signal-amber">Being processed</p>
         </div>
 
-        {/* Time saved */}
+        {/* Auto-Resolved Today */}
         <div className="text-center">
           <motion.p 
-            className="text-3xl font-bold text-hero-teal"
+            className="text-3xl font-bold text-hero-purple"
             initial={{ scale: 0.5 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
             transition={{ type: 'spring', delay: 0.3 }}
           >
-            {timeSavedMinutes}m
+            {autoHandled}
           </motion.p>
-          <p className="text-xs text-muted-foreground mt-1">Time saved today</p>
-          <p className="text-[10px] text-hero-teal">vs manual processing</p>
+          <p className="text-xs font-medium mt-1">Auto-Resolved</p>
+          <p className="text-[10px] text-hero-purple">Today</p>
         </div>
       </div>
 
-      {/* What AI handled */}
+      {/* Pulse Pipeline Summary */}
       <div className="mt-4 pt-4 border-t border-border/50">
-        <p className="text-xs text-muted-foreground mb-2">AI automatically processed:</p>
+        <p className="text-xs text-muted-foreground mb-2">Pulse Pipeline — {totalPulses} total today:</p>
         <div className="flex flex-wrap gap-2">
-          <span className="text-xs px-2 py-1 rounded-full bg-signal-green-bg text-signal-green">
-            ✓ 12 routine purchases
+          <span className="text-xs px-2 py-1 rounded-full bg-hero-purple-soft text-hero-purple">
+            🟣 {autoHandled} Auto-Handled
           </span>
           <span className="text-xs px-2 py-1 rounded-full bg-signal-green-bg text-signal-green">
-            ✓ 8 GL codes assigned
+            🟢 {Math.round(autoHandled * 0.3)} Resolved
           </span>
-          <span className="text-xs px-2 py-1 rounded-full bg-signal-green-bg text-signal-green">
-            ✓ 6 invoices matched
+          <span className="text-xs px-2 py-1 rounded-full bg-signal-amber-bg text-signal-amber">
+            🟡 {totalPulses - autoHandled - decisionsNeeded} In Motion
           </span>
         </div>
       </div>

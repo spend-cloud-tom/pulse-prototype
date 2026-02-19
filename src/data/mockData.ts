@@ -1,5 +1,21 @@
 import { UserProfile } from './types';
 
+export const demoImages = {
+  receipt: '/images/receipt.png',
+  invoice: '/images/invoice.png',
+  leakyFaucet: '/images/leaky-faucet.jpg',
+  brokenShower: '/images/broken-shower.webp',
+  brokenWheelchair: '/images/broken-wheelchair.webp',
+  brokenLightbulb: '/images/broken-lightbulb.webp',
+  flood: '/images/flooded-room.webp',
+  fallIncident: '/images/fall-incident-bathroom.jpeg',
+  medication: '/images/medication-bottle.jpg',
+  deliveryConfirm: '/images/delivery-confirmation.jpeg',
+  missedDelivery: '/images/missed-delivery-tag.webp',
+  building: '/images/modern-building.jpeg',
+  handwrittenNotes: '/images/handwritten-notes.avif',
+};
+
 export const users: UserProfile[] = [
   {
     id: 'anouk',
@@ -93,15 +109,26 @@ export const aiAlerts = [
   },
 ];
 
-export const signalTypeConfig: Record<string, { label: string }> = {
-  purchase: { label: 'Purchase' },
-  maintenance: { label: 'Maintenance' },
-  incident: { label: 'Incident' },
-  'shift-handover': { label: 'Handover' },
-  compliance: { label: 'Compliance' },
-  event: { label: 'Event' },
-  resource: { label: 'Resource' },
-  general: { label: 'General' },
+// PULSE TYPE CONFIG — Every item is a Pulse with a type tag
+// Format: "[Type] Pulse" to reinforce the unified mental model
+export const signalTypeConfig: Record<string, { label: string; pulseLabel: string }> = {
+  purchase: { label: 'Purchase', pulseLabel: 'Purchase Pulse' },
+  maintenance: { label: 'Maintenance', pulseLabel: 'Maintenance Pulse' },
+  incident: { label: 'Incident', pulseLabel: 'Incident Pulse' },
+  'shift-handover': { label: 'Handover', pulseLabel: 'Handover Pulse' },
+  compliance: { label: 'Compliance', pulseLabel: 'Compliance Pulse' },
+  event: { label: 'Event', pulseLabel: 'Event Pulse' },
+  resource: { label: 'Resource', pulseLabel: 'Resource Pulse' },
+  general: { label: 'General', pulseLabel: 'Pulse' },
+};
+
+// PULSE STATE CONFIG — Unified state labels and colors
+export const pulseStateConfig: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
+  'needs-action': { label: 'Needs Action', color: 'text-signal-red', bgColor: 'bg-signal-red-bg', icon: '🔴' },
+  'in-motion': { label: 'In Motion', color: 'text-signal-amber', bgColor: 'bg-signal-amber-bg', icon: '🟡' },
+  'blocked': { label: 'Blocked', color: 'text-muted-foreground', bgColor: 'bg-secondary', icon: '⚫' },
+  'auto-handled': { label: 'Auto-Handled', color: 'text-hero-purple', bgColor: 'bg-hero-purple-soft', icon: '🟣' },
+  'resolved': { label: 'Resolved', color: 'text-signal-green', bgColor: 'bg-signal-green-bg', icon: '🟢' },
 };
 
 // Upcoming events for event coordination view

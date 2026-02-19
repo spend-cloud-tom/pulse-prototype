@@ -5,6 +5,7 @@ import { useRole } from '@/context/RoleContext';
 import { classifyAndGroup, ClassifiedSignal } from '@/lib/decisionTypes';
 import PulseEditDrawer from '@/components/PulseEditDrawer';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
+import ImageThumbnail from '@/components/ImageThumbnail';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -16,6 +17,7 @@ import {
   Brain, ArrowRight, CheckCircle2, DollarSign, Tag, FileText
 } from 'lucide-react';
 import { Signal } from '@/data/types';
+import { demoImages } from '@/data/mockData';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
 import AnomalyHeatmap from '@/components/AnomalyHeatmap';
 import OrchestrationFlow from '@/components/OrchestrationFlow';
@@ -57,6 +59,27 @@ const glCodeMap: Record<string, string> = {
 };
 
 /* ─── Helper Functions ─── */
+const getSignalImage = (signal: Signal): string => {
+  const type = signal.signal_type;
+  const title = (signal.title || '').toLowerCase();
+  const desc = (signal.description || '').toLowerCase();
+  
+  if (type === 'purchase' || title.includes('groceries') || title.includes('supplies')) return demoImages.receipt;
+  if (type === 'maintenance') {
+    if (title.includes('light') || title.includes('bulb') || title.includes('lamp')) return demoImages.brokenLightbulb;
+    if (title.includes('wheelchair') || title.includes('chair')) return demoImages.brokenWheelchair;
+    if (title.includes('shower') || desc.includes('shower')) return demoImages.brokenShower;
+    if (title.includes('leak') || title.includes('faucet') || title.includes('tap')) return demoImages.leakyFaucet;
+    if (title.includes('flood')) return demoImages.flood;
+    return demoImages.leakyFaucet;
+  }
+  if (type === 'incident' || title.includes('fall') || title.includes('incident') || desc.includes('fall')) return demoImages.fallIncident;
+  if (type === 'compliance') return demoImages.medication;
+  if (title.includes('invoice')) return demoImages.invoice;
+  if (title.includes('delivery') || title.includes('package')) return demoImages.deliveryConfirm;
+  return demoImages.receipt;
+};
+
 const computeVAT = (total: number, rate = 0.21) => {
   const net = total / (1 + rate);
   const vat = total - net;
@@ -350,14 +373,9 @@ const DetailDrawerContent = ({
         </div>
       )}
 
-      {/* Receipt image placeholder */}
+      {/* Signal image — constrained cover with tap-to-expand */}
       <div className="px-4 py-4 border-b border-border">
-        <div className="rounded-xl border-2 border-dashed border-border py-6 flex items-center justify-center">
-          <div className="text-center text-muted-foreground">
-            <DollarSign className="h-7 w-7 mx-auto mb-1.5 opacity-40" />
-            <p className="text-xs">Receipt image</p>
-          </div>
-        </div>
+        <ImageThumbnail src={getSignalImage(signal)} alt="Attachment" size="lg" />
       </div>
 
       {/* Actions — sticky at bottom */}
@@ -952,12 +970,12 @@ const RohanView = () => {
               <div className="flex items-center gap-4 mt-1 text-sm">
                 {highRiskCount > 0 && (
                   <span className="flex items-center gap-1.5 text-signal-red font-medium">
-                    🔴 {highRiskCount} high priority
+                    🔴 {highRiskCount} Pulses need action
                   </span>
                 )}
-                <span className="text-muted-foreground">{exceptions.length} exceptions</span>
-                <span className="text-muted-foreground">{approvals.length} approvals</span>
-                <span className="text-muted-foreground">{matchedCount} auto-matched</span>
+                <span className="text-muted-foreground">{exceptions.length} flagged Pulses</span>
+                <span className="text-muted-foreground">{approvals.length} in motion</span>
+                <span className="text-muted-foreground">{matchedCount} auto-handled</span>
               </div>
             </div>
             
@@ -968,16 +986,16 @@ const RohanView = () => {
                 onClick={() => handleResolveLowRisk(lowRiskExceptions.length)}
               >
                 <CheckCheck className="h-4 w-4" />
-                Resolve {lowRiskExceptions.length} low-risk
+                Resolve {lowRiskExceptions.length} Pulses
               </Button>
             )}
           </div>
           
-          {/* Tab navigation */}
+          {/* Tab navigation — Pulse Pipeline states */}
           <div className="flex items-center gap-1 mt-4 border-b border-border -mb-px">
             {[
-              { key: 'exceptions', label: 'Exceptions', count: exceptions.length + actionableMatches.length },
-              { key: 'approvals', label: 'Approvals', count: approvals.length },
+              { key: 'exceptions', label: 'Needs Action', count: exceptions.length + actionableMatches.length },
+              { key: 'approvals', label: 'In Motion', count: approvals.length },
               { key: 'monitoring', label: 'Monitoring', count: shadowSpendItems.length },
             ].map(tab => (
               <button

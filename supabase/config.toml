@@ -1,0 +1,4 @@
+project_id = "xzcxzrrteobslulgidac"
+
+[functions.classify-signal]
+verify_jwt = false

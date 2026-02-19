@@ -5,7 +5,6 @@ import { RoleProvider, useRole } from '@/context/RoleContext';
 import AutomationBanner from '@/components/AutomationBanner';
 import RoleToggle from '@/components/RoleToggle';
 import { FilterState } from '@/components/GlobalFilters';
-import NewPulseDialog from '@/components/NewPulseDialog';
 import PulseSearch from '@/components/PulseSearch';
 import SearchResultsView from '@/components/SearchResultsView';
 import PulseDetailDrawer from '@/components/PulseDetailDrawer';
@@ -16,8 +15,8 @@ import SarahView from '@/components/views/SarahView';
 import JolandaView from '@/components/views/JolandaView';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Bell, LogOut, ChevronDown, MapPin, Calendar, Filter, Plus, Mic, Camera } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
+import { Search, Bell, LogOut, ChevronDown, MapPin, Calendar, Filter } from 'lucide-react';
+import OmniDock from '@/components/OmniDock';
 import { Signal } from '@/data/types';
 import { cn } from '@/lib/utils';
 
@@ -209,7 +208,6 @@ const CollapsibleSearch = ({
 const PulseApp = () => {
   const { activeRole, signals } = useRole();
   const navigate = useNavigate();
-  const [newPulseOpen, setNewPulseOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     location: 'All locations',
@@ -353,7 +351,7 @@ const PulseApp = () => {
               transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
             >
               {/* Role-specific views handle their own layout constraints */}
-              {activeRole === 'anouk' && <AnoukView onNewPulse={() => setNewPulseOpen(true)} />}
+              {activeRole === 'anouk' && <AnoukView />}
               {activeRole === 'rohan' && <RohanView />}
               {activeRole === 'sarah' && <SarahView />}
               {activeRole === 'jolanda' && <JolandaView />}
@@ -362,47 +360,12 @@ const PulseApp = () => {
         </AnimatePresence>
       </main>
 
-      <NewPulseDialog open={newPulseOpen} onOpenChange={setNewPulseOpen} />
-
       {/* Search-triggered detail drawer */}
       <PulseDetailDrawer signal={searchDrawerSignal} open={searchDrawerOpen} onOpenChange={setSearchDrawerOpen} />
 
-      {/* ─── GLOBAL FLOATING "NEW PULSE" BUTTON ─── */}
-      {/* Available for ALL users — the core "One Door" philosophy */}
-      {activeRole !== 'anouk' && (
-        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
-          {/* Quick actions */}
-          <button
-            onClick={() => {
-              toast({
-                title: "🎤 Listening...",
-                description: "Speak your request now.",
-              });
-            }}
-            className="h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors border border-slate-200"
-          >
-            <Mic className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => {
-              toast({
-                title: "📷 Camera",
-                description: "Take a photo of what you need.",
-              });
-            }}
-            className="h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors border border-slate-200"
-          >
-            <Camera className="h-5 w-5" />
-          </button>
-          {/* Main FAB */}
-          <button
-            onClick={() => setNewPulseOpen(true)}
-            className="h-14 w-14 rounded-full bg-slate-900 shadow-lg flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
-          >
-            <Plus className="h-6 w-6" />
-          </button>
-        </div>
-      )}
+      {/* ─── OMNI-DOCK: Persistent "One Door" Input ─── */}
+      {/* Available for ALL users except Anouk (who has her own bottom input) */}
+      {activeRole !== 'anouk' && <OmniDock />}
     </div>
   );
 };

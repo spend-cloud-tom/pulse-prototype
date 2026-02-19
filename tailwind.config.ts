@@ -27,12 +27,17 @@ export default {
       '3xl': ['1.875rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],  // 30px
       '4xl': ['2.25rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],    // 36px
     },
-    /* ─── Strict Font Weights (400 and 700 only) ─── */
+    /* ─── Font Weights ─── */
     fontWeight: {
+      'thin': '100',
+      'extralight': '200',
+      'light': '300',
       'normal': '400',
-      'medium': '400',      // Map medium → normal
-      'semibold': '700',    // Map semibold → bold
+      'medium': '500',
+      'semibold': '600',
       'bold': '700',
+      'extrabold': '800',
+      'black': '900',
     },
     extend: {
       fontFamily: {
@@ -41,12 +46,6 @@ export default {
         /* UI/Data: System stack for tables, forms, dense data */
         sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
         ui: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
-      },
-      /* ─── Text Color Hierarchy (3-tier system) ─── */
-      textColor: {
-        'primary': 'hsl(212, 20%, 15%)',      // Dark soft slate/charcoal
-        'secondary': 'hsl(212, 15%, 45%)',    // Medium cool grey
-        'tertiary': 'hsl(212, 10%, 65%)',     // Light grey for placeholders
       },
       /* ─── Letter Spacing ─── */
       letterSpacing: {
@@ -63,6 +62,12 @@ export default {
         'relaxed': '1.625',
       },
       colors: {
+        /* Text Color Hierarchy (3-tier system) */
+        'text-hierarchy': {
+          'primary': 'hsl(212, 20%, 15%)',
+          'secondary': 'hsl(212, 15%, 45%)',
+          'tertiary': 'hsl(212, 10%, 65%)',
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

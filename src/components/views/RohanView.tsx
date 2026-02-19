@@ -7,10 +7,11 @@ import PulseDetailDrawer from '@/components/PulseDetailDrawer';
 import PulseEditDrawer from '@/components/PulseEditDrawer';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { 
   Check, MessageSquare, X, FileCheck2, ShieldAlert, Zap, 
   ArrowUpDown, CheckCheck, AlertTriangle, Clock, Pencil,
-  Receipt, Image, Sparkles, Send, ChevronRight
+  Receipt, Image, Sparkles, Send, ChevronRight, Filter, Calendar, Euro
 } from 'lucide-react';
 import { Signal } from '@/data/types';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
@@ -100,41 +101,20 @@ const ExceptionRow = ({
   );
 };
 
-/* ─── Modeless Sidebar Panel ─── */
-const DetailSidebar = ({ 
+/* ─── Detail Drawer Content ─── */
+const DetailDrawerContent = ({ 
   signal, 
-  onClose,
   onEdit,
   onQuery
 }: { 
-  signal: ClassifiedSignal | null;
-  onClose: () => void;
+  signal: ClassifiedSignal;
   onEdit: () => void;
   onQuery: () => void;
 }) => {
   const [queryMessage, setQueryMessage] = useState('');
-  
-  if (!signal) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 20 }}
-      className="w-[400px] shrink-0 bg-card rounded-2xl shadow-elevation-high border border-border overflow-hidden slide-in-right"
-    >
-      {/* Header */}
-      <div className="p-4 border-b border-border bg-secondary/30">
-        <div className="flex items-center justify-between mb-2">
-          <ConfidenceFlag level={signal.riskLevel} />
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-        <h3 className="font-semibold text-base">{signal.description}</h3>
-        <p className="text-sm text-muted-foreground">{signal.submitter_name} · {signal.location}</p>
-      </div>
-      
+    <div className="flex flex-col h-full">
       {/* Receipt image placeholder */}
       <div className="p-4 border-b border-border">
         <div className="aspect-[4/3] rounded-xl bg-secondary/50 flex items-center justify-center">
@@ -202,8 +182,8 @@ const DetailSidebar = ({
         </div>
       </div>
       
-      {/* Actions */}
-      <div className="p-4 space-y-2">
+      {/* Actions — sticky at bottom */}
+      <div className="mt-auto p-4 space-y-2 border-t border-border bg-card">
         <div className="flex gap-2">
           <Button className="flex-1 gap-1.5" size="sm">
             <Check className="h-3.5 w-3.5" /> Approve
@@ -221,11 +201,17 @@ const DetailSidebar = ({
           </Button>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 /* ─── Main Rohan View ─── */
+type FilterState = {
+  riskLevel: 'all' | 'high' | 'medium' | 'low';
+  amountRange: 'all' | 'under50' | '50to200' | 'over200';
+  dateRange: 'all' | 'today' | 'week' | 'month';
+};
+
 const RohanView = () => {
   const { signals } = useRole();
   const [sortMode, setSortMode] = useState<SortMode>('risk');
@@ -237,6 +223,12 @@ const RohanView = () => {
   const [reconciledIds, setReconciledIds] = useState<Set<string>>(new Set());
   const [appliedFixes, setAppliedFixes] = useState<Set<string>>(new Set());
   const [resolvedLowRisk, setResolvedLowRisk] = useState(false);
+  const [filters, setFilters] = useState<FilterState>({
+    riskLevel: 'all',
+    amountRange: 'all',
+    dateRange: 'all',
+  });
+  const [showFilters, setShowFilters] = useState(false);
 
   const actionPulses = signals.filter(s => s.status === 'pending' || s.status === 'needs-clarity');
   const completedPulses = signals.filter(s => s.status === 'delivered' || s.status === 'closed' || s.status === 'auto-approved');
@@ -304,6 +296,24 @@ const RohanView = () => {
   const matchedCount = threeWayMatches.filter(m => m.status === 'matched').length;
   const lowRiskExceptions = actionableMatches.filter(m => m.variance > 0 && m.variance < 3);
 
+  // Filter items based on current filter state
+  const filterItems = (items: ClassifiedSignal[]) => {
+    return items.filter(item => {
+      // Risk level filter
+      if (filters.riskLevel !== 'all' && item.riskLevel !== filters.riskLevel) return false;
+      
+      // Amount range filter
+      const amount = item.amount || 0;
+      if (filters.amountRange === 'under50' && amount >= 50) return false;
+      if (filters.amountRange === '50to200' && (amount < 50 || amount > 200)) return false;
+      if (filters.amountRange === 'over200' && amount <= 200) return false;
+      
+      return true;
+    });
+  };
+
+  const activeFilterCount = Object.values(filters).filter(v => v !== 'all').length;
+
   const openEdit = (signal: Signal) => {
     setEditSignal(signal);
     setEditOpen(true);
@@ -368,13 +378,11 @@ const RohanView = () => {
         </div>
       </div>
 
-      {/* Main content — split view */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="flex gap-6">
-          {/* Left: List */}
-          <div className="flex-1 min-w-0 space-y-4">
-            {/* Sort controls */}
-            <div className="flex items-center justify-between">
+      {/* Main content */}
+      <div className="max-w-5xl mx-auto px-6 py-6">
+        <div className="space-y-4">
+            {/* Sort & Filter controls */}
+            <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
                 <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">Sort by</span>
@@ -393,13 +401,141 @@ const RohanView = () => {
                 ))}
               </div>
               
-              <button
-                onClick={() => setCopilotOpen(true)}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-              >
-                <span>📊</span> AI triage
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg transition-colors ${
+                    showFilters || activeFilterCount > 0
+                      ? 'bg-foreground text-background font-medium'
+                      : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  <Filter className="h-3.5 w-3.5" />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="bg-background text-foreground text-[10px] px-1.5 py-0.5 rounded-full">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </button>
+                
+                <button
+                  onClick={() => setCopilotOpen(true)}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  <span>📊</span> AI triage
+                </button>
+              </div>
             </div>
+            
+            {/* Filter panel */}
+            <AnimatePresence>
+              {showFilters && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-4 rounded-xl bg-card border border-border space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-sm font-semibold">Filters</h3>
+                      {activeFilterCount > 0 && (
+                        <button
+                          onClick={() => setFilters({ riskLevel: 'all', amountRange: 'all', dateRange: 'all' })}
+                          className="text-xs text-muted-foreground hover:text-foreground"
+                        >
+                          Clear all
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-4">
+                      {/* Risk Level */}
+                      <div className="space-y-2">
+                        <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                          <AlertTriangle className="h-3.5 w-3.5" /> Risk Level
+                        </label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { value: 'all', label: 'All' },
+                            { value: 'high', label: '🔴 High' },
+                            { value: 'medium', label: '🟡 Medium' },
+                            { value: 'low', label: '🟢 Low' },
+                          ].map(opt => (
+                            <button
+                              key={opt.value}
+                              onClick={() => setFilters(f => ({ ...f, riskLevel: opt.value as any }))}
+                              className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+                                filters.riskLevel === opt.value
+                                  ? 'bg-foreground text-background font-medium'
+                                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Amount Range */}
+                      <div className="space-y-2">
+                        <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                          <Euro className="h-3.5 w-3.5" /> Amount
+                        </label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { value: 'all', label: 'All' },
+                            { value: 'under50', label: '< €50' },
+                            { value: '50to200', label: '€50-200' },
+                            { value: 'over200', label: '> €200' },
+                          ].map(opt => (
+                            <button
+                              key={opt.value}
+                              onClick={() => setFilters(f => ({ ...f, amountRange: opt.value as any }))}
+                              className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+                                filters.amountRange === opt.value
+                                  ? 'bg-foreground text-background font-medium'
+                                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Date Range */}
+                      <div className="space-y-2">
+                        <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5" /> Date
+                        </label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {[
+                            { value: 'all', label: 'All' },
+                            { value: 'today', label: 'Today' },
+                            { value: 'week', label: 'This week' },
+                            { value: 'month', label: 'This month' },
+                          ].map(opt => (
+                            <button
+                              key={opt.value}
+                              onClick={() => setFilters(f => ({ ...f, dateRange: opt.value as any }))}
+                              className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
+                                filters.dateRange === opt.value
+                                  ? 'bg-foreground text-background font-medium'
+                                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Exception list */}
             {activeTab === 'exceptions' && (
@@ -428,7 +564,7 @@ const RohanView = () => {
                 ))}
                 
                 {/* Signal exceptions */}
-                {sortItems(exceptions).map(signal => (
+                {sortItems(filterItems(exceptions)).map(signal => (
                   <ExceptionRow
                     key={signal.id}
                     signal={signal}
@@ -436,13 +572,27 @@ const RohanView = () => {
                     isSelected={selectedSignal?.id === signal.id}
                   />
                 ))}
+                
+                {/* Empty state when filters hide all items */}
+                {filterItems(exceptions).length === 0 && exceptions.length > 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No items match your filters</p>
+                    <button
+                      onClick={() => setFilters({ riskLevel: 'all', amountRange: 'all', dateRange: 'all' })}
+                      className="text-xs text-foreground underline mt-1"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Approvals list */}
             {activeTab === 'approvals' && (
               <div className="space-y-2">
-                {sortItems(approvals).map(signal => (
+                {sortItems(filterItems(approvals)).map(signal => (
                   <ExceptionRow
                     key={signal.id}
                     signal={signal}
@@ -450,6 +600,20 @@ const RohanView = () => {
                     isSelected={selectedSignal?.id === signal.id}
                   />
                 ))}
+                
+                {/* Empty state when filters hide all items */}
+                {filterItems(approvals).length === 0 && approvals.length > 0 && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Filter className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No items match your filters</p>
+                    <button
+                      onClick={() => setFilters({ riskLevel: 'all', amountRange: 'all', dateRange: 'all' })}
+                      className="text-xs text-foreground underline mt-1"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -534,21 +698,32 @@ const RohanView = () => {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Right: Modeless detail sidebar */}
-          <AnimatePresence>
-            {selectedSignal && (
-              <DetailSidebar
-                signal={selectedSignal}
-                onClose={() => setSelectedSignal(null)}
-                onEdit={() => openEdit(selectedSignal)}
-                onQuery={() => {}}
-              />
-            )}
-          </AnimatePresence>
         </div>
       </div>
+
+      {/* Detail Drawer — slides in from right */}
+      <Sheet open={!!selectedSignal} onOpenChange={(open) => !open && setSelectedSignal(null)}>
+        <SheetContent side="right" className="w-[420px] sm:w-[480px] p-0 overflow-y-auto">
+          <SheetHeader className="p-4 border-b border-border bg-secondary/30">
+            <div className="flex items-center gap-2 mb-1">
+              {selectedSignal && <ConfidenceFlag level={selectedSignal.riskLevel} />}
+            </div>
+            <SheetTitle className="text-base font-semibold">
+              {selectedSignal?.description}
+            </SheetTitle>
+            <p className="text-sm text-muted-foreground">
+              {selectedSignal?.submitter_name} · {selectedSignal?.location}
+            </p>
+          </SheetHeader>
+          {selectedSignal && (
+            <DetailDrawerContent
+              signal={selectedSignal}
+              onEdit={() => openEdit(selectedSignal)}
+              onQuery={() => {}}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
 
       {/* Edit drawer */}
       <PulseEditDrawer signal={editSignal} open={editOpen} onOpenChange={setEditOpen} />

@@ -1,11 +1,19 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRole } from '@/context/RoleContext';
 import { teamSignals } from '@/data/mockData';
-import { Mic, Camera, ChevronRight, Package, Truck, CheckCircle2, AlertCircle, Clock } from 'lucide-react';
+import { Mic, Camera, ChevronRight, Package, Truck, CheckCircle2, AlertCircle, Clock, ShoppingCart, Wrench, Receipt, HelpCircle } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
+
+/* Quick-Tap template options for Anouk's frequent actions (Anti-Blank Slate) */
+const quickTapTemplates = [
+  { id: 'supplies', icon: ShoppingCart, label: 'Order supplies', template: 'I need to order: ' },
+  { id: 'broken', icon: Wrench, label: 'Report broken item', template: 'Broken item to report: ' },
+  { id: 'receipt', icon: Receipt, label: 'Log incidental', template: 'Incidental purchase: €' },
+  { id: 'question', icon: HelpCircle, label: 'Can I buy this?', template: 'Can I purchase: ' },
+];
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PROGRESS TRACKER — Rich Visual Modeless Feedback (RVMF)
@@ -74,9 +82,7 @@ const ProgressTracker = ({ status }: { status: string }) => {
   );
 };
 
-interface AnoukViewProps {
-  onNewPulse?: () => void;
-}
+/* AnoukView no longer needs props - OmniDock is self-contained */
 
 /* ─────────────────────────────────────────────────────────────────────────────
    STATUS BADGE — Soft pill-shaped indicator (no harsh colors)
@@ -245,12 +251,13 @@ const StatusCard = ({
    - No confirmation buttons, purely informational cards
    - Subtle shadows, generous whitespace
    ───────────────────────────────────────────────────────────────────────────── */
-const AnoukView = ({ onNewPulse }: AnoukViewProps) => {
+const AnoukView = () => {
   const [copilotOpen, setCopilotOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [isListening, setIsListening] = useState(false);
   const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
-  const [showInfoDialog, setShowInfoDialog] = useState<string | null>(null);
+  const [showQuickTaps, setShowQuickTaps] = useState(true);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { signals } = useRole();
 
   // Filter signals for Anouk, excluding resolved ones for demo
@@ -280,6 +287,25 @@ const AnoukView = ({ onNewPulse }: AnoukViewProps) => {
     });
   };
 
+  // Handle input change and hide quick-taps when typing
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+    if (value.length > 0 && showQuickTaps) {
+      setShowQuickTaps(false);
+    } else if (value.length === 0) {
+      setShowQuickTaps(true);
+    }
+  };
+
+  // Handle quick-tap selection: prefill and focus (don't execute)
+  const handleQuickTap = (template: string) => {
+    setInputValue(template);
+    setShowQuickTaps(false);
+    // Focus input so keyboard slides up, user can tweak or add photo
+    setTimeout(() => inputRef.current?.focus(), 50);
+  };
+
   const handleSubmit = () => {
     if (inputValue.trim()) {
       toast({
@@ -287,6 +313,7 @@ const AnoukView = ({ onNewPulse }: AnoukViewProps) => {
         description: `"${inputValue.slice(0, 40)}${inputValue.length > 40 ? '...' : ''}" — AI is classifying it now.`,
       });
       setInputValue('');
+      setShowQuickTaps(true);
       // Simulate AI classification
       setTimeout(() => {
         toast({
@@ -294,8 +321,6 @@ const AnoukView = ({ onNewPulse }: AnoukViewProps) => {
           description: "Category: Supplies · Routed to: Procurement · Budget: Wlz",
         });
       }, 2000);
-    } else {
-      onNewPulse?.();
     }
   };
 
@@ -439,56 +464,122 @@ const AnoukView = ({ onNewPulse }: AnoukViewProps) => {
         </div>
       </div>
 
-      {/* ─── FIXED BOTTOM: UNIFIED "ONE DOOR" INPUT ─── */}
-      <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-t from-white via-white to-transparent pt-4 pb-6 px-5 safe-area-bottom">
-        <div className="max-w-[680px] mx-auto">
+      {/* ─── OMNI-DOCK: Persistent "One Door" Input with Quick-Tap Gallery ─── */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none pb-safe">
+        {/* Gradient fade for content scrolling underneath */}
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent" />
+        
+        <div className="relative px-4 pb-4 pointer-events-auto">
+          
+          {/* ─── QUICK-TAP SWIMLANE (Anti-Blank Slate) ─── */}
+          {/* Horizontally scrollable, last pill cut off to hint at swiping */}
+          <AnimatePresence>
+            {showQuickTaps && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10, transition: { duration: 0.15 } }}
+                transition={{ duration: 0.2 }}
+                className="mb-2 -mx-4 px-4"
+              >
+                <div 
+                  className="flex gap-3 overflow-x-auto pb-1 pr-8"
+                  style={{ 
+                    scrollbarWidth: 'none', 
+                    msOverflowStyle: 'none',
+                  }}
+                >
+                  {quickTapTemplates.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleQuickTap(item.template)}
+                        className="
+                          flex items-center gap-2 
+                          px-4 py-2.5
+                          rounded-full 
+                          bg-slate-100
+                          text-slate-700 text-sm font-medium
+                          whitespace-nowrap
+                          hover:bg-slate-200
+                          active:scale-95
+                          transition-all duration-150
+                          shrink-0
+                        "
+                      >
+                        <Icon className="h-4 w-4 text-teal-600" />
+                        {item.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* ─── MAIN INPUT DOCK ─── */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-2xl p-2 flex items-center gap-2"
-            style={{ 
-              boxShadow: '0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04)' 
+            transition={{ delay: 0.3, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+            className="mx-auto max-w-[600px] bg-white rounded-[24px] p-2 flex items-center gap-2"
+            style={{
+              /* 2-Part Shadow for true physical depth (Refactoring UI) */
+              boxShadow: '0 10px 24px hsla(212, 20%, 15%, 0.1), 0 4px 6px hsla(212, 20%, 15%, 0.05)',
             }}
           >
             {/* Text input */}
             <input
+              ref={inputRef}
               type="text"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={handleInputChange}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
               placeholder="I need something..."
-              className="flex-1 px-4 py-3 text-base bg-transparent outline-none text-slate-800 placeholder:text-slate-400"
+              className="flex-1 min-w-0 px-4 py-3 text-base font-normal bg-transparent outline-none text-slate-800 placeholder:text-slate-400 font-display"
             />
             
-            {/* Voice button */}
+            {/* Voice button — Brand teal */}
             <button
               onClick={handleVoice}
-              className="h-12 w-12 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors shrink-0"
+              className={`h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-150 shrink-0 ${
+                isListening 
+                  ? 'bg-teal-500 text-white animate-pulse' 
+                  : 'bg-teal-50 text-teal-600 hover:bg-teal-100 active:scale-95'
+              }`}
+              aria-label="Voice input"
             >
-              <Mic className="h-5 w-5 text-slate-600" />
+              <Mic className="h-5 w-5" />
             </button>
             
-            {/* Camera button */}
+            {/* Camera button — Brand coral */}
             <button
               onClick={handleCamera}
-              className="h-12 w-12 rounded-xl bg-slate-900 hover:bg-slate-800 flex items-center justify-center transition-colors shrink-0"
+              className="h-11 w-11 rounded-xl flex items-center justify-center transition-all duration-150 shrink-0 active:scale-95"
+              style={{
+                backgroundColor: 'hsl(12, 76%, 95%)',
+                color: 'hsl(12, 76%, 50%)',
+              }}
+              aria-label="Camera input"
             >
-              <Camera className="h-5 w-5 text-white" />
+              <Camera className="h-5 w-5" />
             </button>
+            
+            {/* Send button — appears when there's input */}
+            {inputValue.trim() && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                onClick={handleSubmit}
+                className="h-11 w-11 rounded-xl bg-slate-900 text-white hover:bg-slate-800 active:scale-95 flex items-center justify-center transition-all duration-150 shrink-0"
+                aria-label="Send"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </motion.button>
+            )}
           </motion.div>
           
-          {/* AI helper — subtle, tertiary */}
-          <motion.button
-            onClick={() => setCopilotOpen(true)}
-            className="w-full mt-3 flex items-center justify-center gap-2 py-2 text-sm text-slate-400 hover:text-slate-600 transition-colors"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            <span>🤖</span>
-            <span>Ask AI what happened</span>
-          </motion.button>
         </div>
       </div>
 

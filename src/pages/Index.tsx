@@ -16,7 +16,8 @@ import SarahView from '@/components/views/SarahView';
 import JolandaView from '@/components/views/JolandaView';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Bell, LogOut, ChevronDown, MapPin, Calendar, Filter } from 'lucide-react';
+import { Search, Bell, LogOut, ChevronDown, MapPin, Calendar, Filter, Plus, Mic, Camera } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 import { Signal } from '@/data/types';
 import { cn } from '@/lib/utils';
 
@@ -365,6 +366,43 @@ const PulseApp = () => {
 
       {/* Search-triggered detail drawer */}
       <PulseDetailDrawer signal={searchDrawerSignal} open={searchDrawerOpen} onOpenChange={setSearchDrawerOpen} />
+
+      {/* ─── GLOBAL FLOATING "NEW PULSE" BUTTON ─── */}
+      {/* Available for ALL users — the core "One Door" philosophy */}
+      {activeRole !== 'anouk' && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2">
+          {/* Quick actions */}
+          <button
+            onClick={() => {
+              toast({
+                title: "🎤 Listening...",
+                description: "Speak your request now.",
+              });
+            }}
+            className="h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors border border-slate-200"
+          >
+            <Mic className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => {
+              toast({
+                title: "📷 Camera",
+                description: "Take a photo of what you need.",
+              });
+            }}
+            className="h-12 w-12 rounded-full bg-white shadow-lg flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors border border-slate-200"
+          >
+            <Camera className="h-5 w-5" />
+          </button>
+          {/* Main FAB */}
+          <button
+            onClick={() => setNewPulseOpen(true)}
+            className="h-14 w-14 rounded-full bg-slate-900 shadow-lg flex items-center justify-center text-white hover:bg-slate-800 transition-colors"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };

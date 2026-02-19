@@ -1,5 +1,9 @@
 import type { Config } from "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   PULSE TAILWIND CONFIG — Refactoring UI + Regelarm Typography System
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
@@ -12,10 +16,51 @@ export default {
         "2xl": "1400px",
       },
     },
+    /* ─── Strict Type Scale (rem mapped to px) ─── */
+    fontSize: {
+      'xs': ['0.75rem', { lineHeight: '1.5' }],      // 12px
+      'sm': ['0.875rem', { lineHeight: '1.5' }],     // 14px
+      'base': ['1rem', { lineHeight: '1.5' }],       // 16px
+      'lg': ['1.125rem', { lineHeight: '1.5' }],     // 18px
+      'xl': ['1.25rem', { lineHeight: '1.4' }],      // 20px
+      '2xl': ['1.5rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],    // 24px
+      '3xl': ['1.875rem', { lineHeight: '1.15', letterSpacing: '-0.02em' }],  // 30px
+      '4xl': ['2.25rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],    // 36px
+    },
+    /* ─── Strict Font Weights (400 and 700 only) ─── */
+    fontWeight: {
+      'normal': '400',
+      'medium': '400',      // Map medium → normal
+      'semibold': '700',    // Map semibold → bold
+      'bold': '700',
+    },
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['DM Sans', 'system-ui', 'sans-serif'],
+        /* Display/Friendly: Nunito for headings, buttons, conversational UI */
+        display: ['Nunito', 'Quicksand', 'Varela Round', 'system-ui', 'sans-serif'],
+        /* UI/Data: System stack for tables, forms, dense data */
+        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+        ui: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+      },
+      /* ─── Text Color Hierarchy (3-tier system) ─── */
+      textColor: {
+        'primary': 'hsl(212, 20%, 15%)',      // Dark soft slate/charcoal
+        'secondary': 'hsl(212, 15%, 45%)',    // Medium cool grey
+        'tertiary': 'hsl(212, 10%, 65%)',     // Light grey for placeholders
+      },
+      /* ─── Letter Spacing ─── */
+      letterSpacing: {
+        'tighter': '-0.02em',   // For large headings
+        'tight': '-0.01em',     // For medium headings
+        'normal': '0',
+        'wide': '0.05em',       // For all-caps/overlines
+      },
+      /* ─── Line Height ─── */
+      lineHeight: {
+        'tight': '1.15',        // Large headings
+        'snug': '1.25',         // Medium headings
+        'normal': '1.5',        // Body text
+        'relaxed': '1.625',
       },
       colors: {
         border: "hsl(var(--border))",

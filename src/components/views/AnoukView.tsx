@@ -8,7 +8,13 @@ import PulseTypeIcon from '@/components/PulseTypeIcon';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   PROGRESS TRACKER — Visual progress bar for purchase tracking
+   PROGRESS TRACKER — Rich Visual Modeless Feedback (RVMF)
+   
+   UX Principles Applied:
+   - Eliminates navigational excise (no click to see status)
+   - Reports normalcy quietly (no alerts, just visual state)
+   - De-emphasizes inactive steps (softer colors, not tiny text)
+   - Uses weight + icons for accessibility (not color alone)
    ───────────────────────────────────────────────────────────────────────────── */
 const ProgressTracker = ({ status }: { status: string }) => {
   const steps = [
@@ -18,7 +24,6 @@ const ProgressTracker = ({ status }: { status: string }) => {
     { key: 'delivered', label: 'Delivered', icon: CheckCircle2 },
   ];
   
-  // Map status to step index
   const statusToStep: Record<string, number> = {
     'pending': 0,
     'needs-clarity': 0,
@@ -33,27 +38,33 @@ const ProgressTracker = ({ status }: { status: string }) => {
   const currentStep = statusToStep[status] ?? 0;
 
   return (
-    <div className="flex items-center gap-1 mt-2">
+    <div className="flex items-center w-full mt-1.5" role="progressbar" aria-valuenow={currentStep} aria-valuemax={steps.length - 1}>
       {steps.map((step, i) => {
         const isComplete = i < currentStep;
         const isCurrent = i === currentStep;
+        const isFuture = i > currentStep;
         const Icon = step.icon;
         
         return (
-          <div key={step.key} className="flex items-center">
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium transition-all ${
-              isComplete 
-                ? 'bg-emerald-100 text-emerald-700' 
-                : isCurrent 
-                  ? 'bg-teal-100 text-teal-700' 
-                  : 'bg-slate-100 text-slate-400'
-            }`}>
-              <Icon className="h-3 w-3" />
-              <span className="hidden sm:inline">{step.label}</span>
+          <div key={step.key} className="flex items-center flex-1">
+            <div 
+              className={`flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[11px] transition-all whitespace-nowrap ${
+                isComplete 
+                  ? 'text-emerald-600' 
+                  : isCurrent 
+                    ? 'bg-slate-800 text-white font-semibold' 
+                    : 'text-slate-300'
+              }`}
+              aria-current={isCurrent ? 'step' : undefined}
+            >
+              <Icon className={`h-3 w-3 shrink-0 ${isCurrent ? '' : isComplete ? '' : 'opacity-50'}`} />
+              <span className={`hidden sm:inline ${isFuture ? 'font-normal' : isComplete ? 'font-medium' : 'font-semibold'}`}>
+                {step.label}
+              </span>
             </div>
             {i < steps.length - 1 && (
-              <div className={`w-4 h-0.5 mx-0.5 ${
-                isComplete ? 'bg-emerald-300' : 'bg-slate-200'
+              <div className={`flex-1 h-px mx-1 ${
+                isComplete ? 'bg-emerald-400' : 'bg-slate-200'
               }`} />
             )}
           </div>
@@ -93,7 +104,11 @@ const StatusBadge = ({ status }: { status: string }) => {
 
 /* ─────────────────────────────────────────────────────────────────────────────
    STATUS CARD — Informational only, no confirmation buttons
-   Subtle shadow, no borders, "Report an issue" tertiary link
+   
+   UX Principles (Refactoring UI / About Face):
+   - Group by proximity: progress bar tightly coupled to content
+   - Negative Reporting: delivered items show only "Report an issue" link
+   - Do, Don't Ask: no confirmation buttons on delivered items
    ───────────────────────────────────────────────────────────────────────────── */
 const StatusCard = ({ 
   signal, 
@@ -108,12 +123,13 @@ const StatusCard = ({
 }) => {
   const isNeedsInput = variant === 'needs-input';
   const isCompleted = variant === 'completed';
+  const isDelivered = signal.status === 'delivered' || signal.status === 'closed';
   
   const handleReportIssue = (e: React.MouseEvent) => {
     e.stopPropagation();
     toast({
       title: "Issue reported",
-      description: "Someone will look into this shortly.",
+      description: "Someone will look into this shortly. The item will remain visible until resolved.",
     });
   };
 
@@ -124,7 +140,9 @@ const StatusCard = ({
       className={`rounded-2xl p-5 transition-all ${
         isNeedsInput 
           ? 'bg-amber-50/60' 
-          : 'bg-white'
+          : isDelivered
+            ? 'bg-emerald-50/40'
+            : 'bg-white'
       }`}
       style={{ 
         boxShadow: isCompleted 
@@ -135,45 +153,61 @@ const StatusCard = ({
       <div className="flex items-start gap-4">
         {/* Icon */}
         <div className={`flex items-center justify-center h-11 w-11 rounded-xl shrink-0 ${
-          isNeedsInput ? 'bg-amber-100' : isCompleted ? 'bg-emerald-50' : 'bg-slate-100'
+          isNeedsInput ? 'bg-amber-100' : isDelivered ? 'bg-emerald-100' : isCompleted ? 'bg-emerald-50' : 'bg-slate-100'
         }`}>
           <PulseTypeIcon type={signal.signal_type} className={`h-5 w-5 ${
-            isNeedsInput ? 'text-amber-600' : isCompleted ? 'text-emerald-600' : 'text-slate-500'
+            isNeedsInput ? 'text-amber-600' : isDelivered ? 'text-emerald-600' : isCompleted ? 'text-emerald-600' : 'text-slate-500'
           }`} />
         </div>
         
-        {/* Content */}
-        <div className="flex-1 min-w-0 space-y-2">
-          {/* Title — dark slate, semibold */}
-          <p className={`text-[15px] font-semibold leading-snug ${
-            isCompleted ? 'text-slate-400' : 'text-slate-800'
-          }`}>
-            {signal.description}
-          </p>
-          
-          {/* Meta — softer slate-grey */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <StatusBadge status={signal.status} />
-            {signal.amount != null && signal.amount > 0 && (
-              <span className="text-sm text-slate-500 tabular-nums">
-                €{signal.amount.toFixed(2)}
-              </span>
-            )}
+        {/* Content — tight spacing within, more padding around */}
+        <div className="flex-1 min-w-0">
+          {/* Title + meta group — tightly spaced */}
+          <div className="space-y-1">
+            <p className={`text-[15px] font-semibold leading-snug ${
+              isCompleted ? 'text-slate-400' : 'text-slate-800'
+            }`}>
+              {signal.description}
+            </p>
+            
+            {/* Meta row: amount + location */}
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              {signal.amount != null && signal.amount > 0 && (
+                <span className="text-slate-500 tabular-nums font-medium">
+                  €{signal.amount.toFixed(2)}
+                </span>
+              )}
+              <span>·</span>
+              <span>{signal.location}</span>
+            </div>
           </div>
           
-          {/* Routing info — very subtle */}
-          <p className="text-xs text-slate-400">
-            You → Procurement · {signal.location}
-          </p>
-          
-          {/* Progress tracker for in-progress items */}
+          {/* Progress tracker — tightly coupled to content above (mt-2), not to card edge */}
           {variant === 'in-progress' && (
-            <ProgressTracker status={signal.status} />
+            <div className="mt-2">
+              <ProgressTracker status={signal.status} />
+            </div>
+          )}
+          
+          {/* Delivered state: show completion + tertiary report link */}
+          {isDelivered && (
+            <div className="mt-3 flex items-center justify-between">
+              <span className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                Delivered — auto-closes in 24h
+              </span>
+              <button 
+                onClick={handleReportIssue}
+                className="text-xs text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                Report an issue
+              </button>
+            </div>
           )}
           
           {/* Needs input: action buttons */}
           {isNeedsInput && (
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-2 mt-3">
               <button
                 onClick={onProvideInfo}
                 className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
@@ -189,11 +223,11 @@ const StatusCard = ({
             </div>
           )}
           
-          {/* Report an issue — tertiary text link, not a button */}
-          {!isNeedsInput && (
+          {/* In-progress (non-delivered): subtle report link */}
+          {variant === 'in-progress' && !isDelivered && (
             <button 
               onClick={handleReportIssue}
-              className="text-xs text-slate-400 hover:text-slate-600 transition-colors mt-1"
+              className="text-xs text-slate-400 hover:text-slate-600 transition-colors mt-2"
             >
               Report an issue
             </button>

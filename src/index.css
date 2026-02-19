@@ -1,4 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=Nunito:wght@700;800;900&display=swap');
+/* ═══════════════════════════════════════════════════════════════════════════
+   PULSE TYPOGRAPHIC SYSTEM — Refactoring UI + Regelarm Philosophy
+   
+   Font Families:
+   - Display/Friendly: Nunito (headings, buttons, conversational UI)
+   - UI/Data: System stack (tables, forms, dense data)
+   
+   Strict Type Scale (rem → px):
+   - text-xs: 0.75rem (12px)
+   - text-sm: 0.875rem (14px)
+   - text-base: 1rem (16px)
+   - text-lg: 1.125rem (18px)
+   - text-xl: 1.25rem (20px)
+   - text-2xl: 1.5rem (24px)
+   - text-3xl: 1.875rem (30px)
+   - text-4xl: 2.25rem (36px)
+   
+   Font Weights: 400 (Normal) and 700 (Bold) only
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,8 +26,18 @@
 
 @layer base {
   :root {
+    /* ─── Typography Tokens ─── */
+    --font-display: 'Nunito', 'Quicksand', 'Varela Round', system-ui, sans-serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    
+    /* Text Color Hierarchy (3-tier system) */
+    --text-primary: 212 20% 15%;      /* Dark soft slate/charcoal */
+    --text-secondary: 212 15% 45%;    /* Medium cool grey for metadata */
+    --text-tertiary: 212 10% 65%;     /* Light grey for placeholders/disabled */
+    
+    /* ─── Core Design Tokens ─── */
     --background: 220 16% 97%;
-    --foreground: 220 20% 12%;
+    --foreground: 212 20% 15%;
 
     --card: 0 0% 100%;
     --card-foreground: 220 20% 12%;
@@ -117,13 +147,93 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
+  /* ─── Base Typography ─── */
+  html {
+    font-size: 16px; /* 1rem = 16px baseline */
   }
 
+  body {
+    @apply bg-background antialiased;
+    font-family: var(--font-ui);
+    color: hsl(var(--text-primary));
+    font-weight: 400;
+    line-height: 1.5;
+    letter-spacing: 0;
+  }
+
+  /* ─── Headings: Nunito (Display/Friendly) ─── */
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'DM Sans', system-ui, sans-serif;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: hsl(var(--text-primary));
+  }
+
+  /* Large headings: tight line-height + negative letter-spacing */
+  h1, h2, .text-2xl, .text-3xl, .text-4xl {
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  /* Smaller headings: slightly looser */
+  h3, h4, h5, h6 {
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  /* ─── Text Color Hierarchy Utilities ─── */
+  .text-primary {
+    color: hsl(var(--text-primary)) !important;
+  }
+  
+  .text-secondary {
+    color: hsl(var(--text-secondary)) !important;
+  }
+  
+  .text-tertiary {
+    color: hsl(var(--text-tertiary)) !important;
+  }
+
+  /* ─── All-Caps / Overline: Positive letter-spacing ─── */
+  .uppercase, .overline, [class*="tracking-wider"] {
+    letter-spacing: 0.05em;
+  }
+
+  /* ─── Baseline Alignment for Mixed Font Sizes ─── */
+  .align-baseline {
+    display: flex;
+    align-items: baseline;
+  }
+
+  /* ─── Numeric Data: Right-aligned + Tabular Figures ─── */
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+
+  td[data-numeric], 
+  .numeric,
+  .text-right-numeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ─── Font Family Utilities ─── */
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-ui {
+    font-family: var(--font-ui);
+  }
+
+  /* ─── Strict Font Weights (400 and 700 only) ─── */
+  .font-normal { font-weight: 400; }
+  .font-bold { font-weight: 700; }
+  .font-medium { font-weight: 400; } /* Map medium to normal */
+  .font-semibold { font-weight: 700; } /* Map semibold to bold */
+
+  /* ─── Buttons: Use Display Font ─── */
+  button, [role="button"], .btn {
+    font-family: var(--font-display);
   }
 }
 

@@ -5,6 +5,7 @@ import MaintenancePanel from '@/components/MaintenancePanel';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { 
   Check, Sparkles, Brain, Package, Truck, FileText, 
   ChevronRight, Clock, AlertCircle, CheckCircle2, Zap
@@ -35,6 +36,15 @@ const bottlenecks = [
   { item: 'Kitchen equipment', blocker: 'Pending manager approval', days: 1, severity: 'low' as const },
 ];
 
+/* ─── Order Progress Config ─── */
+const orderStages = ['Ordered', 'Processing', 'Shipped', 'Delivered'] as const;
+
+const orderProgress: Record<string, { value: number; stageIndex: number; barColor: string; dotColor: string }> = {
+  processing: { value: 50, stageIndex: 1, barColor: 'bg-signal-amber', dotColor: 'border-signal-amber bg-signal-amber' },
+  shipped:    { value: 75, stageIndex: 2, barColor: 'bg-hero-teal', dotColor: 'border-hero-teal bg-hero-teal' },
+  delivered:  { value: 100, stageIndex: 3, barColor: 'bg-signal-green', dotColor: 'border-signal-green bg-signal-green' },
+};
+
 /* ─── Order Status Card ─── */
 const OrderCard = ({ order }: { order: typeof activeOrders[0] }) => {
   const statusConfig = {
@@ -44,6 +54,7 @@ const OrderCard = ({ order }: { order: typeof activeOrders[0] }) => {
   };
   const config = statusConfig[order.status];
   const Icon = config.icon;
+  const progress = orderProgress[order.status];
 
   return (
     <div className="rounded-2xl bg-card p-4 shadow-elevation-low">
@@ -70,6 +81,49 @@ const OrderCard = ({ order }: { order: typeof activeOrders[0] }) => {
           <Badge className={`text-[10px] ${config.bg} ${config.color} border-0 mt-1`}>
             {config.label}
           </Badge>
+        </div>
+      </div>
+
+      {/* Inline progress bar with stage dots */}
+      <div className="mt-3 pt-3 border-t border-slate-100">
+        {/* Progress track */}
+        <div className="relative h-1.5 w-full rounded-full bg-slate-100">
+          <div
+            className={cn('absolute inset-y-0 left-0 rounded-full transition-all duration-500', progress.barColor)}
+            style={{ width: `${progress.value}%` }}
+          />
+        </div>
+
+        {/* Stage dots + labels */}
+        <div className="flex justify-between mt-2">
+          {orderStages.map((stage, i) => {
+            const isCompleted = i < progress.stageIndex;
+            const isCurrent = i === progress.stageIndex;
+            const isActive = isCompleted || isCurrent;
+
+            return (
+              <div key={stage} className="flex flex-col items-center" style={{ width: '25%' }}>
+                <div
+                  className={cn(
+                    'rounded-full border-2 transition-all duration-300',
+                    isCurrent
+                      ? cn('h-3 w-3', progress.dotColor)
+                      : isCompleted
+                        ? cn('h-2.5 w-2.5', progress.dotColor)
+                        : 'h-2.5 w-2.5 border-slate-200 bg-slate-100'
+                  )}
+                />
+                <span
+                  className={cn(
+                    'text-[10px] mt-1 leading-tight',
+                    isActive ? 'text-foreground font-medium' : 'text-muted-foreground'
+                  )}
+                >
+                  {stage}
+                </span>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

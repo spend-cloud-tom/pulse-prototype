@@ -7,6 +7,7 @@ import PulseEditDrawer from '@/components/PulseEditDrawer';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { 
   Check, MessageSquare, X, FileCheck2, ShieldAlert, Zap, 
@@ -22,9 +23,9 @@ import AutoResolveStack from '@/components/AutoResolveStack';
 
 /* ─── Mock Data ─── */
 const threeWayMatches = [
-  { id: 'twm-1', supplier: 'Schoonmaak B.V.', po: 'PO-2024-0891', grn: 'GRN-0891', invoice: 'INV-44921', poAmount: 245.00, invoiceAmount: 245.00, status: 'matched' as const, variance: 0, vendorAvgVariance: 1.1 },
-  { id: 'twm-2', supplier: 'MedSupply NL', po: 'PO-2024-0887', grn: 'GRN-0887', invoice: 'INV-44918', poAmount: 189.50, invoiceAmount: 194.30, status: 'variance' as const, variance: 2.5, vendorAvgVariance: 2.2 },
-  { id: 'twm-3', supplier: 'Albert Heijn', po: null, grn: null, invoice: 'INV-44920', poAmount: 0, invoiceAmount: 67.40, status: 'missing-po' as const, variance: 0, vendorAvgVariance: 0.8 },
+  { id: 'twm-1', supplier: 'Schoonmaak B.V.', po: 'PO-2024-0891', grn: 'GRN-0891', invoice: 'INV-44921', poAmount: 245.00, invoiceAmount: 245.00, status: 'matched' as const, variance: 0, vendorAvgVariance: 1.1, aiNote: '' },
+  { id: 'twm-2', supplier: 'MedSupply NL', po: 'PO-2024-0887', grn: 'GRN-0887', invoice: 'INV-44918', poAmount: 189.50, invoiceAmount: 194.30, status: 'variance' as const, variance: 2.5, vendorAvgVariance: 2.2, aiNote: 'price increase of €4.80 — likely freight surcharge' },
+  { id: 'twm-3', supplier: 'Albert Heijn', po: null, grn: null, invoice: 'INV-44920', poAmount: 0, invoiceAmount: 67.40, status: 'missing-po' as const, variance: 0, vendorAvgVariance: 0.8, aiNote: 'suggest retroactive PO — matches recurring grocery pattern' },
 ];
 
 const shadowSpendItems = [
@@ -387,6 +388,280 @@ type FilterState = {
   dateRange: 'all' | 'today' | 'week' | 'month';
 };
 
+/* ─── Three-Way Match Card (Monitoring Tab) ─── */
+const matchCardStatusConfig = {
+  variance: {
+    border: 'border-signal-amber/40',
+    badgeBg: 'bg-signal-amber-bg',
+    badgeText: 'text-signal-amber',
+  },
+  'missing-po': {
+    border: 'border-signal-red/40',
+    badgeBg: 'bg-signal-red-bg',
+    badgeText: 'text-signal-red',
+  },
+};
+
+const ThreeWayMatchCard = ({
+  match,
+  isReconcileOpen,
+  onReconcile,
+  onClose,
+  onApplyFix,
+}: {
+  match: ThreeWayMatch;
+  isReconcileOpen: boolean;
+  onReconcile: () => void;
+  onClose: () => void;
+  onApplyFix: () => void;
+}) => {
+  const [showConfirm, setShowConfirm] = useState(false);
+  const config = matchCardStatusConfig[match.status as 'variance' | 'missing-po'];
+  const badgeLabel = match.status === 'variance'
+    ? `${match.variance}% variance`
+    : 'Missing PO';
+
+  // Compute AI fix preview values
+  const fixPreview = match.status === 'missing-po'
+    ? { po: 'PO-2024-0901', grn: 'GRN-5531', amount: null }
+    : { po: null, grn: null, amount: match.invoiceAmount };
+
+  const handleClose = () => {
+    setShowConfirm(false);
+    onClose();
+  };
+
+  return (
+    <div className="space-y-0">
+      {/* Main match card */}
+      <div className={cn(
+        'rounded-xl bg-card p-3 border transition-shadow',
+        config.border,
+        isReconcileOpen ? 'rounded-b-none border-b-0 shadow-elevation-low' : 'shadow-elevation-low'
+      )}>
+        {/* Header: supplier + badge + reconcile */}
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold">{match.supplier}</h3>
+          <div className="flex items-center gap-1.5">
+            <Badge className={cn('gap-1 border-0 text-[10px]', config.badgeBg, config.badgeText)}>
+              <FileText className="h-2.5 w-2.5" />
+              {badgeLabel}
+            </Badge>
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-1 h-7 text-xs px-2"
+              onClick={onReconcile}
+            >
+              <Sparkles className="h-3 w-3" /> Reconcile
+            </Button>
+          </div>
+        </div>
+
+        {/* PO / GRN / Invoice grid */}
+        <div className="grid grid-cols-3 gap-2 mb-2">
+          {[
+            { label: 'PO', value: match.po },
+            { label: 'GRN', value: match.grn },
+            { label: 'Invoice', value: match.invoice },
+          ].map(doc => (
+            <div
+              key={doc.label}
+              className="rounded-lg bg-slate-50 py-1.5 px-2.5 text-center"
+            >
+              <p className="text-[10px] text-muted-foreground mb-0.5">{doc.label}</p>
+              <p className="font-semibold text-xs">{doc.value ?? '—'}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* AI insight */}
+        {match.aiNote && (
+          <p className="text-xs text-signal-amber flex items-center gap-1.5">
+            <Sparkles className="h-3 w-3 shrink-0" />
+            <span>AI: {match.aiNote}</span>
+          </p>
+        )}
+      </div>
+
+      {/* Inline reconciliation panel */}
+      <AnimatePresence>
+        {isReconcileOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className={cn(
+              'rounded-b-xl bg-card p-3 border border-t-0 shadow-elevation-low',
+              config.border
+            )}>
+              {/* Title bar */}
+              <div className="flex items-center justify-between mb-2.5">
+                <h4 className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase">
+                  Reconciliation — {match.supplier}
+                </h4>
+                <button
+                  onClick={handleClose}
+                  className="h-6 w-6 rounded-md flex items-center justify-center hover:bg-secondary transition-colors"
+                >
+                  <X className="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+              </div>
+
+              {/* PO / GRN / Amount detail grid */}
+              <div className="grid grid-cols-3 gap-2 mb-2.5">
+                {/* PO cell */}
+                <div className={cn(
+                  'rounded-lg py-1.5 px-2.5',
+                  showConfirm && fixPreview.po
+                    ? 'bg-hero-teal-soft border border-hero-teal/20'
+                    : !match.po ? 'bg-signal-red-bg border border-signal-red/20' : 'bg-slate-50'
+                )}>
+                  <p className={cn(
+                    'text-[10px] mb-0.5 flex items-center gap-1',
+                    showConfirm && fixPreview.po
+                      ? 'text-hero-teal font-medium'
+                      : !match.po ? 'text-signal-red font-medium' : 'text-muted-foreground'
+                  )}>
+                    PO {!match.po && !showConfirm && <AlertTriangle className="h-2.5 w-2.5" />}
+                    {showConfirm && fixPreview.po && <Check className="h-2.5 w-2.5" />}
+                  </p>
+                  {showConfirm && fixPreview.po ? (
+                    <div>
+                      {match.po && <p className="text-[10px] text-muted-foreground line-through">{match.po}</p>}
+                      {!match.po && <p className="text-[10px] text-muted-foreground line-through">Missing</p>}
+                      <p className="font-semibold text-xs text-hero-teal">{fixPreview.po}</p>
+                    </div>
+                  ) : (
+                    <p className={cn(
+                      'font-semibold text-xs',
+                      !match.po && 'text-signal-red'
+                    )}>
+                      {match.po ?? 'Missing'}
+                    </p>
+                  )}
+                </div>
+
+                {/* GRN cell */}
+                <div className={cn(
+                  'rounded-lg py-1.5 px-2.5',
+                  showConfirm && fixPreview.grn
+                    ? 'bg-hero-teal-soft border border-hero-teal/20'
+                    : !match.grn ? 'bg-signal-amber-bg border border-signal-amber/20' : 'bg-slate-50'
+                )}>
+                  <p className={cn(
+                    'text-[10px] mb-0.5',
+                    showConfirm && fixPreview.grn
+                      ? 'text-hero-teal font-medium flex items-center gap-1'
+                      : !match.grn ? 'text-signal-amber font-medium' : 'text-muted-foreground'
+                  )}>
+                    GRN {showConfirm && fixPreview.grn && <Check className="h-2.5 w-2.5" />}
+                  </p>
+                  {showConfirm && fixPreview.grn ? (
+                    <div>
+                      {match.grn && <p className="text-[10px] text-muted-foreground line-through">{match.grn}</p>}
+                      {!match.grn && <p className="text-[10px] text-muted-foreground line-through">Missing</p>}
+                      <p className="font-semibold text-xs text-hero-teal">{fixPreview.grn}</p>
+                    </div>
+                  ) : (
+                    <p className={cn(
+                      'font-semibold text-xs',
+                      !match.grn && 'text-signal-amber'
+                    )}>
+                      {match.grn ?? 'Missing'}
+                    </p>
+                  )}
+                </div>
+
+                {/* Amount cell */}
+                <div className={cn(
+                  'rounded-lg py-1.5 px-2.5',
+                  showConfirm && fixPreview.amount
+                    ? 'bg-hero-teal-soft border border-hero-teal/20'
+                    : 'bg-slate-50'
+                )}>
+                  <p className={cn(
+                    'text-[10px] mb-0.5',
+                    showConfirm && fixPreview.amount
+                      ? 'text-hero-teal font-medium flex items-center gap-1'
+                      : 'text-muted-foreground'
+                  )}>
+                    Amount {showConfirm && fixPreview.amount && <Check className="h-2.5 w-2.5" />}
+                  </p>
+                  {showConfirm && fixPreview.amount ? (
+                    <div>
+                      <p className="text-[10px] text-muted-foreground line-through">€{match.poAmount.toFixed(2)}</p>
+                      <p className="font-semibold text-xs text-hero-teal">€{fixPreview.amount.toFixed(2)}</p>
+                    </div>
+                  ) : (
+                    <p className="font-semibold text-xs">€{match.invoiceAmount.toFixed(2)}</p>
+                  )}
+                </div>
+              </div>
+
+              {/* AI suggestion bar / Confirm bar */}
+              {showConfirm ? (
+                <div className="flex items-center justify-between rounded-lg bg-hero-teal-soft p-2.5 mb-2.5">
+                  <p className="text-xs text-hero-teal flex items-center gap-1.5 font-medium">
+                    <Sparkles className="h-3 w-3 shrink-0" />
+                    AI fix previewed — review changes above
+                  </p>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs px-2"
+                      onClick={() => setShowConfirm(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="gap-1 h-7 text-xs px-2.5 bg-hero-teal text-white hover:bg-hero-teal/90"
+                      onClick={onApplyFix}
+                    >
+                      <Check className="h-3 w-3" /> Confirm fix
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 mb-2.5">
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                    <Sparkles className="h-3 w-3 text-signal-amber shrink-0" />
+                    <span>{match.status === 'missing-po'
+                      ? 'Matches recurring grocery pattern'
+                      : `Price increase of €${(match.invoiceAmount - match.poAmount).toFixed(2)} — likely freight surcharge`
+                    }</span>
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1 h-7 text-xs px-2 shrink-0"
+                    onClick={() => setShowConfirm(true)}
+                  >
+                    <Sparkles className="h-3 w-3" /> Apply AI fix
+                  </Button>
+                </div>
+              )}
+
+              {/* Edit fields button */}
+              <Button
+                size="sm"
+                className="gap-1 h-7 text-xs bg-foreground text-background hover:bg-foreground/90"
+              >
+                <Pencil className="h-3 w-3" /> Edit fields
+              </Button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 /* ─── Reconcile Detail Content ─── */
 const ReconcileDetailContent = ({
   match,
@@ -562,6 +837,7 @@ const RohanView = () => {
   const [appliedFixes, setAppliedFixes] = useState<Set<string>>(new Set());
   const [resolvedLowRisk, setResolvedLowRisk] = useState(false);
   const [showSuccessCheck, setShowSuccessCheck] = useState(false);
+  const [reconcileOpenId, setReconcileOpenId] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     riskLevel: 'all',
     amountRange: 'all',
@@ -1036,6 +1312,34 @@ const RohanView = () => {
                     </div>
                   ))}
                 </div>
+
+                {/* Three-Way Match cards */}
+                {actionableMatches.filter(m => !reconciledIds.has(m.id)).length > 0 && (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-signal-amber" />
+                      <h3 className="text-sm font-semibold">Three-Way Match</h3>
+                      <Badge variant="outline" className="text-[10px] bg-signal-amber-bg text-signal-amber border-0">
+                        {actionableMatches.filter(m => !reconciledIds.has(m.id)).length} pending
+                      </Badge>
+                    </div>
+                    <AnimatePresence mode="popLayout">
+                      {actionableMatches.filter(m => !reconciledIds.has(m.id)).map(match => (
+                        <ThreeWayMatchCard
+                          key={match.id}
+                          match={match}
+                          isReconcileOpen={reconcileOpenId === match.id}
+                          onReconcile={() => setReconcileOpenId(match.id)}
+                          onClose={() => setReconcileOpenId(null)}
+                          onApplyFix={() => {
+                            handleReconcile(match);
+                            setReconcileOpenId(null);
+                          }}
+                        />
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                )}
 
                 {/* Auto-matched */}
                 <div className="space-y-3">

@@ -321,7 +321,7 @@ const PulseApp = () => {
       </header>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main>
+      <main className={cn(activeRole !== 'anouk' && 'pb-40')}>
         <AnimatePresence mode="wait">
           {isSearchActive ? (
             <motion.div

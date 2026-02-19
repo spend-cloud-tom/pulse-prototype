@@ -112,6 +112,7 @@ export default {
         hero: {
           teal: "hsl(var(--hero-teal))",
           purple: "hsl(var(--hero-purple))",
+          coral: "hsl(var(--hero-coral))",
           "teal-soft": "hsl(var(--hero-teal-soft))",
           "purple-soft": "hsl(var(--hero-purple-soft))",
         },

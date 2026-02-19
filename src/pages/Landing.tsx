@@ -26,8 +26,12 @@ const FloatingCard = ({
 
   return (
     <motion.div
-      className="absolute rounded-xl border border-border bg-card/90 backdrop-blur-sm px-4 py-3 shadow-lg w-56"
-      style={{ left: x, top: y }}
+      className="absolute rounded-xl bg-white px-4 py-3 w-56"
+      style={{ 
+        left: x, 
+        top: y,
+        boxShadow: '0 4px 6px hsla(0, 0%, 0%, 0.05), 0 10px 24px hsla(0, 0%, 0%, 0.1)',
+      }}
       initial={{ opacity: 0, y: 30, rotate: rotate - 2 }}
       animate={{ opacity: 1, y: 0, rotate }}
       transition={{ delay: 0.6 + delay, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
@@ -100,7 +104,8 @@ const PillarCard = ({
       transition={{ delay, duration: 0.5 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative rounded-2xl border border-border bg-card p-6 md:p-8 transition-all hover:shadow-md hover:border-foreground/10 cursor-default"
+      className="group relative rounded-2xl bg-white p-6 md:p-8 transition-all cursor-default"
+      style={{ boxShadow: '0 2px 4px hsla(0, 0%, 0%, 0.02), 0 4px 12px hsla(0, 0%, 0%, 0.04)' }}
     >
       <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-hero-teal-soft to-hero-purple-soft flex items-center justify-center mb-4">
         {icon}
@@ -261,12 +266,11 @@ const Landing = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-sm space-y-8">
-          {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-              <span className="text-sm font-bold text-background">P</span>
-            </div>
-            <span className="font-display text-xl font-bold tracking-tight">Pulse</span>
+          {/* Friendly lowercase 'pulse.' logo */}
+          <div className="flex items-center">
+            <span className="font-display text-2xl font-bold tracking-tight text-slate-900">
+              pulse<span className="text-hero-coral">.</span>
+            </span>
           </div>
 
           {loginStep === 'email' && (
@@ -330,156 +334,179 @@ const Landing = () => {
   /* ─── Landing Page ─── */
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      {/* Nav */}
-      <header className="border-b border-border/50">
-        <div className="mx-auto max-w-5xl flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-foreground flex items-center justify-center">
-              <span className="text-sm font-bold text-background">P</span>
-            </div>
-            <span className="font-display text-xl font-bold tracking-tight">Pulse</span>
+      {/* Nav — clean, minimal */}
+      <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-md">
+        <div className="mx-auto max-w-6xl flex items-center justify-between px-6 py-5">
+          {/* Friendly lowercase 'pulse.' logo */}
+          <div className="flex items-center">
+            <span className="font-display text-2xl font-bold tracking-tight text-slate-900">
+              pulse<span className="text-hero-coral">.</span>
+            </span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-sm text-muted-foreground" onClick={handleDemoAccess}>View demo</Button>
-            <Button size="sm" onClick={() => setShowLogin(true)} className="rounded-full px-5">Login</Button>
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={handleDemoAccess} 
+              className="text-sm text-slate-500 hover:text-slate-900 transition-colors font-medium"
+            >
+              See how it works
+            </button>
+            <Button 
+              size="sm" 
+              onClick={() => setShowLogin(true)} 
+              className="rounded-full px-6 h-10 text-sm font-semibold shadow-elevation-medium"
+            >
+              Sign in
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6">
+      <main>
 
         {/* ─── HERO ─── */}
-        <section className="relative py-20 md:py-32">
-          {/* Gradient blobs — decorative */}
+        <section className="relative py-24 md:py-32 lg:py-40">
+          {/* Subtle gradient blobs — decorative */}
           <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-            <div className="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-hero-teal-soft opacity-60 blur-3xl" />
-            <div className="absolute -top-16 right-0 h-[400px] w-[400px] rounded-full bg-hero-purple-soft opacity-50 blur-3xl" />
+            <div className="absolute -top-32 -left-32 h-[600px] w-[600px] rounded-full bg-hero-teal-soft/40 blur-[100px]" />
+            <div className="absolute -top-16 right-0 h-[500px] w-[500px] rounded-full bg-hero-purple-soft/30 blur-[100px]" />
           </div>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            {/* Left — copy */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-              className="space-y-6"
-            >
-              <div className="flex items-center gap-3">
-                <CopilotAvatar />
-                <motion.span
-                  className="text-xs font-medium text-muted-foreground bg-secondary rounded-full px-3 py-1"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 1.2 }}
-                >
-                  AI co-pilot for care operations
-                </motion.span>
-              </div>
-
-              <h1 className="font-display text-4xl md:text-5xl lg:text-[3.5rem] font-bold tracking-tight leading-[1.08]">
-                Calm in Every<br />Care Decision
-              </h1>
-              <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-md">
-                From urgent purchases to facility requests, AI orchestrates the flow. You focus on care, we handle the rest.
-              </p>
-
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button
-                  size="lg"
-                  onClick={() => setShowLogin(true)}
-                  className="rounded-full px-8 h-12 text-sm font-semibold gap-2 shadow-md"
-                >
-                  Get started <ArrowRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="lg"
-                  variant="outline"
-                  onClick={handleDemoAccess}
-                  className="rounded-full px-8 h-12 text-sm gap-2 group"
-                >
-                  View demo
-                  <motion.span
-                    animate={{ x: [0, 3, 0] }}
-                    transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
-                  >
-                    <Sparkles className="h-3.5 w-3.5 text-hero-purple opacity-60 group-hover:opacity-100 transition-opacity" />
-                  </motion.span>
-                </Button>
-              </div>
-
-              <LiveCounter />
-            </motion.div>
-
-            {/* Right — floating card illustration */}
-            <div className="relative h-72 md:h-96 hidden md:block">
-              <FloatingCard title="Plumber repair — kitchen sink" status="pending" delay={0} x="10%" y="5%" rotate={-2} />
-              <FloatingCard title="Cleaning wipes (Ward B)" status="resolved" delay={0.2} x="35%" y="35%" rotate={1.5} />
-              <FloatingCard title="Pharmacy receipt €67.40" status="auto" delay={0.4} x="5%" y="65%" rotate={-1} />
-
-              {/* Connecting lines SVG */}
-              <motion.svg
-                className="absolute inset-0 w-full h-full pointer-events-none"
-                viewBox="0 0 400 400"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.15 }}
-                transition={{ delay: 1.5 }}
+          <div className="mx-auto max-w-6xl px-6">
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              {/* Left — copy with proper hierarchy */}
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+                className="space-y-8"
               >
-                <path d="M100 60 Q200 180 160 300" stroke="hsl(var(--hero-teal))" strokeWidth="1.5" fill="none" strokeDasharray="6 4" />
-                <path d="M200 100 Q250 200 180 340" stroke="hsl(var(--hero-purple))" strokeWidth="1" fill="none" strokeDasharray="4 6" />
-              </motion.svg>
+                <div className="flex items-center gap-3">
+                  <CopilotAvatar />
+                  <motion.span
+                    className="text-sm font-medium text-slate-500 bg-slate-100 rounded-full px-4 py-1.5"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 1.2 }}
+                  >
+                    AI co-pilot for care operations
+                  </motion.span>
+                </div>
+
+                {/* Heading: extrabold, dark slate, not cartoonishly large */}
+                <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.1] text-slate-900">
+                  Give care workers<br />their time back
+                </h1>
+                
+                {/* Sub-headline: de-emphasized with softer color */}
+                <p className="text-xl text-slate-500 leading-relaxed max-w-lg font-normal">
+                  The one-door policy for healthcare. From urgent purchases to facility requests, AI orchestrates the flow so you can focus on what matters.
+                </p>
+
+                {/* CTAs with strict hierarchy */}
+                <div className="flex flex-wrap items-center gap-4 pt-4">
+                  {/* Primary CTA: solid, high-contrast pill */}
+                  <Button
+                    size="lg"
+                    onClick={handleDemoAccess}
+                    className="rounded-full px-8 h-14 text-base font-semibold gap-2"
+                    style={{ boxShadow: '0 4px 6px hsla(0, 0%, 0%, 0.05), 0 10px 24px hsla(0, 0%, 0%, 0.1)' }}
+                  >
+                    See how it works <ArrowRight className="h-4 w-4" />
+                  </Button>
+                  
+                  {/* Secondary CTA: subtle text link */}
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="text-base font-medium text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-2"
+                  >
+                    Read the philosophy
+                    <Sparkles className="h-4 w-4 text-hero-purple/60" />
+                  </button>
+                </div>
+
+                <LiveCounter />
+              </motion.div>
+
+              {/* Right — floating card illustration with two-part shadow */}
+              <div className="relative h-80 md:h-[420px] hidden lg:block">
+                <FloatingCard title="Plumber repair — kitchen sink" status="pending" delay={0} x="10%" y="5%" rotate={-2} />
+                <FloatingCard title="Cleaning wipes (Ward B)" status="resolved" delay={0.2} x="40%" y="38%" rotate={1.5} />
+                <FloatingCard title="Pharmacy receipt €67.40" status="auto" delay={0.4} x="8%" y="68%" rotate={-1} />
+
+                {/* Connecting lines SVG */}
+                <motion.svg
+                  className="absolute inset-0 w-full h-full pointer-events-none"
+                  viewBox="0 0 400 400"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.12 }}
+                  transition={{ delay: 1.5 }}
+                >
+                  <path d="M100 60 Q200 180 160 300" stroke="hsl(var(--hero-teal))" strokeWidth="1.5" fill="none" strokeDasharray="6 4" />
+                  <path d="M200 100 Q250 200 180 340" stroke="hsl(var(--hero-purple))" strokeWidth="1" fill="none" strokeDasharray="4 6" />
+                </motion.svg>
+              </div>
             </div>
           </div>
         </section>
 
         {/* ─── VALUE PILLARS ─── */}
-        <section className="pb-20 md:pb-28">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <p className="text-xs font-semibold text-hero-teal uppercase tracking-widest mb-2">Why Pulse</p>
-            <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight">Built for how care actually works</h2>
-          </motion.div>
+        {/* Alternating background for section separation (no borders) */}
+        <section className="py-24 md:py-32 bg-slate-50">
+          <div className="mx-auto max-w-6xl px-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <p className="text-sm font-semibold text-hero-teal uppercase tracking-widest mb-3">Why Pulse</p>
+              <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">Built for how care actually works</h2>
+            </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <PillarCard
-              icon={<ShieldCheck className="h-5 w-5 text-hero-teal" />}
-              title="Stress-Free Decisions"
-              description="AI filters routine requests, auto-classifies purchases, and flags only the unusual. You see exactly what needs attention — nothing more."
-              hoverDetail="AI predicts this week's Ward B supplies will auto-clear, saving ~2 hours of manual review."
-              delay={0}
-            />
-            <PillarCard
-              icon={<Waypoints className="h-5 w-5 text-hero-purple" />}
-              title="Everyone Knows What's Next"
-              description="Every request shows who owns it, where it is in the process, and the next actionable step. No ambiguity, no chasing."
-              hoverDetail="Next suggested action: Jolanda approves Ward C exception, then Sarah generates PO."
-              delay={0.1}
-            />
-            <PillarCard
-              icon={<Radar className="h-5 w-5 text-foreground" />}
-              title="Intelligent Transparency"
-              description="Track approvals, budgets, deliveries, and maintenance in real-time across all locations. Predict issues before they arise."
-              hoverDetail="Budget utilization trending 12% above normal for Q1 — early warning active."
-              delay={0.2}
-            />
+            <div className="grid md:grid-cols-3 gap-8">
+              <PillarCard
+                icon={<ShieldCheck className="h-5 w-5 text-hero-teal" />}
+                title="Stress-Free Decisions"
+                description="AI filters routine requests, auto-classifies purchases, and flags only the unusual. You see exactly what needs attention — nothing more."
+                hoverDetail="AI predicts this week's Ward B supplies will auto-clear, saving ~2 hours of manual review."
+                delay={0}
+              />
+              <PillarCard
+                icon={<Waypoints className="h-5 w-5 text-hero-purple" />}
+                title="Everyone Knows What's Next"
+                description="Every request shows who owns it, where it is in the process, and the next actionable step. No ambiguity, no chasing."
+                hoverDetail="Next suggested action: Jolanda approves Ward C exception, then Sarah generates PO."
+                delay={0.1}
+              />
+              <PillarCard
+                icon={<Radar className="h-5 w-5 text-slate-700" />}
+                title="Intelligent Transparency"
+                description="Track approvals, budgets, deliveries, and maintenance in real-time across all locations. Predict issues before they arise."
+                hoverDetail="Budget utilization trending 12% above normal for Q1 — early warning active."
+                delay={0.2}
+              />
+            </div>
           </div>
         </section>
 
         {/* ─── AI DEMO SECTION ─── */}
-        <DemoSection onDemoAccess={handleDemoAccess} />
+        <div className="mx-auto max-w-6xl px-6">
+          <DemoSection onDemoAccess={handleDemoAccess} />
+        </div>
       </main>
 
       {/* ─── FOOTER ─── */}
-      <footer className="border-t border-border/50 py-10">
-        <div className="mx-auto max-w-5xl px-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>© {new Date().getFullYear()} Pulse</span>
+      <footer className="py-16 bg-slate-50">
+        <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+          <div className="flex items-center gap-2">
+            <span className="font-display text-lg font-bold text-slate-900">pulse<span className="text-hero-coral">.</span></span>
+            <span className="text-slate-400">·</span>
+            <span>© {new Date().getFullYear()}</span>
+          </div>
           <span className="text-center">
             Operational clarity for care organizations — powered by{' '}
             <motion.span
-              className="inline-block font-medium text-foreground"
+              className="inline-block font-semibold text-slate-700"
               animate={{ textShadow: ['0 0 0px transparent', '0 0 8px hsl(var(--hero-teal) / 0.3)', '0 0 0px transparent'] }}
               transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
             >

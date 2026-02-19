@@ -17,7 +17,7 @@ const VoiceWaveform = ({ isActive, barCount = 5 }: VoiceWaveformProps) => {
       {Array.from({ length: barCount }).map((_, i) => (
         <motion.div
           key={i}
-          className="w-1 bg-hero-teal rounded-full"
+          className="w-1 bg-white rounded-full"
           initial={{ height: 8 }}
           animate={{
             height: [8, 20, 12, 24, 8],

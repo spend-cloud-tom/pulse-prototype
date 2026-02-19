@@ -2,7 +2,6 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Camera, Send, ShoppingCart, Wrench, Receipt, HelpCircle, Package } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-import VoiceWaveform from '@/components/VoiceWaveform';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    OMNI-DOCK — The "One Door" Persistent Input with Quick-Tap Gallery
@@ -32,6 +31,7 @@ interface OmniDockProps {
 const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockProps) => {
   const [inputValue, setInputValue] = useState('');
   const [isListening, setIsListening] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [showQuickTaps, setShowQuickTaps] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -94,13 +94,15 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
   };
 
   const handleCamera = () => {
+    setIsScanning(true);
     toast({
-      title: "📷 Opening camera...",
-      description: "Take a photo of the item or receipt.",
+      title: "📷 Scanning...",
+      description: "AI is reading the image.",
     });
     
     // Simulate photo capture + OCR
     setTimeout(() => {
+      setIsScanning(false);
       toast({
         title: "📷 Photo captured!",
         description: "AI detected: \"Cleaning supplies receipt — €34.50\"",
@@ -178,93 +180,208 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
             boxShadow: '0 10px 24px hsla(212, 20%, 15%, 0.1), 0 4px 6px hsla(212, 20%, 15%, 0.05)',
           }}
         >
-          {/* Text Input — borderless, friendly placeholder */}
-          <input
-            ref={inputRef}
-            type="text"
-            value={inputValue}
-            onChange={handleInputChange}
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            placeholder={placeholder}
-            className="
-              flex-1 min-w-0
-              px-4 py-3 
-              text-base font-normal
-              bg-transparent 
-              outline-none 
-              text-slate-800 
-              placeholder:text-slate-400 placeholder:font-normal
-              font-display
-            "
-          />
+          {/* Input area — relative container for overlays */}
+          <div className="flex-1 min-w-0 relative overflow-hidden rounded-xl">
+            {/* Camera scan line overlay */}
+            <AnimatePresence>
+              {isScanning && (
+                <motion.div
+                  className="absolute top-0 bottom-0 w-[2px] z-10 pointer-events-none"
+                  style={{
+                    background: 'hsl(12, 76%, 50%)',
+                    boxShadow: '0 0 12px 3px hsla(12, 76%, 50%, 0.35), 0 0 4px 1px hsla(12, 76%, 50%, 0.2)',
+                  }}
+                  initial={{ left: '0%', opacity: 0 }}
+                  animate={{ left: ['0%', '100%', '0%', '100%'], opacity: [0, 1, 1, 1, 0] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.5, ease: 'easeInOut' }}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Scanning background tint */}
+            <AnimatePresence>
+              {isScanning && (
+                <motion.div
+                  className="absolute inset-0 rounded-xl pointer-events-none z-0"
+                  style={{ background: 'hsla(12, 76%, 50%, 0.04)' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 1, 0.5, 1, 0] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.5, ease: 'easeInOut' }}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Waveform (listening) OR Input */}
+            <AnimatePresence mode="wait">
+              {isListening ? (
+                <motion.div
+                  key="waveform"
+                  className="flex items-center gap-3 px-4 py-3 h-[46px]"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <span className="text-xs font-medium text-teal-600 whitespace-nowrap">
+                    Listening…
+                  </span>
+                  <div className="flex items-center justify-center gap-[3px] flex-1 h-6">
+                    {Array.from({ length: 24 }).map((_, i) => (
+                      <motion.div
+                        key={i}
+                        className="w-[2px] bg-teal-500 rounded-full"
+                        style={{
+                          opacity: 1 - Math.abs(i - 11.5) / 18,
+                        }}
+                        initial={{ height: 4 }}
+                        animate={{
+                          height: [
+                            4,
+                            8 + Math.sin(i * 0.6) * 6 + Math.random() * 8,
+                            4 + Math.cos(i * 0.4) * 4 + Math.random() * 6,
+                            10 + Math.sin(i * 0.8) * 8 + Math.random() * 6,
+                            4,
+                          ],
+                        }}
+                        transition={{
+                          duration: 1.0 + Math.random() * 0.4,
+                          repeat: Infinity,
+                          delay: i * 0.04,
+                          ease: 'easeInOut',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="input"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    placeholder={isScanning ? 'Scanning…' : placeholder}
+                    disabled={isScanning}
+                    className={`
+                      w-full
+                      px-4 py-3 
+                      text-base font-normal
+                      bg-transparent 
+                      outline-none 
+                      placeholder:font-normal
+                      font-display
+                      relative z-[1]
+                      ${isScanning 
+                        ? 'text-transparent placeholder:text-coral-400' 
+                        : 'text-slate-800 placeholder:text-slate-400'
+                      }
+                    `}
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
           
-          {/* Voice Button — Brand teal with waveform when listening */}
-          <button
-            onClick={handleVoice}
-            disabled={isListening}
-            className={`
-              h-11 rounded-xl 
-              flex items-center justify-center 
-              transition-all duration-150 
-              shrink-0
-              ${isListening 
-                ? 'bg-teal-500 text-white px-4 min-w-[80px]' 
-                : 'bg-teal-50 text-teal-600 hover:bg-teal-100 active:scale-95 w-11'
-              }
-            `}
-            aria-label="Voice input"
-          >
-            {isListening ? (
-              <VoiceWaveform isActive={isListening} />
-            ) : (
-              <Mic className="h-5 w-5" />
-            )}
-          </button>
-          
-          {/* Camera Button — Brand coral with soft hover state */}
-          <button
-            onClick={handleCamera}
-            className="
-              h-11 w-11 rounded-xl 
-              bg-coral-50 text-coral-600
-              hover:bg-coral-100 
-              active:scale-95
-              flex items-center justify-center 
-              transition-all duration-150 
-              shrink-0
-            "
-            style={{
-              backgroundColor: 'hsl(12, 76%, 95%)',
-              color: 'hsl(12, 76%, 50%)',
-            }}
-            aria-label="Camera input"
-          >
-            <Camera className="h-5 w-5" />
-          </button>
-          
-          {/* Send Button — appears when there's input */}
-          {inputValue.trim() && (
-            <motion.button
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              onClick={handleSubmit}
-              className="
-                h-11 w-11 rounded-xl 
-                bg-slate-900 text-white
-                hover:bg-slate-800 
-                active:scale-95
+          {/* Voice Button — Brand teal with pulsing ring when listening */}
+          <div className="relative shrink-0">
+            {/* Pulsing ring */}
+            <AnimatePresence>
+              {isListening && (
+                <motion.div
+                  className="absolute inset-0 rounded-xl"
+                  style={{ border: '2px solid hsl(170, 60%, 45%)' }}
+                  initial={{ opacity: 0, scale: 1 }}
+                  animate={{ opacity: [0.6, 0, 0.6], scale: [1, 1.35, 1] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                />
+              )}
+            </AnimatePresence>
+            <button
+              onClick={handleVoice}
+              disabled={isListening || isScanning}
+              className={`
+                relative h-11 w-11 rounded-xl
                 flex items-center justify-center 
                 transition-all duration-150 
-                shrink-0
-              "
-              aria-label="Send"
+                ${isListening 
+                  ? 'bg-teal-500 text-white' 
+                  : 'bg-teal-50 text-teal-600 hover:bg-teal-100 active:scale-95'
+                }
+              `}
+              aria-label="Voice input"
             >
-              <Send className="h-5 w-5" />
-            </motion.button>
-          )}
+              <Mic className="h-5 w-5" />
+            </button>
+          </div>
+          
+          {/* Camera Button — Brand coral with pulsing ring when scanning */}
+          <div className="relative shrink-0">
+            {/* Pulsing ring */}
+            <AnimatePresence>
+              {isScanning && (
+                <motion.div
+                  className="absolute inset-0 rounded-xl"
+                  style={{ border: '2px solid hsl(12, 76%, 50%)' }}
+                  initial={{ opacity: 0, scale: 1 }}
+                  animate={{ opacity: [0.6, 0, 0.6], scale: [1, 1.35, 1] }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+                />
+              )}
+            </AnimatePresence>
+            <button
+              onClick={handleCamera}
+              disabled={isScanning || isListening}
+              className={`
+                relative h-11 w-11 rounded-xl 
+                flex items-center justify-center 
+                transition-all duration-150 
+              `}
+              style={{
+                backgroundColor: isScanning ? 'hsl(12, 76%, 50%)' : 'hsl(12, 76%, 95%)',
+                color: isScanning ? 'white' : 'hsl(12, 76%, 50%)',
+              }}
+              aria-label="Camera input"
+            >
+              <Camera className="h-5 w-5" />
+            </button>
+          </div>
+          
+          {/* Send Button — appears when there's input */}
+          <AnimatePresence>
+            {inputValue.trim() && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                onClick={handleSubmit}
+                className="
+                  h-11 w-11 rounded-xl 
+                  bg-slate-900 text-white
+                  hover:bg-slate-800 
+                  active:scale-95
+                  flex items-center justify-center 
+                  transition-all duration-150 
+                  shrink-0
+                "
+                aria-label="Send"
+              >
+                <Send className="h-5 w-5" />
+              </motion.button>
+            )}
+          </AnimatePresence>
         </motion.div>
       </div>
     </div>

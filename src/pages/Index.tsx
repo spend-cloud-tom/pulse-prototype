@@ -321,7 +321,7 @@ const PulseApp = () => {
       </header>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className={cn(activeRole !== 'anouk' && 'pb-40')}>
+      <main className="pb-40">
         <AnimatePresence mode="wait">
           {isSearchActive ? (
             <motion.div
@@ -365,8 +365,8 @@ const PulseApp = () => {
       <PulseDetailDrawer signal={searchDrawerSignal} open={searchDrawerOpen} onOpenChange={setSearchDrawerOpen} />
 
       {/* ─── OMNI-DOCK: Persistent "One Door" Input ─── */}
-      {/* Available for ALL users except Anouk (who has her own bottom input) */}
-      {activeRole !== 'anouk' && <OmniDock />}
+      {/* Available for ALL users including Anouk */}
+      <OmniDock />
 
       {/* ─── COMMAND PALETTE: ⌘K / Ctrl+K ─── */}
       <CommandPalette onSelectSignal={(id) => {

@@ -384,3 +384,13 @@
 .budget-heat-glow {
   animation: budget-heat 2s ease-in-out infinite;
 }
+
+/* AI Confidence dial pulse when needs attention */
+@keyframes confidence-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0 hsl(var(--signal-amber) / 0)); }
+  50% { filter: drop-shadow(0 0 6px hsl(var(--signal-amber) / 0.6)); }
+}
+
+.confidence-pulse {
+  animation: confidence-pulse 2s ease-in-out infinite;
+}

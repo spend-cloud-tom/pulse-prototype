@@ -6,6 +6,7 @@ import { classifyAndGroup, ClassifiedSignal } from '@/lib/decisionTypes';
 import PulseDetailDrawer from '@/components/PulseDetailDrawer';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
 import OrchestrationSummary from '@/components/OrchestrationSummary';
+import BudgetRadar from '@/components/BudgetRadar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -272,16 +273,15 @@ const JolandaView = () => {
             </button>
           </div>
           
-          {/* Budget cards */}
-          <div className="grid md:grid-cols-3 gap-4">
+          {/* Budget Radar — Visual circular gauges */}
+          <div className="flex justify-center gap-8 py-2">
             {locationBudgets.map(loc => (
-              <BudgetCard
+              <BudgetRadar
                 key={loc.location}
                 location={loc.location}
                 spent={loc.spent}
                 total={loc.total}
                 trend={loc.trend}
-                committed={Math.round(loc.total * 0.15)}
               />
             ))}
           </div>

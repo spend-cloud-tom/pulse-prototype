@@ -6,7 +6,7 @@ export const users: UserProfile[] = [
     name: 'Anouk van Dijk',
     role: 'Care Worker',
     focus: 'Get things done',
-    avatar: '/avatars/anouk.jpg',
+    avatar: '/avatars/anouk.jpg',  // Image 1: nurse in blue Healthcare Service uniform
     bannerMessage: "We've handled everything for you today. Just <strong>1 thing</strong> needs your attention.",
   },
   {
@@ -14,7 +14,7 @@ export const users: UserProfile[] = [
     name: 'Rohan Patel',
     role: 'Finance Admin',
     focus: 'Control risk',
-    avatar: '/avatars/rohan.jpg',
+    avatar: '/avatars/rohan.jpg',  // Image 3: man at desk with monitors
     bannerMessage: 'AI processed <strong>42 pulses</strong> today. <strong>6</strong> require financial review.',
   },
   {
@@ -22,7 +22,7 @@ export const users: UserProfile[] = [
     name: 'Sarah de Vries',
     role: 'Procurement Officer',
     focus: 'Supply continuity',
-    avatar: '/avatars/sarah.jpg',
+    avatar: '/avatars/sarah.jpg',  // Image 4: woman at laptop with headset
     bannerMessage: '<strong>4 pulses</strong> awaiting your action. AI matched suppliers for 2.',
   },
   {
@@ -30,7 +30,7 @@ export const users: UserProfile[] = [
     name: 'Jolanda Bakker',
     role: 'Team Lead',
     focus: 'Approvals',
-    avatar: '/avatars/jolanda.jpg',
+    avatar: '/avatars/jolanda.jpg',  // Image 2: woman in blazer with tablet
     bannerMessage: '<strong>3 team pulses</strong> need your approval.',
   },
 ];

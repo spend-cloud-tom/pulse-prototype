@@ -483,11 +483,7 @@ const AnoukView = () => {
                 className="mb-2 -mx-4 px-4"
               >
                 <div 
-                  className="flex gap-3 overflow-x-auto pb-1 pr-8"
-                  style={{ 
-                    scrollbarWidth: 'none', 
-                    msOverflowStyle: 'none',
-                  }}
+                  className="flex gap-3 justify-center pb-1"
                 >
                   {quickTapTemplates.map((item) => {
                     const Icon = item.icon;

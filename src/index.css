@@ -340,3 +340,47 @@
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WOW FEATURES — Professional Polish Animations
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Urgency breathing glow — controlled seriousness, not alarmist */
+@keyframes urgency-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--signal-red) / 0); }
+  50% { box-shadow: 0 0 16px 4px hsl(var(--signal-red) / 0.25); }
+}
+
+.urgency-glow {
+  animation: urgency-breathe 2.5s ease-in-out infinite;
+}
+
+/* Voice waveform bar animation */
+@keyframes waveform-pulse {
+  0%, 100% { transform: scaleY(0.3); }
+  50% { transform: scaleY(1); }
+}
+
+.waveform-bar {
+  animation: waveform-pulse 0.6s ease-in-out infinite;
+}
+
+/* Progress step pulse for current step */
+@keyframes step-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(var(--hero-teal) / 0); }
+  50% { box-shadow: 0 0 8px 2px hsl(var(--hero-teal) / 0.4); }
+}
+
+.step-current-pulse {
+  animation: step-pulse 2s ease-in-out infinite;
+}
+
+/* Budget radar heat glow when approaching threshold */
+@keyframes budget-heat {
+  0%, 100% { filter: drop-shadow(0 0 0 hsl(var(--signal-amber) / 0)); }
+  50% { filter: drop-shadow(0 0 8px hsl(var(--signal-amber) / 0.5)); }
+}
+
+.budget-heat-glow {
+  animation: budget-heat 2s ease-in-out infinite;
+}

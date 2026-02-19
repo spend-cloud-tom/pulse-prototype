@@ -1,237 +1,246 @@
 # Pulse Demo Flow — HackaTom 2026
 
-> **One clear idea**: Pulse is the "one-door policy" for healthcare operations — AI handles the routine so care workers can focus on care.
+> **Core insight**: Pulse is an **operational signal orchestration layer** — AI handles 85% automatically so humans only touch what requires judgment.
 
 ---
 
 ## 🎯 The Story in One Sentence
 
-*"From a care worker snapping a receipt to a finance admin reconciling invoices, Pulse orchestrates the entire flow with AI — eliminating paperwork, reducing cognitive load, and giving everyone clarity on what needs attention."*
+*"In healthcare operations, 85% of signals are routine. Pulse orchestrates them automatically — surfacing only the 15% that require human judgment, while giving leadership real-time visibility across locations."*
 
 ---
 
-## 👥 Personas (Switch via floating button, top-right)
+## 🧠 What is a Pulse?
 
-| Persona | Role | Focus | Demo Highlight |
-|---------|------|-------|----------------|
-| **Anouk** | Care Worker | Get things done | Voice/photo input, auto-classification |
-| **Jolanda** | Team Lead | Approvals | Budget oversight, approve/reject decisions |
-| **Rohan** | Finance Admin | Control risk | Three-way match, exception triage |
-| **Sarah** | Procurement | Supply continuity | PO generation, vendor matching |
+**A Pulse is an operational event that requires tracking, decision, or awareness.**
 
----
-
-## 🎬 Demo Script (5-7 minutes)
-
-### ACT 1: The Care Worker Experience (Anouk) — 90 seconds
-
-**Setup**: *"Meet Anouk. She's a care worker at Zonneweide. She just bought cleaning supplies for a resident and needs to log it."*
-
-#### Steps:
-1. **Show the clean mobile-first interface**
-   - Point out: No complex forms, just a simple input bar at the bottom
-   - "One door for everything — voice, camera, or text"
-
-2. **Tap a Quick-Tap pill** (e.g., "Order supplies")
-   - Template pre-fills: "I need to order: "
-   - Type: "blue cleaning wipes for Ward B"
-   - **Hit send**
-
-3. **Watch AI classification toast**
-   - First toast: "📝 New request created — AI is classifying it now"
-   - Second toast (2s later): "🤖 AI classified your request — Category: Supplies · Routed to: Procurement · Budget: Wlz"
-
-4. **Tap the 🤖 AI button** (bottom right of a card)
-   - AI Copilot overlay opens
-   - Walk through the 3-step conversation:
-     - "Hey Anouk! I've matched it to Ward B's hygiene budget"
-     - "GL code auto-filled: 4210 — under €50 threshold"
-     - "Done! ✅ Procurement will handle ordering"
-
-5. **Show "Needs Input" card** (if one exists)
-   - Tap "Provide info" → Card resolves with toast
-   - *"Anouk doesn't chase paperwork — the system tells her exactly what's blocking"*
-
-**Key message**: *"Anouk spent 30 seconds. No forms, no GL codes to memorize, no chasing approvals."*
+| Pulse Type | Example | Who Sees It |
+|------------|---------|-------------|
+| **Decision Pulse** | €420 bedding from non-contracted supplier | Jolanda (approval needed) |
+| **Exception Pulse** | Invoice variance +2.5% above PO | Rohan (reconciliation needed) |
+| **Informational Pulse** | Order shipped, arriving tomorrow | Sarah (awareness only) |
+| **Auto-Resolved Pulse** | €34 cleaning supplies, auto-approved | Nobody (AI handled it) |
 
 ---
 
-### ACT 2: The Team Lead View (Jolanda) — 90 seconds
+## 🎬 Demo Script (5 minutes) — Orchestration Focus
 
-**Transition**: *"Now let's see what Jolanda, the team lead, sees. She's responsible for budget oversight and approvals."*
+### OPENING: The Problem (30 seconds)
 
-#### Steps:
-1. **Switch persona** (floating switcher → Jolanda)
-   - Page scrolls to top, shows budget dashboard
+*"Healthcare organizations drown in operational signals. Purchase requests, maintenance tickets, compliance flags, shift handovers — all competing for attention.*
 
-2. **Point out the budget cards**
-   - Three locations with spend vs budget
-   - Trend indicators (+8%, -3%, +12%)
-   - *"At a glance, she knows Het Anker is running hot"*
+*The result? Care workers chase paperwork. Managers approve blindly. Finance reconciles manually. Everyone asks: 'What's the status?'*
 
-3. **Show the decision queue**
-   - Cards with AI risk classification (flagged items highlighted)
-   - Amount, submitter, AI reasoning visible
-
-4. **Approve an item**
-   - Tap ✅ Approve on a medical gloves request
-   - Toast: "✅ Approved — sent to procurement"
-   - Follow-up toast: "📦 Order initiated — Sarah has started processing"
-
-5. **Tap "AI Insights" button**
-   - Walk through Jolanda's AI script:
-     - "Ward C spending 34% above average"
-     - "Recommend: approve gloves, flag bedding for quote"
-     - AI takes action, moves items appropriately
-
-**Key message**: *"Jolanda makes decisions, not paperwork. AI surfaces what matters and explains why."*
+*Pulse changes this. Watch."*
 
 ---
 
-### ACT 3: The Finance View (Rohan) — 90 seconds
+### ACT 1: The Orchestration Dashboard (60 seconds)
 
-**Transition**: *"Behind the scenes, Rohan in finance needs to reconcile everything. Let's see his world."*
+**Start on Jolanda's view** (Team Lead)
 
-#### Steps:
-1. **Switch persona** (→ Rohan)
-   - Shows exception-based triage view
+#### What to show:
 
-2. **Point out the tabs**
-   - Exceptions (6) | Approvals (3) | Monitoring
-   - *"Rohan only sees what needs attention — not every transaction"*
+1. **The Orchestration Summary** (top of screen)
+   - "AI handled **94%** automatically today"
+   - "**3 decisions** need your judgment"
+   - "**45 minutes** saved vs manual processing"
+   
+   *"This is the first thing Jolanda sees. Not a list of everything — just what needs her."*
 
-3. **Show a three-way match exception**
-   - Invoice vs PO variance highlighted
-   - AI reasoning: "MedSupply variance within historical pattern"
+2. **Point to the auto-resolved section**
+   - Collapsed by default
+   - "12 routine purchases, 8 GL codes, 6 invoices — all handled"
+   - *"She doesn't need to see these. AI matched patterns, applied rules, done."*
 
-4. **Reconcile an item**
-   - Tap "Reconcile" button
-   - Toast confirms resolution
-
-5. **Use filters**
-   - Click Filters button
-   - Filter by Risk Level: High
-   - *"He can slice and dice by risk, amount, or date"*
-
-6. **Tap "AI triage" button**
-   - Walk through Rohan's AI script:
-     - "12 auto-matched, 5 need attention"
-     - "Auto-resolve low-risk" → clears 3 items
-     - "Total exposure reduced from €1,240 to €407"
-
-**Key message**: *"Rohan's job is exception handling, not data entry. AI did the matching; he validates the edge cases."*
+3. **Show the 3 decision cards**
+   - Each has AI reasoning inline (not hidden in a modal)
+   - Risk level visible
+   - One has urgency glow (breathing animation)
+   
+   *"These three need human judgment. AI explains why."*
 
 ---
 
-### ACT 4: The Procurement View (Sarah) — 60 seconds
+### ACT 2: The Decision Moment (60 seconds)
 
-**Transition**: *"Finally, Sarah in procurement turns approvals into orders."*
+**Stay on Jolanda's view**
 
-#### Steps:
-1. **Switch persona** (→ Sarah)
-   - Shows order pipeline and vendor suggestions
+#### What to show:
 
-2. **Point out active orders**
-   - Shipped, Processing, Delivered status
-   - ETA and tracking visible
+1. **Expand one decision card**
+   - €420 bedding from non-contracted supplier
+   - AI insight: "34% above Ward C average. Similar spike Oct 2024 was seasonal."
+   - *"AI doesn't just flag — it gives context."*
 
-3. **Show AI vendor suggestion**
-   - "MedSupply NL — 96% match, save €12.40"
-   - Tap "Assign" → Toast confirms
+2. **Approve it**
+   - ✅ Success animation (checkmark snap)
+   - Toast: "Approved — routed to procurement"
+   - Card slides out
+   
+   *"One tap. Full audit trail. Sarah already sees it."*
 
-4. **Show auto-PO candidates**
-   - Items within threshold ready for one-click PO
-   - *"Recurring items auto-generate — Sarah just validates"*
-
-5. **Tap AI button** for Sarah's script
-   - "2 auto-POs ready, 1 order shipped"
-   - "Generate both POs" → Done!
-
-**Key message**: *"Sarah's not typing POs — she's managing exceptions and vendor relationships."*
+3. **Show the budget radar** (if time)
+   - Three locations side-by-side
+   - Het Anker glowing amber (approaching threshold)
+   - *"Cross-location visibility. No spreadsheet needed."*
 
 ---
 
-### CLOSING: The Big Picture — 30 seconds
+### ACT 3: The Exception Handler (60 seconds)
 
-**Switch back to Anouk** (or show landing page)
+**Switch to Rohan** (Finance)
+
+#### What to show:
+
+1. **The exception-only view**
+   - "Rohan doesn't see 42 transactions. He sees 5 exceptions."
+   - Tabs: Exceptions (5) | Monitoring
+   
+   *"AI did the three-way match on 37 invoices. These 5 need him."*
+
+2. **Show one variance exception**
+   - MedSupply invoice +2.5% over PO
+   - AI: "Within vendor's historical variance (avg 2.2%)"
+   - *"AI says: probably fine. Rohan confirms."*
+
+3. **Reconcile with one click**
+   - Success animation
+   - "Posted to GL. Audit trail created."
+
+4. **Show the pattern detection alert**
+   - "Shadow spend alert: €1,240 non-contracted this month (+23%)"
+   - *"AI doesn't just process — it detects patterns humans miss."*
+
+---
+
+### ACT 4: The Care Worker Reality (60 seconds)
+
+**Switch to Anouk** (Care Worker)
+
+#### What to show:
+
+1. **The calm interface**
+   - "All sorted" or "1 thing needs you"
+   - No inbox. No queue. Just clarity.
+   
+   *"Anouk doesn't manage a system. She does her job."*
+
+2. **Show the one-door input**
+   - Voice waveform when tapping mic
+   - Quick-tap pills for common actions
+   - *"30 seconds to log anything. Voice, photo, or text."*
+
+3. **Show a "Needs Input" card** (if exists)
+   - "Your pharmacy receipt needs a GL code"
+   - Tap "Provide info" → resolved
+   - *"The system tells her exactly what's blocking. She fixes it. Done."*
+
+4. **Show the progress tracker**
+   - Animated checkmarks snapping into place
+   - "Her request is already with procurement. She didn't chase anyone."
+
+---
+
+### CLOSING: The System-Level Outcome (30 seconds)
+
+**Show the Orchestration Summary again**
 
 *"What you just saw:*
-- *A care worker logged a purchase in 30 seconds*
-- *AI classified it, routed it, and filled in the GL code*
-- *The team lead approved it with full context*
-- *Finance reconciled it automatically*
-- *Procurement generated the PO*
 
-*All without a single form, a single email chase, or a single 'what's the status?' question.*
+- ***94% of signals handled automatically*** — no human touched them
+- ***3 decisions made*** — with full AI context
+- ***45 minutes saved*** — per person, per day
+- ***Zero 'what's the status?' questions*** — everyone has visibility
 
-*This is Pulse — the one-door policy for healthcare operations."*
+*This isn't a purchase tool. This is operational orchestration.*
+
+*Pulse handles the routine. Humans handle the judgment.*
+
+*That's how you give care workers back to care."*
+
+---
+
+## 🎯 Key Messages to Land
+
+| If they remember one thing... | Say this |
+|-------------------------------|----------|
+| **For care workers** | "30 seconds to log anything. No forms. No chasing." |
+| **For managers** | "See only what needs your decision. AI explains why." |
+| **For finance** | "Exception handling, not data entry. AI did the matching." |
+| **For leadership** | "Cross-location visibility. Pattern detection. Real-time." |
+
+---
+
+## ⚠️ What NOT to Do
+
+1. **Don't demo all 4 personas sequentially** — It becomes a feature parade
+2. **Don't open the AI chat overlay repeatedly** — It feels theatrical
+3. **Don't show Sarah's procurement view** — It's standard SaaS, not differentiating
+4. **Don't explain the workflow linearly** — Show orchestration, not steps
+
+---
+
+## 🔥 If Emmanuel Asks...
+
+### "What exactly is a Pulse?"
+*"An operational event that requires tracking, decision, or awareness. Could be a purchase, a maintenance ticket, a compliance flag. The system treats them uniformly — AI classifies, routes, and resolves what it can. Humans handle what requires judgment."*
+
+### "How is this different from [competitor]?"
+*"Most tools digitize the workflow. We orchestrate it. 85% never reaches a human. The 15% that does comes with AI context. That's the difference between a form system and an operational layer."*
+
+### "What about trust? How do people trust the AI?"
+*"AI doesn't make decisions — it handles patterns. Every auto-resolution has a confidence score and audit trail. Humans set the thresholds. AI operates within them. Trust builds from transparency, not magic."*
+
+### "How long to implement?"
+*"4-6 weeks for first location. We train on your patterns, set your thresholds, integrate with your ERP. Care workers are productive day one — it's simpler than what they have now."*
 
 ---
 
 ## ✅ Demo Checklist
 
-### Before the Demo
-- [ ] Open app at landing page (pulse-prototype.netlify.app or localhost)
-- [ ] Click "See how it works" to enter dashboard
-- [ ] Ensure persona switcher shows all 4 avatars
-- [ ] Have some signals in the database (or use demo data)
+### Before
+- [ ] Start on Jolanda's view (not Anouk)
+- [ ] Ensure Orchestration Summary shows 94% / 3 decisions
+- [ ] Have one urgent item with glow animation
+- [ ] Have pattern detection alert visible in Rohan's view
 
-### During the Demo
-- [ ] Use persona switcher (top-right) to switch views
-- [ ] Let toasts complete before moving on
-- [ ] Click AI buttons to show copilot conversations
-- [ ] Approve/reconcile items to show state changes
+### During
+- [ ] Lead with the orchestration numbers
+- [ ] Show auto-resolved section collapsed
+- [ ] Approve one item with success animation
+- [ ] Switch to Rohan for exceptions only
+- [ ] End on Anouk for "calm" feeling
+- [ ] Close with system-level outcome
 
-### Key Interactions That Work
-| Action | Location | Result |
-|--------|----------|--------|
-| Quick-Tap pill | Anouk input bar | Pre-fills template |
-| Send message | Anouk input bar | Creates pulse + AI classification |
-| Voice button | Anouk input bar | Simulates voice → fills input |
-| Camera button | Anouk input bar | Toast (simulated) |
-| Provide info | Anouk needs-input card | Resolves card |
-| Ask AI | Any view | Opens AI Copilot overlay |
-| Approve/Reject | Jolanda decision cards | Moves item, shows toast chain |
-| Reconcile | Rohan exception list | Resolves match |
-| Filter | Rohan view | Filters list by risk/amount/date |
-| Assign supplier | Sarah queue | Confirms assignment |
+### Timing
+- Opening: 30s
+- Jolanda (orchestration + decision): 2 min
+- Rohan (exceptions + patterns): 1 min
+- Anouk (calm + one-door): 1 min
+- Closing: 30s
+- **Total: 5 minutes** (leaves buffer for questions)
 
 ---
 
-## 🎤 Talking Points
+## 💡 The Real WOW
 
-### If asked about AI:
-*"The AI isn't making decisions — it's doing the grunt work. Classification, matching, routing. Humans stay in control of approvals and exceptions."*
+The wow isn't animation.
 
-### If asked about integration:
-*"Pulse sits on top of your existing ERP. It's the friendly front door that handles intake and orchestration, then syncs back to your systems of record."*
+It's when they realize:
 
-### If asked about security:
-*"All data stays within your tenant. AI processing happens in-region. We're SOC2 compliant and working toward NEN 7510 for healthcare."*
+> "Wait — 94% never needed a human?"
 
-### If asked about implementation:
-*"Typical rollout is 4-6 weeks. We start with one location, train the AI on your patterns, then expand. Care workers are productive on day one."*
+> "The AI explains *why* it flagged this?"
 
----
+> "She logged that in 30 seconds?"
 
-## 🚨 Known Limitations (Don't Demo These)
+> "He only sees 5 exceptions out of 42?"
 
-1. **Voice input** — Simulated (fills with preset text)
-2. **Camera** — Toast only (no actual photo capture)
-3. **Real AI classification** — Uses Supabase edge function (may have latency)
-4. **Notifications** — Static demo data per role
-5. **Search** — Works but limited to demo signals
+That's category-level differentiation.
 
 ---
 
-## 💡 Pro Tips
+*Operational calm. AI intelligence. Human judgment where it matters.*
 
-1. **Start with Anouk** — Most relatable, shows the "one door" concept
-2. **Don't rush the AI copilot** — Let each step land
-3. **Use the persona switcher dramatically** — "Now let's see what happens on the other side..."
-4. **End with the loop** — Show how Anouk's request flows through all 4 personas
-5. **Keep it to 5-7 minutes** — Leave time for questions
-
----
-
-*Good luck! 🚀*
+*That's Pulse.*

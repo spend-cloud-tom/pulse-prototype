@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRole } from '@/context/RoleContext';
 import MaintenancePanel from '@/components/MaintenancePanel';
+import SuccessCheckmark from '@/components/SuccessCheckmark';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -156,6 +157,7 @@ const SarahView = () => {
   const [assignedIds, setAssignedIds] = useState<Set<string>>(new Set());
   const [generatedPOs, setGeneratedPOs] = useState<Set<string>>(new Set());
   const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>({});
+  const [showSuccessCheck, setShowSuccessCheck] = useState(false);
 
   // Filter signals, excluding assigned ones
   const actionPulses = signals.filter(
@@ -168,8 +170,12 @@ const SarahView = () => {
   const readyAutoPOs = autoPOCandidates.filter(c => c.ready && !generatedPOs.has(c.item));
   const pendingAutoPOs = autoPOCandidates.filter(c => !c.ready);
   
-  // Handle assigning a supplier to a pulse
+  // Handle assigning a supplier to a pulse with success animation
   const handleAssignSupplier = (signalId: string, description: string, vendor: string) => {
+    // Show success checkmark animation
+    setShowSuccessCheck(true);
+    setTimeout(() => setShowSuccessCheck(false), 800);
+    
     setAssignedIds(prev => new Set([...prev, signalId]));
     toast({
       title: "✅ Supplier assigned — PO created",
@@ -485,6 +491,11 @@ const SarahView = () => {
       </div>
 
       <AICopilotOverlay open={copilotOpen} onClose={() => setCopilotOpen(false)} role="sarah" />
+      
+      {/* Success checkmark animation overlay */}
+      <AnimatePresence>
+        <SuccessCheckmark show={showSuccessCheck} />
+      </AnimatePresence>
     </div>
   );
 };

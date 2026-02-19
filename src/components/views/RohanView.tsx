@@ -5,6 +5,7 @@ import { useRole } from '@/context/RoleContext';
 import { classifyAndGroup, ClassifiedSignal } from '@/lib/decisionTypes';
 import PulseDetailDrawer from '@/components/PulseDetailDrawer';
 import PulseEditDrawer from '@/components/PulseEditDrawer';
+import SuccessCheckmark from '@/components/SuccessCheckmark';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
@@ -223,6 +224,7 @@ const RohanView = () => {
   const [reconciledIds, setReconciledIds] = useState<Set<string>>(new Set());
   const [appliedFixes, setAppliedFixes] = useState<Set<string>>(new Set());
   const [resolvedLowRisk, setResolvedLowRisk] = useState(false);
+  const [showSuccessCheck, setShowSuccessCheck] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     riskLevel: 'all',
     amountRange: 'all',
@@ -236,8 +238,12 @@ const RohanView = () => {
   const { approvals, exceptions, alerts } = useMemo(() => classifyAndGroup(actionPulses), [actionPulses]);
   const allItems = [...exceptions, ...approvals, ...alerts];
   
-  // Handle reconciling a 3-way match
+  // Handle reconciling a 3-way match with success animation
   const handleReconcile = (match: typeof threeWayMatches[0]) => {
+    // Show success checkmark animation
+    setShowSuccessCheck(true);
+    setTimeout(() => setShowSuccessCheck(false), 800);
+    
     setReconciledIds(prev => new Set([...prev, match.id]));
     toast({
       title: "✅ Reconciled — posting to GL",
@@ -730,6 +736,11 @@ const RohanView = () => {
       
       {/* AI Co-pilot */}
       <AICopilotOverlay open={copilotOpen} onClose={() => setCopilotOpen(false)} role="rohan" />
+      
+      {/* Success checkmark animation overlay */}
+      <AnimatePresence>
+        <SuccessCheckmark show={showSuccessCheck} />
+      </AnimatePresence>
     </div>
   );
 };

@@ -23,6 +23,7 @@ const quickTapTemplates = [
    - Reports normalcy quietly (no alerts, just visual state)
    - De-emphasizes inactive steps (softer colors, not tiny text)
    - Uses weight + icons for accessibility (not color alone)
+   - Animated checkmarks snap into place with satisfying delays
    ───────────────────────────────────────────────────────────────────────────── */
 const ProgressTracker = ({ status }: { status: string }) => {
   const steps = [
@@ -55,25 +56,63 @@ const ProgressTracker = ({ status }: { status: string }) => {
         
         return (
           <div key={step.key} className="flex items-center flex-1">
-            <div 
-              className={`flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[11px] transition-all whitespace-nowrap ${
+            {/* Step marker with animated checkmark */}
+            <motion.div 
+              initial={false}
+              animate={{
+                scale: isCurrent ? 1 : isComplete ? 1 : 0.9,
+                opacity: isFuture ? 0.5 : 1,
+              }}
+              transition={{ 
+                type: 'spring', 
+                stiffness: 500, 
+                damping: 30,
+                delay: isComplete ? i * 0.1 : 0,
+              }}
+              className={`flex items-center justify-center gap-1 px-2 py-0.5 rounded-full text-[11px] whitespace-nowrap ${
                 isComplete 
                   ? 'text-emerald-600' 
                   : isCurrent 
-                    ? 'bg-slate-800 text-white font-semibold' 
+                    ? 'bg-slate-800 text-white font-semibold step-current-pulse' 
                     : 'text-slate-300'
               }`}
               aria-current={isCurrent ? 'step' : undefined}
             >
-              <Icon className={`h-3 w-3 shrink-0 ${isCurrent ? '' : isComplete ? '' : 'opacity-50'}`} />
+              {isComplete ? (
+                <motion.div
+                  initial={{ scale: 0, rotate: -45 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ 
+                    type: 'spring', 
+                    stiffness: 500, 
+                    damping: 25,
+                    delay: i * 0.15,
+                  }}
+                >
+                  <CheckCircle2 className="h-3 w-3 shrink-0" />
+                </motion.div>
+              ) : (
+                <Icon className={`h-3 w-3 shrink-0 ${isFuture ? 'opacity-50' : ''}`} />
+              )}
               <span className={`hidden sm:inline ${isFuture ? 'font-normal' : isComplete ? 'font-medium' : 'font-semibold'}`}>
                 {step.label}
               </span>
-            </div>
+            </motion.div>
+            
+            {/* Animated connecting line */}
             {i < steps.length - 1 && (
-              <div className={`flex-1 h-px mx-1 ${
-                isComplete ? 'bg-emerald-400' : 'bg-slate-200'
-              }`} />
+              <div className="flex-1 h-px mx-1 bg-slate-200 overflow-hidden">
+                <motion.div 
+                  className="h-full bg-emerald-400"
+                  initial={{ width: '0%' }}
+                  animate={{ width: isComplete ? '100%' : '0%' }}
+                  transition={{ 
+                    duration: 0.4, 
+                    delay: i * 0.15,
+                    ease: [0.4, 0, 0.2, 1],
+                  }}
+                />
+              </div>
             )}
           </div>
         );

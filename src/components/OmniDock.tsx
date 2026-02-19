@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Camera, Send, ShoppingCart, Wrench, Receipt, HelpCircle, Package } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import VoiceWaveform from '@/components/VoiceWaveform';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    OMNI-DOCK — The "One Door" Persistent Input with Quick-Tap Gallery
@@ -199,23 +200,27 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
             "
           />
           
-          {/* Voice Button — Brand teal with soft hover state */}
+          {/* Voice Button — Brand teal with waveform when listening */}
           <button
             onClick={handleVoice}
             disabled={isListening}
             className={`
-              h-11 w-11 rounded-xl 
+              h-11 rounded-xl 
               flex items-center justify-center 
               transition-all duration-150 
               shrink-0
               ${isListening 
-                ? 'bg-teal-500 text-white animate-pulse' 
-                : 'bg-teal-50 text-teal-600 hover:bg-teal-100 active:scale-95'
+                ? 'bg-teal-500 text-white px-4 min-w-[80px]' 
+                : 'bg-teal-50 text-teal-600 hover:bg-teal-100 active:scale-95 w-11'
               }
             `}
             aria-label="Voice input"
           >
-            <Mic className="h-5 w-5" />
+            {isListening ? (
+              <VoiceWaveform isActive={isListening} />
+            ) : (
+              <Mic className="h-5 w-5" />
+            )}
           </button>
           
           {/* Camera Button — Brand coral with soft hover state */}

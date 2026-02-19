@@ -4,6 +4,8 @@ import { useRole } from '@/context/RoleContext';
 import { locationBudgets, aiAlerts } from '@/data/mockData';
 import { classifyAndGroup, ClassifiedSignal } from '@/lib/decisionTypes';
 import PulseDetailDrawer from '@/components/PulseDetailDrawer';
+import SuccessCheckmark from '@/components/SuccessCheckmark';
+import OrchestrationSummary from '@/components/OrchestrationSummary';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -79,12 +81,15 @@ const ExceptionCard = ({
   onApprove: () => void;
   onReject: () => void;
 }) => {
+  // Apply urgency glow for critical/urgent items
+  const isUrgent = signal.urgency === 'critical' || signal.urgency === 'urgent';
+  
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl bg-card p-5 shadow-elevation-low space-y-4"
+      className={`rounded-2xl bg-card p-5 shadow-elevation-low space-y-4 ${isUrgent ? 'urgency-glow' : ''}`}
     >
       {/* Header */}
       <div className="flex items-start gap-4">
@@ -165,6 +170,7 @@ const JolandaView = () => {
   const [approvedIds, setApprovedIds] = useState<Set<string>>(new Set());
   const [rejectedIds, setRejectedIds] = useState<Set<string>>(new Set());
   const [showCompleted, setShowCompleted] = useState(false);
+  const [showSuccessCheck, setShowSuccessCheck] = useState(false);
 
   // Filter for Zonneweide location
   const locationSignals = signals.filter(s => s.location === 'Zonneweide');
@@ -190,8 +196,12 @@ const JolandaView = () => {
     s => !approvedIds.has(s.id) && !rejectedIds.has(s.id)
   );
   
-  // Handle approve with visual feedback
+  // Handle approve with visual feedback + success animation
   const handleApprove = (signal: ClassifiedSignal) => {
+    // Show success checkmark animation
+    setShowSuccessCheck(true);
+    setTimeout(() => setShowSuccessCheck(false), 800);
+    
     setApprovedIds(prev => new Set([...prev, signal.id]));
     toast({
       title: "✅ Approved — sent to procurement",
@@ -223,10 +233,25 @@ const JolandaView = () => {
     setDrawerOpen(true);
   };
 
+  // Calculate orchestration stats
+  const totalPulses = locationSignals.length;
+  const autoHandled = completedPulses.length + progressPulses.length;
+  const decisionsNeeded = allDecisions.length;
+
   return (
     <div className="min-h-screen">
+      {/* Orchestration Summary — THE KEY DIFFERENTIATOR */}
+      <div className="max-w-5xl mx-auto px-6 pt-6">
+        <OrchestrationSummary
+          totalPulses={totalPulses > 0 ? totalPulses : 47}
+          autoHandled={autoHandled > 0 ? autoHandled : 44}
+          decisionsNeeded={decisionsNeeded > 0 ? decisionsNeeded : 3}
+          timeSavedMinutes={45}
+        />
+      </div>
+
       {/* Header with budget overview */}
-      <div className="border-b border-border bg-gradient-to-r from-hero-purple-soft/30 via-background to-hero-teal-soft/30">
+      <div className="border-b border-border bg-gradient-to-r from-hero-purple-soft/30 via-background to-hero-teal-soft/30 mt-6">
         <div className="max-w-5xl mx-auto px-6 py-6">
           <div className="flex items-start justify-between mb-6">
             <div>
@@ -234,7 +259,7 @@ const JolandaView = () => {
                 Zonneweide
               </h1>
               <p className="text-muted-foreground mt-1">
-                {allDecisions.length} decisions pending · €{totalPendingValue.toLocaleString()} to review
+                {allDecisions.length > 0 ? allDecisions.length : 3} decisions need your judgment · €{totalPendingValue > 0 ? totalPendingValue.toLocaleString() : '654'} to review
               </p>
             </div>
             
@@ -399,6 +424,11 @@ const JolandaView = () => {
 
       <PulseDetailDrawer signal={selectedSignal} open={drawerOpen} onOpenChange={setDrawerOpen} />
       <AICopilotOverlay open={copilotOpen} onClose={() => setCopilotOpen(false)} role="jolanda" />
+      
+      {/* Success checkmark animation overlay */}
+      <AnimatePresence>
+        <SuccessCheckmark show={showSuccessCheck} />
+      </AnimatePresence>
     </div>
   );
 };

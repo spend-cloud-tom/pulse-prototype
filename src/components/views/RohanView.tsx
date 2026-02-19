@@ -16,6 +16,9 @@ import {
 } from 'lucide-react';
 import { Signal } from '@/data/types';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
+import AnomalyHeatmap from '@/components/AnomalyHeatmap';
+import OrchestrationFlow from '@/components/OrchestrationFlow';
+import AutoResolveStack from '@/components/AutoResolveStack';
 
 /* ─── Mock Data ─── */
 const threeWayMatches = [
@@ -719,8 +722,16 @@ const RohanView = () => {
       </div>
 
       {/* Main content */}
-      <div className="max-w-5xl mx-auto px-6 py-6">
-        <div className="space-y-4">
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="grid lg:grid-cols-4 gap-6">
+          {/* Left sidebar — Heatmap + Auto-resolved */}
+          <div className="lg:col-span-1 space-y-4">
+            <AnomalyHeatmap onLocationClick={(loc) => console.log('Navigate to', loc)} />
+            <AutoResolveStack autoDemo={true} />
+          </div>
+
+          {/* Main feed area */}
+          <div className="lg:col-span-3 space-y-4">
             {/* Sort & Filter controls */}
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
@@ -1047,6 +1058,7 @@ const RohanView = () => {
                 </div>
               </div>
             )}
+          </div>
         </div>
       </div>
 

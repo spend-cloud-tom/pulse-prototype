@@ -15,6 +15,9 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
+import OrchestrationFlow from '@/components/OrchestrationFlow';
+import AIExplainabilityPanel from '@/components/AIExplainabilityPanel';
+import AutoResolveStack from '@/components/AutoResolveStack';
 
 /* ─── Budget Card with Visual Progress ─── */
 const BudgetCard = ({ location, spent, total, trend, committed }: {
@@ -242,12 +245,19 @@ const JolandaView = () => {
   return (
     <div className="min-h-screen">
       {/* Orchestration Summary — THE KEY DIFFERENTIATOR */}
-      <div className="max-w-5xl mx-auto px-6 pt-6">
+      <div className="max-w-5xl mx-auto px-6 pt-6 space-y-4">
         <OrchestrationSummary
           totalPulses={totalPulses > 0 ? totalPulses : 47}
           autoHandled={autoHandled > 0 ? autoHandled : 44}
           decisionsNeeded={decisionsNeeded > 0 ? decisionsNeeded : 3}
           timeSavedMinutes={45}
+        />
+        
+        {/* Orchestration Flow — Animated workflow visualization */}
+        <OrchestrationFlow 
+          activeStage={1} 
+          pulseTitle="Medical supplies request"
+          compact={false}
         />
       </div>
 
@@ -382,13 +392,16 @@ const JolandaView = () => {
           
           {/* Right: AI Alerts sidebar */}
           <div className="space-y-6">
+            {/* Auto-Resolve Stack — Timed demo animation */}
+            <AutoResolveStack autoDemo={true} />
+            
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-hero-purple" />
               <h3 className="font-semibold">AI Alerts</h3>
             </div>
             
             <div className="space-y-3">
-              {aiAlerts.slice(0, 4).map(alert => (
+              {aiAlerts.slice(0, 3).map(alert => (
                 <div 
                   key={alert.id} 
                   className="rounded-xl bg-card p-4 shadow-elevation-low space-y-2"

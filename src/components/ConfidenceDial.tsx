@@ -60,7 +60,7 @@ const ConfidenceDial = ({
               strokeWidth={stroke}
               className="text-muted/20"
             />
-            {/* Progress arc */}
+            {/* Progress arc — animates when in viewport */}
             <motion.circle
               cx={width / 2}
               cy={width / 2}
@@ -70,7 +70,8 @@ const ConfidenceDial = ({
               strokeLinecap="round"
               className={getColor()}
               initial={{ strokeDashoffset: circumference }}
-              animate={{ strokeDashoffset: circumference - progress }}
+              whileInView={{ strokeDashoffset: circumference - progress }}
+              viewport={{ once: true, margin: '-30px' }}
               transition={{ duration: 1, ease: 'easeOut', delay: 0.2 }}
               style={{ strokeDasharray: circumference }}
             />

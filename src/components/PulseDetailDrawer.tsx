@@ -7,6 +7,7 @@ import { signalTypeConfig } from '@/data/mockData';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
 import { cn } from '@/lib/utils';
 import { Check, MessageSquare, X, Clock, User, MapPin, Calendar, FileText, AlertTriangle } from 'lucide-react';
+import AIExplainabilityPanel from '@/components/AIExplainabilityPanel';
 
 interface PulseDetailDrawerProps {
   signal: Signal | ClassifiedSignal | null;
@@ -145,23 +146,13 @@ const PulseDetailDrawer = ({ signal, open, onOpenChange, onAction }: PulseDetail
             </div>
           )}
 
-          {/* AI reasoning — collapsible, secondary */}
-          {signal.ai_reasoning && (
-            <div className="space-y-2">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Why this was generated</p>
-              <div className="rounded-xl border border-border bg-secondary/30 p-3 text-sm text-muted-foreground space-y-2">
-                <p>{signal.ai_reasoning}</p>
-                {signal.confidence !== null && (
-                  <div className="flex items-center gap-1.5 text-xs">
-                    <div className={cn(
-                      'h-1.5 w-1.5 rounded-full',
-                      signal.confidence >= 80 ? 'bg-signal-green' : signal.confidence >= 50 ? 'bg-signal-amber' : 'bg-signal-red'
-                    )} />
-                    AI confidence: {signal.confidence}%
-                  </div>
-                )}
-              </div>
-            </div>
+          {/* AI Explainability Panel — Enterprise-grade transparency */}
+          {(signal.ai_reasoning || signal.confidence) && (
+            <AIExplainabilityPanel
+              confidence={signal.confidence || 75}
+              reasoning={signal.ai_reasoning || "This request has been analyzed by the AI engine for risk assessment and routing optimization."}
+              recommendation={classified.riskLevel === 'high' ? 'review' : classified.riskLevel === 'medium' ? 'review' : 'approve'}
+            />
           )}
 
           {/* Vendor */}

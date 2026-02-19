@@ -99,13 +99,14 @@ const ProgressTracker = ({ status }: { status: string }) => {
               </span>
             </motion.div>
             
-            {/* Animated connecting line */}
+            {/* Animated connecting line — triggers when in viewport */}
             {i < steps.length - 1 && (
               <div className="flex-1 h-px mx-1 bg-slate-200 overflow-hidden">
                 <motion.div 
                   className="h-full bg-emerald-400"
                   initial={{ width: '0%' }}
-                  animate={{ width: isComplete ? '100%' : '0%' }}
+                  whileInView={{ width: isComplete ? '100%' : '0%' }}
+                  viewport={{ once: true }}
                   transition={{ 
                     duration: 0.4, 
                     delay: i * 0.15,

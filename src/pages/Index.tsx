@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Search, Bell, LogOut, ChevronDown, MapPin, Calendar, Filter } from 'lucide-react';
 import OmniDock from '@/components/OmniDock';
+import CommandPalette from '@/components/CommandPalette';
 import { Signal } from '@/data/types';
 import { cn } from '@/lib/utils';
 
@@ -366,6 +367,12 @@ const PulseApp = () => {
       {/* ─── OMNI-DOCK: Persistent "One Door" Input ─── */}
       {/* Available for ALL users except Anouk (who has her own bottom input) */}
       {activeRole !== 'anouk' && <OmniDock />}
+
+      {/* ─── COMMAND PALETTE: ⌘K / Ctrl+K ─── */}
+      <CommandPalette onSelectSignal={(id) => {
+        const signal = signals.find(s => s.id === id);
+        if (signal) handleSelectSignal(signal);
+      }} />
     </div>
   );
 };

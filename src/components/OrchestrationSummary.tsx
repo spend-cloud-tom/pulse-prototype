@@ -45,7 +45,8 @@ const OrchestrationSummary = ({
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-50px' }}
       className="rounded-2xl bg-gradient-to-r from-hero-teal-soft/50 via-background to-hero-purple-soft/50 border border-border/50 p-5"
     >
       <div className="flex items-center gap-2 mb-4">
@@ -64,7 +65,8 @@ const OrchestrationSummary = ({
           <motion.p 
             className="text-3xl font-bold text-signal-green"
             initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
+            whileInView={{ scale: 1 }}
+            viewport={{ once: true }}
             transition={{ type: 'spring', delay: 0.1 }}
           >
             {autoHandledPct}%
@@ -78,7 +80,8 @@ const OrchestrationSummary = ({
           <motion.p 
             className="text-3xl font-bold"
             initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
+            whileInView={{ scale: 1 }}
+            viewport={{ once: true }}
             transition={{ type: 'spring', delay: 0.2 }}
           >
             {decisionsNeeded}
@@ -92,7 +95,8 @@ const OrchestrationSummary = ({
           <motion.p 
             className="text-3xl font-bold text-hero-teal"
             initial={{ scale: 0.5 }}
-            animate={{ scale: 1 }}
+            whileInView={{ scale: 1 }}
+            viewport={{ once: true }}
             transition={{ type: 'spring', delay: 0.3 }}
           >
             {timeSavedMinutes}m

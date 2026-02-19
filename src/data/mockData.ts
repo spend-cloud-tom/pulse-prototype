@@ -6,7 +6,7 @@ export const users: UserProfile[] = [
     name: 'Anouk van Dijk',
     role: 'Care Worker',
     focus: 'Get things done',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+    avatar: '/avatars/anouk.jpg',
     bannerMessage: "We've handled everything for you today. Just <strong>1 thing</strong> needs your attention.",
   },
   {
@@ -14,7 +14,7 @@ export const users: UserProfile[] = [
     name: 'Rohan Patel',
     role: 'Finance Admin',
     focus: 'Control risk',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    avatar: '/avatars/rohan.jpg',
     bannerMessage: 'AI processed <strong>42 pulses</strong> today. <strong>6</strong> require financial review.',
   },
   {
@@ -22,7 +22,7 @@ export const users: UserProfile[] = [
     name: 'Sarah de Vries',
     role: 'Procurement Officer',
     focus: 'Supply continuity',
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    avatar: '/avatars/sarah.jpg',
     bannerMessage: '<strong>4 pulses</strong> awaiting your action. AI matched suppliers for 2.',
   },
   {
@@ -30,7 +30,7 @@ export const users: UserProfile[] = [
     name: 'Jolanda Bakker',
     role: 'Team Lead',
     focus: 'Approvals',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face',
+    avatar: '/avatars/jolanda.jpg',
     bannerMessage: '<strong>3 team pulses</strong> need your approval.',
   },
 ];
@@ -54,10 +54,10 @@ export const autoApprovedBreakdown = {
 };
 
 export const teamSignals = [
-  { name: 'Bram Visser', signal: 'Groceries — needs funding split', status: 'needs-clarity' as const, time: '5h ago', type: 'purchase' as const },
-  { name: 'Lisa de Groot', signal: 'Broken shower — room 14', status: 'pending' as const, time: '1h ago', type: 'maintenance' as const },
-  { name: 'Night shift', signal: 'Maria — medication adjusted, monitor closely', status: 'pending' as const, time: '6:45 AM', type: 'shift-handover' as const },
-  { name: 'Anouk van Dijk', signal: 'Fall incident — Henk, room 8', status: 'pending' as const, time: '45 min ago', type: 'incident' as const },
+  { name: 'Sanjaya Kumar', signal: 'Groceries — needs funding split', status: 'needs-clarity' as const, time: '5h ago', type: 'purchase' as const },
+  { name: 'Tom Bakker', signal: 'Broken shower — room 14', status: 'pending' as const, time: '1h ago', type: 'maintenance' as const },
+  { name: 'Night shift', signal: 'Geert-Jan — medication adjusted, monitor closely', status: 'pending' as const, time: '6:45 AM', type: 'shift-handover' as const },
+  { name: 'Anouk van Dijk', signal: 'Fall incident — Marielle, room 8', status: 'pending' as const, time: '45 min ago', type: 'incident' as const },
 ];
 
 export const locationBudgets = [

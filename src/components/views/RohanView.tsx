@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '@/hooks/use-toast';
 import { useRole } from '@/context/RoleContext';
 import { classifyAndGroup, ClassifiedSignal } from '@/lib/decisionTypes';
-import PulseDetailDrawer from '@/components/PulseDetailDrawer';
 import PulseEditDrawer from '@/components/PulseEditDrawer';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
 import { Button } from '@/components/ui/button';
@@ -12,7 +11,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { 
   Check, MessageSquare, X, FileCheck2, ShieldAlert, Zap, 
   ArrowUpDown, CheckCheck, AlertTriangle, Clock, Pencil,
-  Receipt, Image, Sparkles, Send, ChevronRight, Filter, Calendar, Euro
+  Receipt, Image, Sparkles, Send, ChevronRight, Filter, Calendar, Euro,
+  Brain, ArrowRight, CheckCircle2, DollarSign, Tag, FileText
 } from 'lucide-react';
 import { Signal } from '@/data/types';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
@@ -36,7 +36,87 @@ const missingDataFixes = [
   { pulse: 'Medical supplies', field: 'Receipt', suggestion: 'Reminder sent to Anouk', confidence: 0 },
 ];
 
+type ThreeWayMatch = typeof threeWayMatches[number];
+
 type SortMode = 'amount' | 'risk' | 'deadline' | 'vendor';
+
+/* ─── GL Code Map ─── */
+const glCodeMap: Record<string, string> = {
+  purchase: '4900',
+  maintenance: '4300',
+  incident: '4500',
+  compliance: '4600',
+  event: '4700',
+  resource: '4800',
+  general: '4900',
+  'shift-handover': '4100',
+};
+
+/* ─── Helper Functions ─── */
+const computeVAT = (total: number, rate = 0.21) => {
+  const net = total / (1 + rate);
+  const vat = total - net;
+  return { net, vat, total, rate };
+};
+
+const deriveCostCenter = (location: string, funding: string | null) => {
+  return `${location}-${funding || 'General'}`;
+};
+
+const deriveBudgetPeriod = (dateStr: string) => {
+  try {
+    const d = new Date(dateStr);
+    const q = Math.ceil((d.getMonth() + 1) / 3);
+    return `Q${q} ${d.getFullYear()}`;
+  } catch {
+    return 'Q1 2026';
+  }
+};
+
+interface ComplianceCheck {
+  label: string;
+  description: string;
+  passed: boolean;
+}
+
+const getComplianceChecks = (signal: ClassifiedSignal): ComplianceCheck[] => {
+  const hasFlag = !!signal.flag_reason;
+  const hasHighConfidence = (signal.confidence || 0) >= 70;
+  const hasFunding = !!signal.funding;
+  const hasAttachments = signal.attachments && signal.attachments.length > 0;
+
+  return [
+    {
+      label: 'Policy match',
+      description: hasFlag ? 'Above limit — manual review' : 'Within policy',
+      passed: !hasFlag,
+    },
+    {
+      label: 'Historical match',
+      description: `${signal.confidence || 0}% similarity`,
+      passed: hasHighConfidence,
+    },
+    {
+      label: 'Funding verified',
+      description: signal.funding || 'Unverified',
+      passed: hasFunding,
+    },
+    {
+      label: 'Receipt attached',
+      description: hasAttachments ? 'Attached' : 'Missing',
+      passed: !!hasAttachments,
+    },
+  ];
+};
+
+const formatDrawerDate = (dateStr: string) => {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  } catch {
+    return dateStr;
+  }
+};
 
 /* ─── Confidence Flag Component ─── */
 const ConfidenceFlag = ({ level }: { level: 'high' | 'medium' | 'low' }) => {
@@ -112,93 +192,184 @@ const DetailDrawerContent = ({
   onEdit: () => void;
   onQuery: () => void;
 }) => {
-  const [queryMessage, setQueryMessage] = useState('');
+  const vatInfo = computeVAT(signal.amount || 0);
+  const complianceChecks = getComplianceChecks(signal);
+  const passedCount = complianceChecks.filter(c => c.passed).length;
+  const glCode = glCodeMap[signal.signal_type] || '4900';
+  const confidencePercent = signal.confidence || 0;
+  const confidenceColor = confidencePercent >= 70 ? 'bg-signal-green' : confidencePercent >= 40 ? 'bg-signal-amber' : 'bg-signal-red';
 
   return (
     <div className="flex flex-col h-full">
+      {/* Header: signal number + type + checks badge */}
+      <div className="p-4 pb-3 border-b border-border">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground font-medium">#{signal.signal_number}</span>
+            <Badge variant="outline" className="text-[11px] capitalize">{signal.signal_type}</Badge>
+          </div>
+          <Badge
+            variant="outline"
+            className={`text-[11px] ${passedCount <= 1 ? 'border-signal-red text-signal-red' : passedCount <= 2 ? 'border-signal-amber text-signal-amber' : 'border-signal-green text-signal-green'}`}
+          >
+            {passedCount}/{complianceChecks.length} checks
+          </Badge>
+        </div>
+        <h3 className="text-lg font-bold leading-snug">{signal.title || signal.description}</h3>
+      </div>
+
+      {/* Submitter info */}
+      <div className="px-4 py-3 border-b border-border flex items-center gap-3">
+        <div className="h-9 w-9 rounded-full bg-secondary flex items-center justify-center text-sm font-semibold text-muted-foreground shrink-0">
+          {signal.submitter_name.charAt(0)}
+        </div>
+        <div>
+          <p className="text-sm font-semibold">{signal.submitter_name}</p>
+          <p className="text-xs text-muted-foreground">
+            {signal.location} · {formatDrawerDate(signal.created_at)}
+          </p>
+        </div>
+      </div>
+
+      {/* Description line */}
+      {signal.description && (
+        <div className="px-4 py-3 border-b border-border">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {signal.description} — submitted by {signal.submitter_name}
+          </p>
+        </div>
+      )}
+
+      {/* Financial summary card */}
+      <div className="px-4 py-4 border-b border-border">
+        <div className="rounded-xl bg-secondary/40 p-4">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Total (incl. VAT)</p>
+          <div className="flex items-baseline justify-between">
+            <p className="text-2xl font-bold tabular-nums">€{vatInfo.total.toFixed(2)}</p>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground tabular-nums">Net €{vatInfo.net.toFixed(2)}</p>
+              <p className="text-xs text-muted-foreground tabular-nums">VAT €{vatInfo.vat.toFixed(2)} (21%)</p>
+            </div>
+          </div>
+          {/* Category tags */}
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Badge variant="outline" className="text-[11px] gap-1">
+              <Sparkles className="h-3 w-3" /> {glCode} — {signal.category || 'General'}
+            </Badge>
+            <Badge variant="outline" className="text-[11px] capitalize">{signal.category || 'General'}</Badge>
+            <Badge variant="outline" className="text-[11px]">{signal.category || 'General'} / {signal.signal_type === 'general' ? 'Unclassified' : signal.signal_type}</Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Financial details grid */}
+      <div className="px-4 py-4 border-b border-border">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">Financial Details</p>
+        <div className="border border-border rounded-lg overflow-hidden">
+          <div className="grid grid-cols-2">
+            <div className="p-3 border-b border-r border-border">
+              <p className="text-[11px] text-muted-foreground mb-0.5">Cost Center</p>
+              <p className="text-sm font-semibold">{deriveCostCenter(signal.location, signal.funding)}</p>
+            </div>
+            <div className="p-3 border-b border-border">
+              <p className="text-[11px] text-muted-foreground mb-0.5">Budget Period</p>
+              <p className="text-sm font-semibold">{deriveBudgetPeriod(signal.created_at)}</p>
+            </div>
+            <div className="p-3 border-r border-border">
+              <p className="text-[11px] text-muted-foreground mb-0.5">Payment Terms</p>
+              <p className="text-sm font-semibold">Immediate</p>
+            </div>
+            <div className="p-3">
+              <p className="text-[11px] text-muted-foreground mb-0.5">Funding Stream</p>
+              <p className="text-sm font-semibold">{signal.funding || 'General'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* AI Confidence bar */}
+      <div className="px-4 py-4 border-b border-border">
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
+            <Sparkles className="h-3.5 w-3.5" /> AI Confidence
+          </p>
+          <p className="text-sm font-bold tabular-nums">{confidencePercent}%</p>
+        </div>
+        <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+          <div
+            className={`h-full rounded-full transition-all ${confidenceColor}`}
+            style={{ width: `${confidencePercent}%` }}
+          />
+        </div>
+      </div>
+
+      {/* AI Reasoning */}
+      {signal.ai_reasoning && (
+        <div className="px-4 py-4 border-b border-border">
+          <div className="rounded-xl bg-secondary/40 p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Brain className="h-4 w-4 text-muted-foreground" />
+              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">AI Reasoning</p>
+            </div>
+            <p className="text-sm leading-relaxed text-muted-foreground">{signal.ai_reasoning}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Compliance section */}
+      <div className="px-4 py-4 border-b border-border">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">Compliance</p>
+        <div className="grid grid-cols-2 gap-3">
+          {complianceChecks.map((check, i) => (
+            <div key={i} className="flex items-start gap-2">
+              {check.passed ? (
+                <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0 mt-0.5" />
+              ) : (
+                <AlertTriangle className="h-4 w-4 text-signal-amber shrink-0 mt-0.5" />
+              )}
+              <div>
+                <p className="text-sm font-medium leading-tight">{check.label}</p>
+                <p className="text-xs text-muted-foreground">{check.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Warning banner */}
+      {signal.flag_reason && (
+        <div className="px-4 py-3 border-b border-border">
+          <div className="flex items-center gap-2 rounded-lg bg-signal-amber-bg/50 px-3 py-2.5">
+            <AlertTriangle className="h-4 w-4 text-signal-amber shrink-0" />
+            <p className="text-sm text-signal-amber font-medium">{signal.flag_reason}</p>
+          </div>
+        </div>
+      )}
+
       {/* Receipt image placeholder */}
-      <div className="p-4 border-b border-border">
-        <div className="aspect-[4/3] rounded-xl bg-secondary/50 flex items-center justify-center">
+      <div className="px-4 py-4 border-b border-border">
+        <div className="rounded-xl border-2 border-dashed border-border py-6 flex items-center justify-center">
           <div className="text-center text-muted-foreground">
-            <Image className="h-8 w-8 mx-auto mb-2 opacity-50" />
+            <DollarSign className="h-7 w-7 mx-auto mb-1.5 opacity-40" />
             <p className="text-xs">Receipt image</p>
           </div>
         </div>
       </div>
-      
-      {/* AI Reasoning */}
-      {signal.ai_reasoning && (
-        <div className="p-4 border-b border-border bg-hero-purple-soft/30">
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="h-4 w-4 text-hero-purple" />
-            <p className="text-xs font-semibold text-hero-purple uppercase tracking-wider">AI Analysis</p>
-          </div>
-          <p className="text-sm leading-relaxed">{signal.ai_reasoning}</p>
-          {signal.flag_reason && (
-            <Badge className="mt-2 text-[10px] bg-signal-amber-bg text-signal-amber border-0">
-              {signal.flag_reason}
-            </Badge>
-          )}
-        </div>
-      )}
-      
-      {/* Details grid */}
-      <div className="p-4 border-b border-border">
-        <div className="grid grid-cols-2 gap-3 text-sm">
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Amount</p>
-            <p className="font-semibold tabular-nums">€{(signal.amount || 0).toFixed(2)}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Category</p>
-            <p className="font-medium">{signal.category || 'Uncategorized'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Funding</p>
-            <p className="font-medium">{signal.funding || 'TBD'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground mb-0.5">Type</p>
-            <p className="font-medium capitalize">{signal.signal_type}</p>
-          </div>
-        </div>
-      </div>
-      
-      {/* Quick chat to query */}
-      <div className="p-4 border-b border-border">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          Quick query to {signal.submitter_name.split(' ')[0]}
-        </p>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={queryMessage}
-            onChange={(e) => setQueryMessage(e.target.value)}
-            placeholder="Ask about this expense..."
-            className="flex-1 text-sm px-3 py-2 rounded-lg bg-secondary/50 border-0 focus:ring-2 focus:ring-foreground/10 outline-none"
-          />
-          <Button size="sm" variant="outline" className="shrink-0">
-            <Send className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      </div>
-      
+
       {/* Actions — sticky at bottom */}
-      <div className="mt-auto p-4 space-y-2 border-t border-border bg-card">
+      <div className="mt-auto p-4 border-t border-border bg-card">
         <div className="flex gap-2">
           <Button className="flex-1 gap-1.5" size="sm">
             <Check className="h-3.5 w-3.5" /> Approve
           </Button>
-          <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onEdit}>
-            <Pencil className="h-3.5 w-3.5" /> Edit
+          <Button variant="outline" className="gap-1.5" size="sm" onClick={onQuery}>
+            <MessageSquare className="h-3.5 w-3.5" /> Ask
           </Button>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="flex-1 gap-1.5" size="sm" onClick={onQuery}>
-            <MessageSquare className="h-3.5 w-3.5" /> Query
+          <Button variant="outline" className="gap-1.5" size="sm" onClick={onEdit}>
+            <ArrowRight className="h-3.5 w-3.5" /> Reassign
           </Button>
-          <Button variant="ghost" className="flex-1 gap-1.5 text-destructive hover:text-destructive" size="sm">
-            <X className="h-3.5 w-3.5" /> Reject
+          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive px-2.5">
+            <X className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -213,10 +384,173 @@ type FilterState = {
   dateRange: 'all' | 'today' | 'week' | 'month';
 };
 
+/* ─── Reconcile Detail Content ─── */
+const ReconcileDetailContent = ({
+  match,
+  onReconcile,
+}: {
+  match: ThreeWayMatch;
+  onReconcile: () => void;
+}) => {
+  const isVariance = match.status === 'variance';
+  const isMissingPO = match.status === 'missing-po';
+  const varianceAmount = match.invoiceAmount - match.poAmount;
+  const variancePct = match.poAmount > 0 ? ((varianceAmount / match.poAmount) * 100).toFixed(1) : '—';
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="p-4 pb-3 border-b border-border">
+        <div className="flex items-center justify-between mb-2">
+          <Badge variant="outline" className="text-[11px]">Three-way match</Badge>
+          <Badge
+            variant="outline"
+            className={`text-[11px] ${isVariance ? 'border-signal-amber text-signal-amber' : isMissingPO ? 'border-signal-red text-signal-red' : 'border-signal-green text-signal-green'}`}
+          >
+            {isVariance ? 'Variance detected' : isMissingPO ? 'Missing PO' : 'Matched'}
+          </Badge>
+        </div>
+        <h3 className="text-lg font-bold leading-snug">{match.supplier}</h3>
+        <p className="text-xs text-muted-foreground mt-1">Invoice {match.invoice}</p>
+      </div>
+
+      {/* Amount comparison */}
+      <div className="px-4 py-4 border-b border-border">
+        <div className="rounded-xl bg-secondary/40 p-4">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-3">Amount Comparison</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">PO Amount</span>
+              <span className="text-sm font-semibold tabular-nums">
+                {match.poAmount > 0 ? `€${match.poAmount.toFixed(2)}` : '—'}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">Invoice Amount</span>
+              <span className="text-sm font-bold tabular-nums">€{match.invoiceAmount.toFixed(2)}</span>
+            </div>
+            {isVariance && (
+              <>
+                <div className="border-t border-border" />
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-signal-amber">Variance</span>
+                  <span className="text-sm font-bold tabular-nums text-signal-amber">
+                    +€{varianceAmount.toFixed(2)} ({variancePct}%)
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Match details grid */}
+      <div className="px-4 py-4 border-b border-border">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">Match Details</p>
+        <div className="border border-border rounded-lg overflow-hidden">
+          <div className="grid grid-cols-2">
+            <div className="p-3 border-b border-r border-border">
+              <p className="text-[11px] text-muted-foreground mb-0.5">PO Number</p>
+              <p className="text-sm font-semibold">{match.po || '—'}</p>
+            </div>
+            <div className="p-3 border-b border-border">
+              <p className="text-[11px] text-muted-foreground mb-0.5">GRN Number</p>
+              <p className="text-sm font-semibold">{match.grn || '—'}</p>
+            </div>
+            <div className="p-3 border-r border-border">
+              <p className="text-[11px] text-muted-foreground mb-0.5">Invoice Number</p>
+              <p className="text-sm font-semibold">{match.invoice}</p>
+            </div>
+            <div className="p-3">
+              <p className="text-[11px] text-muted-foreground mb-0.5">Vendor Avg Variance</p>
+              <p className="text-sm font-semibold">{match.vendorAvgVariance}%</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Status checks */}
+      <div className="px-4 py-4 border-b border-border">
+        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">Verification</p>
+        <div className="grid grid-cols-1 gap-2.5">
+          <div className="flex items-start gap-2">
+            {match.po ? (
+              <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0 mt-0.5" />
+            ) : (
+              <AlertTriangle className="h-4 w-4 text-signal-red shrink-0 mt-0.5" />
+            )}
+            <div>
+              <p className="text-sm font-medium">Purchase Order</p>
+              <p className="text-xs text-muted-foreground">{match.po ? `${match.po} — verified` : 'No PO found for this invoice'}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            {match.grn ? (
+              <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0 mt-0.5" />
+            ) : (
+              <AlertTriangle className="h-4 w-4 text-signal-red shrink-0 mt-0.5" />
+            )}
+            <div>
+              <p className="text-sm font-medium">Goods Receipt</p>
+              <p className="text-xs text-muted-foreground">{match.grn ? `${match.grn} — received` : 'No goods receipt note'}</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-2">
+            <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium">Invoice</p>
+              <p className="text-xs text-muted-foreground">{match.invoice} — €{match.invoiceAmount.toFixed(2)}</p>
+            </div>
+          </div>
+          {isVariance && (
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="h-4 w-4 text-signal-amber shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium">Amount Match</p>
+                <p className="text-xs text-muted-foreground">+{match.variance}% variance — vendor avg is {match.vendorAvgVariance}%</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Warning banner */}
+      {(isVariance || isMissingPO) && (
+        <div className="px-4 py-3 border-b border-border">
+          <div className={`flex items-center gap-2 rounded-lg px-3 py-2.5 ${isMissingPO ? 'bg-signal-red-bg/50' : 'bg-signal-amber-bg/50'}`}>
+            <AlertTriangle className={`h-4 w-4 shrink-0 ${isMissingPO ? 'text-signal-red' : 'text-signal-amber'}`} />
+            <p className={`text-sm font-medium ${isMissingPO ? 'text-signal-red' : 'text-signal-amber'}`}>
+              {isMissingPO 
+                ? 'No purchase order found — requires manual matching or PO creation'
+                : `Invoice exceeds PO by ${match.variance}% — review before posting to GL`}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Actions — sticky at bottom */}
+      <div className="mt-auto p-4 border-t border-border bg-card">
+        <div className="flex gap-2">
+          <Button className="flex-1 gap-1.5" size="sm" onClick={onReconcile}>
+            <Check className="h-3.5 w-3.5" /> Reconcile
+          </Button>
+          <Button variant="outline" className="gap-1.5" size="sm">
+            <MessageSquare className="h-3.5 w-3.5" /> Query Supplier
+          </Button>
+          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive px-2.5">
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const RohanView = () => {
   const { signals } = useRole();
   const [sortMode, setSortMode] = useState<SortMode>('risk');
   const [selectedSignal, setSelectedSignal] = useState<ClassifiedSignal | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<ThreeWayMatch | null>(null);
   const [editSignal, setEditSignal] = useState<Signal | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [copilotOpen, setCopilotOpen] = useState(false);
@@ -548,23 +882,32 @@ const RohanView = () => {
               <div className="space-y-2">
                 {/* Three-way match exceptions */}
                 {actionableMatches.filter(m => !reconciledIds.has(m.id)).map(match => (
-                  <div key={match.id} className="p-4 rounded-xl bg-card shadow-elevation-low">
+                  <div
+                    key={match.id}
+                    onClick={() => { setSelectedMatch(match); setSelectedSignal(null); }}
+                    className={`w-full text-left p-4 rounded-xl transition-all cursor-pointer ${
+                      selectedMatch?.id === match.id
+                        ? 'bg-card shadow-elevation-medium ring-2 ring-foreground/10'
+                        : 'bg-card/50 hover:bg-card hover:shadow-elevation-low'
+                    }`}
+                  >
                     <div className="flex items-center gap-4">
                       <ConfidenceFlag level={match.status === 'missing-po' ? 'low' : 'medium'} />
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold">{match.supplier}</p>
                         <p className="text-xs text-muted-foreground">
                           {match.invoice} · {match.status === 'variance' ? `+${match.variance}% variance` : 'Missing PO'}
                         </p>
                       </div>
                       <p className="text-sm font-bold tabular-nums">€{match.invoiceAmount.toFixed(2)}</p>
-                      <Button 
-                        size="sm" 
-                        className="gap-1.5"
-                        onClick={() => handleReconcile(match)}
+                      <Button
+                        size="sm"
+                        className="gap-1.5 shrink-0"
+                        onClick={(e) => { e.stopPropagation(); handleReconcile(match); }}
                       >
                         <Check className="h-3.5 w-3.5" /> Reconcile
                       </Button>
+                      <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedMatch?.id === match.id ? 'rotate-90' : ''}`} />
                     </div>
                   </div>
                 ))}
@@ -574,7 +917,7 @@ const RohanView = () => {
                   <ExceptionRow
                     key={signal.id}
                     signal={signal}
-                    onSelect={() => setSelectedSignal(signal)}
+                    onSelect={() => { setSelectedSignal(signal); setSelectedMatch(null); }}
                     isSelected={selectedSignal?.id === signal.id}
                   />
                 ))}
@@ -602,7 +945,7 @@ const RohanView = () => {
                   <ExceptionRow
                     key={signal.id}
                     signal={signal}
-                    onSelect={() => setSelectedSignal(signal)}
+                    onSelect={() => { setSelectedSignal(signal); setSelectedMatch(null); }}
                     isSelected={selectedSignal?.id === signal.id}
                   />
                 ))}
@@ -708,24 +1051,35 @@ const RohanView = () => {
       </div>
 
       {/* Detail Drawer — slides in from right */}
-      <Sheet open={!!selectedSignal} onOpenChange={(open) => !open && setSelectedSignal(null)}>
-        <SheetContent side="right" className="w-[420px] sm:w-[480px] p-0 overflow-y-auto">
-          <SheetHeader className="p-4 border-b border-border bg-secondary/30">
-            <div className="flex items-center gap-2 mb-1">
-              {selectedSignal && <ConfidenceFlag level={selectedSignal.riskLevel} />}
-            </div>
-            <SheetTitle className="text-base font-semibold">
-              {selectedSignal?.description}
+      <Sheet
+        open={!!selectedSignal || !!selectedMatch}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSelectedSignal(null);
+            setSelectedMatch(null);
+          }
+        }}
+      >
+        <SheetContent side="right" className="w-[600px] sm:w-[680px] p-0 overflow-y-auto">
+          <SheetHeader className="sr-only">
+            <SheetTitle>
+              {selectedSignal ? (selectedSignal.title || selectedSignal.description) : selectedMatch?.supplier}
             </SheetTitle>
-            <p className="text-sm text-muted-foreground">
-              {selectedSignal?.submitter_name} · {selectedSignal?.location}
-            </p>
           </SheetHeader>
           {selectedSignal && (
             <DetailDrawerContent
               signal={selectedSignal}
               onEdit={() => openEdit(selectedSignal)}
               onQuery={() => {}}
+            />
+          )}
+          {selectedMatch && (
+            <ReconcileDetailContent
+              match={selectedMatch}
+              onReconcile={() => {
+                handleReconcile(selectedMatch);
+                setSelectedMatch(null);
+              }}
             />
           )}
         </SheetContent>

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRole } from '@/context/RoleContext';
-import { locationBudgets, aiAlerts, signalTypeConfig } from '@/data/mockData';
+import { locationBudgets, aiAlerts, signalTypeConfig, atRiskSignal } from '@/data/mockData';
 import { groupByDecisionLayer, ClassifiedSignal, urgencyTierConfig } from '@/lib/decisionTypes';
 import PulseDetailDrawer from '@/components/PulseDetailDrawer';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
@@ -97,7 +97,7 @@ const JudgmentCard = ({
         </div>
         
         <div className="text-right shrink-0">
-          <p className="text-2xl font-bold tabular-nums">
+          <p className="text-xl text-muted-foreground tabular-nums">
             €{(signal.amount || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
           </p>
         </div>
@@ -134,20 +134,20 @@ const JudgmentCard = ({
         </div>
       )}
       
-      {/* EXPLICIT CTAs — Pulse-centric action language */}
+      {/* EXPLICIT CTAs — Warm, inviting buttons with brand teal */}
       <div className="flex items-center gap-2 pt-2">
-        <Button onClick={onApprove} className="gap-1.5 flex-1 bg-state-decision hover:bg-state-decision/90">
+        <Button variant="warm" onClick={onApprove} className="gap-1.5 flex-1 rounded-xl">
           <Check className="h-4 w-4" /> {pulseActions.approvePulse}
         </Button>
-        <Button variant="outline" onClick={onEscalate} className="gap-1.5">
+        <Button variant="outline" onClick={onEscalate} className="gap-1.5 rounded-xl">
           <ArrowUpRight className="h-4 w-4" /> {pulseActions.escalatePulse}
         </Button>
-        <Button variant="outline" onClick={onRequestClarification} className="gap-1.5">
+        <Button variant="outline" onClick={onRequestClarification} className="gap-1.5 rounded-xl">
           <HelpCircle className="h-4 w-4" /> {pulseActions.requestInfo}
         </Button>
-        <Button variant="ghost" onClick={onReject} className="text-destructive hover:text-destructive hover:bg-destructive/10">
-          <X className="h-4 w-4" />
-        </Button>
+        <button onClick={onReject} className="text-sm text-muted-foreground hover:text-destructive px-3 py-2">
+          Reject
+        </button>
       </div>
     </motion.div>
   );

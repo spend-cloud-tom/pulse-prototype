@@ -60,8 +60,8 @@ const OrchestrationSummary = ({
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {/* Requests Awaiting Action */}
-        <div className="text-center">
+        {/* Requests Awaiting Action — Indigo border accent */}
+        <div className="text-center p-3 rounded-xl border-l-4 border-l-state-decision bg-state-decision-bg/30">
           <motion.p 
             className="text-3xl font-bold text-state-decision"
             initial={{ scale: 0.5 }}
@@ -75,8 +75,8 @@ const OrchestrationSummary = ({
           <p className="text-[10px] text-state-decision">Your Decision</p>
         </div>
 
-        {/* Requests In Progress */}
-        <div className="text-center">
+        {/* Requests In Progress — Amber border accent */}
+        <div className="text-center p-3 rounded-xl border-l-4 border-l-state-blocked bg-state-blocked-bg/30">
           <motion.p 
             className="text-3xl font-bold text-state-blocked"
             initial={{ scale: 0.5 }}
@@ -90,8 +90,8 @@ const OrchestrationSummary = ({
           <p className="text-[10px] text-state-blocked">Being processed</p>
         </div>
 
-        {/* Auto-Resolved Today */}
-        <div className="text-center">
+        {/* Auto-Resolved Today — Neutral border accent */}
+        <div className="text-center p-3 rounded-xl border-l-4 border-l-border bg-secondary/30">
           <motion.p 
             className="text-3xl font-bold text-hero-purple"
             initial={{ scale: 0.5 }}

@@ -248,7 +248,7 @@ const StatusCard = ({
       <div className="flex items-center gap-2 mb-3">
         <PulseTypeTag type={signal.signal_type} size="sm" />
         {signal.amount != null && signal.amount > 0 && (
-          <span className="text-sm font-bold text-slate-700 tabular-nums ml-auto">
+          <span className="text-sm text-slate-500 tabular-nums ml-auto">
             €{signal.amount.toFixed(2)}
           </span>
         )}
@@ -313,7 +313,7 @@ const StatusCard = ({
                   <TooltipTrigger asChild>
                     <button
                       onClick={onProvideInfo}
-                      className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
+                      className="px-4 py-2 rounded-xl bg-hero-teal text-white text-sm font-medium hover:bg-hero-teal/90 transition-colors shadow-sm"
                     >
                       Provide info
                     </button>
@@ -328,7 +328,7 @@ const StatusCard = ({
                   <TooltipTrigger asChild>
                     <button
                       onClick={onAskAI}
-                      className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
+                      className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
                     >
                       Ask AI
                     </button>

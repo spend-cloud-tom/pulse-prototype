@@ -54,7 +54,12 @@ const BudgetRadar = ({
   const colors = getGradientColors();
 
   return (
-    <div className="flex flex-col items-center group">
+    <div className={cn(
+      "flex flex-col items-center group p-3 rounded-xl border-l-4",
+      isCritical && "border-l-state-risk bg-state-risk-bg/20",
+      isWarning && !isCritical && "border-l-state-blocked bg-state-blocked-bg/20",
+      !isCritical && !isWarning && "border-l-border bg-secondary/20"
+    )}>
       {/* Circular gauge with shadow and glow effects */}
       <div className={cn(
         "relative transition-transform duration-300 group-hover:scale-105",

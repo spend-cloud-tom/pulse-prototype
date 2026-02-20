@@ -95,7 +95,7 @@ const OrderCard = ({ order }: { order: typeof activeOrders[0] }) => {
         </div>
         
         <div className="text-right shrink-0">
-          <p className="font-semibold tabular-nums">€{order.amount.toFixed(2)}</p>
+          <p className="text-muted-foreground tabular-nums">€{order.amount.toFixed(2)}</p>
           <Badge className={`text-[10px] ${config.bg} ${config.color} border-0 mt-1`}>
             {config.label}
           </Badge>
@@ -166,7 +166,7 @@ const ProcurementPulseCard = ({
       <div className="flex items-center justify-between">
         <PulseTypeTag type={signal.signal_type} size="sm" />
         {signal.amount && (
-          <p className="font-semibold tabular-nums text-lg">€{signal.amount.toFixed(2)}</p>
+          <p className="text-muted-foreground tabular-nums text-lg">€{signal.amount.toFixed(2)}</p>
         )}
       </div>
       
@@ -211,8 +211,9 @@ const ProcurementPulseCard = ({
             </div>
           </div>
           <Button 
+            variant="warm"
             size="sm" 
-            className="gap-1.5"
+            className="gap-1.5 rounded-xl"
             onClick={() => toast({
               title: "✅ Owner Assigned",
               description: `${suggestion.vendor} assigned. Moving forward...`,
@@ -225,7 +226,7 @@ const ProcurementPulseCard = ({
       
       {!suggestion && (
         <Button 
-          variant="outline" 
+          variant="warm" 
           onClick={() => {
             onAssign();
             toast({
@@ -233,7 +234,7 @@ const ProcurementPulseCard = ({
               description: "Opening owner selection...",
             });
           }} 
-          className="w-full gap-1.5"
+          className="w-full gap-1.5 rounded-xl"
         >
           <User className="h-4 w-4" /> {pulseActions.assignOwner}
         </Button>
@@ -342,7 +343,8 @@ const SarahView = () => {
             <div className="flex items-center gap-3">
               {readyAutoPOs.length > 0 && (
                 <Button 
-                  className="gap-2 shadow-elevation-low"
+                  variant="warm"
+                  className="gap-2 shadow-elevation-low rounded-xl"
                   onClick={handleAdvancePulses}
                 >
                   <Zap className="h-4 w-4" />
@@ -475,7 +477,8 @@ const SarahView = () => {
                       </div>
                       <Button 
                         size="sm" 
-                        className="gap-1.5"
+                        variant="warm"
+                        className="gap-1.5 rounded-xl"
                         onClick={handleAdvancePulses}
                       >
                         <Zap className="h-3.5 w-3.5" /> {pulseActions.advancePulse} All
@@ -495,11 +498,11 @@ const SarahView = () => {
                           </div>
                         </div>
                         <div className="flex items-center gap-3">
-                          <p className="font-semibold tabular-nums">€{po.amount.toFixed(2)}</p>
+                          <p className="text-muted-foreground tabular-nums">€{po.amount.toFixed(2)}</p>
                           <Button 
                             size="sm" 
-                            variant="outline" 
-                            className="gap-1.5"
+                            variant="warm" 
+                            className="gap-1.5 rounded-xl"
                             onClick={() => handleAdvancePulse(po.item, po.vendor)}
                           >
                             <ArrowRight className="h-3.5 w-3.5" /> {pulseActions.advancePulse}
@@ -523,7 +526,7 @@ const SarahView = () => {
                           <p className="font-medium text-muted-foreground">{po.item}</p>
                           <p className="text-sm text-muted-foreground">{po.vendor} · {po.reason}</p>
                         </div>
-                        <p className="font-semibold tabular-nums text-muted-foreground">€{po.amount.toFixed(2)}</p>
+                        <p className="text-muted-foreground tabular-nums">€{po.amount.toFixed(2)}</p>
                       </div>
                     ))}
                   </div>

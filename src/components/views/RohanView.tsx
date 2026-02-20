@@ -223,8 +223,8 @@ const ExceptionListRow = ({
           <ConfidenceTag level={signal.riskLevel} />
         </div>
         
-        {/* Col 2: Amount - right aligned, tabular */}
-        <p className="text-sm font-bold tabular-nums text-slate-900 text-right">
+        {/* Col 2: Amount - right aligned, tabular, neutral styling */}
+        <p className="text-sm tabular-nums text-slate-500 text-right">
           €{(signal.amount || 0).toFixed(2)}
         </p>
         
@@ -292,7 +292,7 @@ const DetailSidebar = ({
         </div>
         <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-          <p className="text-white text-lg font-bold tabular-nums drop-shadow-sm">
+          <p className="text-white text-lg tabular-nums drop-shadow-sm">
             €{vatInfo.total.toFixed(2)}
           </p>
           <p className="text-white/80 text-xs drop-shadow-sm">
@@ -401,14 +401,14 @@ const DetailSidebar = ({
           </TooltipProvider>
         </div>
         
-        {/* SECONDARY: De-emphasized action buttons */}
+        {/* SECONDARY: Warm, inviting action buttons */}
         <div className="flex items-center gap-3 pt-1">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
-                  variant="outline"
-                  className="flex-1 gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50" 
+                  variant="warm"
+                  className="flex-1 gap-1.5 rounded-xl" 
                   size="sm"
                   onClick={onApprove}
                 >
@@ -424,7 +424,7 @@ const DetailSidebar = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <button 
-                  className="text-sm text-red-500 hover:text-red-600 hover:underline px-2"
+                  className="text-sm text-slate-400 hover:text-destructive px-2"
                   onClick={onReject}
                 >
                   Reject
@@ -482,7 +482,7 @@ const MatchSidebar = ({
         </div>
         <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
         <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-          <p className="text-white text-lg font-bold tabular-nums drop-shadow-sm">
+          <p className="text-white text-lg tabular-nums drop-shadow-sm">
             €{match.invoiceAmount.toFixed(2)}
           </p>
           <p className="text-white/80 text-xs drop-shadow-sm">
@@ -609,14 +609,14 @@ const MatchSidebar = ({
           </TooltipProvider>
         </div>
         
-        {/* Action buttons */}
+        {/* Action buttons — warm, inviting style */}
         <div className="flex items-center gap-3 pt-1">
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
-                  variant="outline"
-                  className="flex-1 gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50" 
+                  variant="warm"
+                  className="flex-1 gap-1.5 rounded-xl" 
                   size="sm"
                   onClick={onReconcile}
                 >
@@ -632,7 +632,7 @@ const MatchSidebar = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <button 
-                  className="text-sm text-red-500 hover:text-red-600 hover:underline px-2"
+                  className="text-sm text-slate-400 hover:text-destructive px-2"
                   onClick={() => {
                     toast({
                       title: "❌ Invoice rejected",

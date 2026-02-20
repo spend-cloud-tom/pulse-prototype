@@ -98,7 +98,7 @@ export const aiAlerts = [
   {
     id: 'alert-3',
     message: 'Elevator inspection at De Berk is 14 days overdue. Compliance risk flagged.',
-    severity: 'amber' as const,
+    severity: 'red' as const,
     action: 'Schedule inspection',
   },
   {
@@ -108,6 +108,42 @@ export const aiAlerts = [
     action: 'Start planning',
   },
 ];
+
+// At-risk compliance signal — 14 days overdue, the loudest item on screen
+export const atRiskSignal = {
+  id: 'risk-001',
+  signal_number: 999,
+  title: 'Elevator Safety Inspection — OVERDUE',
+  description: 'Mandatory elevator safety inspection at De Berk has exceeded the compliance deadline by 14 days. Immediate action required to avoid regulatory penalties.',
+  amount: null,
+  submitter_name: 'System',
+  submitter_avatar: null,
+  location: 'De Berk',
+  category: 'Safety',
+  signal_type: 'compliance' as const,
+  urgency: 'critical' as const,
+  funding: null,
+  status: 'pending' as const,
+  confidence: 100,
+  confidence_level: 'high' as const,
+  flag_reason: 'Compliance deadline exceeded by 14 days — regulatory risk',
+  ai_reasoning: 'This inspection was due on Feb 6, 2026. Dutch elevator safety regulations (Warenwetbesluit liften) require annual inspections. Non-compliance may result in fines up to €10,000 and potential facility closure orders.',
+  supplier_suggestion: 'TÜV Nederland',
+  supplier_confidence: 98,
+  cost_comparison: null,
+  expected_date: '2026-02-06',
+  bottleneck: 'Inspection company not yet contacted',
+  attachments: null,
+  created_at: '2026-02-06T09:00:00Z',
+  updated_at: '2026-02-20T08:00:00Z',
+  current_owner: 'Facilities Manager',
+  lifecycle_stage: 'flagged',
+  sla_hours: 0,
+  escalated_at: '2026-02-13T09:00:00Z',
+  // Special flag for at-risk state
+  isAtRisk: true,
+  daysOverdue: 14,
+};
 
 // SIGNAL TYPE CONFIG — Pulse-centric naming convention
 // Everything is a Pulse, just different types

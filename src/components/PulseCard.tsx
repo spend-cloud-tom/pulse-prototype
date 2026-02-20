@@ -36,6 +36,23 @@ const urgencyBadge: Record<string, { label: string; style: string } | null> = {
   normal: null,
 };
 
+// Risk state indicator — red diamond for at-risk items
+const RiskDiamond = ({ className }: { className?: string }) => (
+  <span className={cn('inline-flex items-center justify-center text-state-risk', className)}>
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+      <path d="M6 0L12 6L6 12L0 6L6 0Z" />
+    </svg>
+  </span>
+);
+
+// Check if signal is at-risk (compliance overdue, critical urgency with flag)
+const isAtRiskSignal = (signal: Signal): boolean => {
+  return (
+    signal.urgency === 'critical' && 
+    (signal.signal_type === 'compliance' || !!signal.flag_reason)
+  );
+};
+
 // PULSE STATE LABELS — Unified language across the system
 const pulseStateLabels: Record<PulseState, string> = {
   'needs-action': 'Needs Action',
@@ -224,18 +241,22 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
               )}>
                 {stateConfig?.label || statusLabels[signal.status] || signal.status}
               </Badge>
-              {/* Urgency badge */}
-              {urgency && (
+              {/* Risk diamond indicator for at-risk items */}
+              {isAtRiskSignal(signal) && (
+                <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-state-risk-bg">
+                  <RiskDiamond className="animate-pulse" />
+                  <span className="text-[10px] font-bold text-state-risk">AT RISK</span>
+                </span>
+              )}
+              {/* Urgency badge (only if not at-risk, to avoid duplication) */}
+              {urgency && !isAtRiskSignal(signal) && (
                 <Badge className={cn('text-[10px] py-0 px-1.5 border-0 font-medium', urgency.style)}>
                   {urgency.label}
                 </Badge>
               )}
-              {/* Amount — prominent */}
+              {/* Amount — neutral styling per proposal */}
               {amt > 0 && (
-                <span className={cn(
-                  'font-semibold text-foreground shrink-0 tabular-nums',
-                  amt > 200 ? 'text-base' : 'text-sm',
-                )}>
+                <span className="text-sm text-muted-foreground shrink-0 tabular-nums">
                   €{amt.toLocaleString('nl-NL', { minimumFractionDigits: 2 })}
                 </span>
               )}
@@ -250,6 +271,19 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
           )}>
             {signal.title}
           </h3>
+
+          {/* RISK BANNER — Full-width red banner for at-risk items (loudest element) */}
+          {isAtRiskSignal(signal) && !dense && (
+            <div className="mt-2 -mx-3.5 px-3.5 py-2.5 bg-state-risk text-white rounded-none border-y border-state-risk">
+              <div className="flex items-center gap-2">
+                <RiskDiamond className="text-white animate-pulse" />
+                <span className="text-xs font-bold uppercase tracking-wider">Compliance Risk — Immediate Action Required</span>
+              </div>
+              {signal.flag_reason && (
+                <p className="text-xs mt-1 opacity-90">{signal.flag_reason}</p>
+              )}
+            </div>
+          )}
 
           {/* Action clarity line — non-negotiable */}
           {isAction && (

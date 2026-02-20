@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { signalTypeConfig } from '@/data/mockData';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
 import { cn } from '@/lib/utils';
-import { Check, MessageSquare, X, Clock, User, MapPin, Calendar, FileText, AlertTriangle } from 'lucide-react';
+import { Check, MessageSquare, X, Clock, User, MapPin, Calendar, FileText, AlertTriangle, Diamond } from 'lucide-react';
 import AIExplainabilityPanel from '@/components/AIExplainabilityPanel';
 
 interface PulseDetailDrawerProps {
@@ -98,6 +98,22 @@ const PulseDetailDrawer = ({ signal, open, onOpenChange, onAction }: PulseDetail
         </SheetHeader>
 
         <div className="space-y-5 pt-2">
+          {/* RISK BANNER — Full-width red banner for at-risk items (loudest element) */}
+          {isAtRiskSignal(signal) && (
+            <div className="-mx-6 px-6 py-4 bg-state-risk text-white">
+              <div className="flex items-center gap-2 mb-2">
+                <RiskDiamond />
+                <span className="text-sm font-bold uppercase tracking-wider">Compliance Risk — Immediate Action Required</span>
+              </div>
+              {signal.flag_reason && (
+                <p className="text-sm opacity-90">{signal.flag_reason}</p>
+              )}
+              {signal.expected_date && (
+                <p className="text-xs mt-2 opacity-75">Deadline: {signal.expected_date}</p>
+              )}
+            </div>
+          )}
+
           {/* Workflow progress — labeled stages */}
           <div className="space-y-2">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Progress</p>
@@ -128,7 +144,7 @@ const PulseDetailDrawer = ({ signal, open, onOpenChange, onAction }: PulseDetail
               <DetailRow icon={<MapPin className="h-3.5 w-3.5" />} label="Location" value={signal.location} />
               <DetailRow icon={<Calendar className="h-3.5 w-3.5" />} label="Submitted" value={formatDate(signal.created_at)} />
               {(signal.amount || 0) > 0 && (
-                <DetailRow icon={<FileText className="h-3.5 w-3.5" />} label="Amount" value={`€${(signal.amount || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`} bold />
+                <DetailRow icon={<FileText className="h-3.5 w-3.5" />} label="Amount" value={`€${(signal.amount || 0).toLocaleString('nl-NL', { minimumFractionDigits: 2 })}`} />
               )}
               {signal.funding && <DetailRow label="Funding" value={signal.funding} />}
               {signal.category && <DetailRow label="Category" value={signal.category} />}
@@ -199,34 +215,34 @@ const PulseDetailDrawer = ({ signal, open, onOpenChange, onAction }: PulseDetail
             </div>
           )}
 
-          {/* Primary CTA — always visible at bottom */}
+          {/* Primary CTA — warm, inviting buttons with brand teal */}
           {needsAction && (
             <div className="space-y-2 pt-2 border-t border-border">
               {classified.decisionType === 'approval' && (
                 <div className="flex items-center gap-2">
-                  <Button className="flex-1 gap-1.5" onClick={() => onAction?.('approve')}>
+                  <Button variant="warm" className="flex-1 gap-1.5 rounded-xl" onClick={() => onAction?.('approve')}>
                     <Check className="h-4 w-4" /> Approve
                   </Button>
-                  <Button variant="outline" className="gap-1.5" onClick={() => onAction?.('query')}>
+                  <Button variant="outline" className="gap-1.5 rounded-xl" onClick={() => onAction?.('query')}>
                     <MessageSquare className="h-4 w-4" /> Query
                   </Button>
-                  <Button variant="ghost" className="text-destructive hover:text-destructive gap-1.5" onClick={() => onAction?.('reject')}>
-                    <X className="h-4 w-4" /> Reject
-                  </Button>
+                  <button className="text-sm text-muted-foreground hover:text-destructive px-3 py-2" onClick={() => onAction?.('reject')}>
+                    Reject
+                  </button>
                 </div>
               )}
               {classified.decisionType === 'exception' && (
                 <div className="flex items-center gap-2">
-                  <Button className="flex-1 gap-1.5" onClick={() => onAction?.('resolve')}>
+                  <Button variant="warm" className="flex-1 gap-1.5 rounded-xl" onClick={() => onAction?.('resolve')}>
                     <Check className="h-4 w-4" /> Reconcile
                   </Button>
-                  <Button variant="outline" className="gap-1.5" onClick={() => onAction?.('query')}>
+                  <Button variant="outline" className="gap-1.5 rounded-xl" onClick={() => onAction?.('query')}>
                     <MessageSquare className="h-4 w-4" /> Review details
                   </Button>
                 </div>
               )}
               {classified.decisionType === 'alert' && (
-                <Button className="w-full gap-1.5" onClick={() => onAction?.('acknowledge')}>
+                <Button variant="warm" className="w-full gap-1.5 rounded-xl" onClick={() => onAction?.('acknowledge')}>
                   <Check className="h-4 w-4" /> Acknowledge
                 </Button>
               )}
@@ -244,8 +260,23 @@ const DetailRow = ({ icon, label, value, bold }: { icon?: React.ReactNode; label
       {icon}
       {label}
     </span>
-    <span className={cn('text-right', bold && 'font-semibold text-foreground')}>{value}</span>
+    <span className={cn('text-right text-muted-foreground tabular-nums', bold && 'text-foreground')}>{value}</span>
   </div>
 );
+
+// Risk diamond indicator
+const RiskDiamond = () => (
+  <svg width="14" height="14" viewBox="0 0 12 12" fill="currentColor" className="shrink-0">
+    <path d="M6 0L12 6L6 12L0 6L6 0Z" />
+  </svg>
+);
+
+// Check if signal is at-risk
+const isAtRiskSignal = (signal: any): boolean => {
+  return (
+    signal.urgency === 'critical' && 
+    (signal.signal_type === 'compliance' || !!signal.flag_reason)
+  );
+};
 
 export default PulseDetailDrawer;

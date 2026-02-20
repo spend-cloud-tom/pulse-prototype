@@ -272,101 +272,200 @@ const DetailSidebar = ({
     }
   };
 
+  const confidencePercent = signal.confidence || 0;
+  const hasAttachments = signal.attachments && signal.attachments.length > 0;
+
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Scrollable content area (image + details scroll together) */}
+      {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto">
-        {/* TOP: Receipt Image */}
-        <div className="relative h-64 bg-slate-100 overflow-hidden shrink-0">
-          <img 
-            src={getSignalImage(signal)} 
-            alt="Receipt" 
-            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-            onClick={() => {
-              toast({
-                title: "📷 Full image view",
-                description: "Opening receipt in full screen...",
-              });
-            }}
-          />
-          <div className="absolute top-3 left-3">
-            <ConfidenceTag level={signal.riskLevel} />
-          </div>
-          <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
-          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-            <p className="text-white text-lg tabular-nums drop-shadow-sm">
-              €{vatInfo.total.toFixed(2)}
-            </p>
-            <p className="text-white/80 text-xs drop-shadow-sm">
-              {signal.submitter_name}
-            </p>
-          </div>
-        </div>
-        {/* Header info */}
-        <div className="px-4 py-3 border-b border-slate-100">
-          <h3 className="text-base font-semibold text-slate-900 leading-snug">
+
+        {/* ── Header ── */}
+        <div className="px-5 pt-4 pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-500 font-medium">#{signal.signal_number}</span>
+              <PulseTypeTag type={signal.signal_type} size="sm" />
+            </div>
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-[11px] font-semibold',
+                passedCount <= 1 ? 'border-red-300 text-red-600 bg-red-50' :
+                passedCount <= 2 ? 'border-amber-300 text-amber-600 bg-amber-50' :
+                'border-emerald-300 text-emerald-600 bg-emerald-50'
+              )}
+            >
+              {passedCount}/{complianceChecks.length} checks
+            </Badge>
+           </div>
+          <h3 className="text-xl font-bold text-slate-900 leading-snug">
             {signal.supplier_suggestion || signal.title || signal.description}
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
-            #{signal.signal_number} · {signal.location} · {formatDrawerDate(signal.created_at)}
+        </div>
+
+        {/* ── Submitter ── */}
+        <div className="px-5 pb-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center text-sm font-semibold text-slate-600 shrink-0">
+            {(signal.submitter_name || 'U').charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-800">{signal.submitter_name}</p>
+            <p className="text-xs text-slate-500">{signal.location} · {formatDrawerDate(signal.created_at)}</p>
+          </div>
+        </div>
+
+        {/* ── Description ── */}
+        <div className="px-5 pb-4">
+          <p className="text-sm text-slate-600 leading-relaxed">
+            {signal.description || signal.title} — submitted by {signal.submitter_name}
           </p>
         </div>
 
-        {/* MIDDLE: AI Reasoning Panel — visually distinct */}
-        <div className="mx-4 my-4 rounded-lg bg-slate-50 p-4">
+        {/* ── Total Amount Card ── */}
+        <div className="mx-4 mb-4 rounded-xl border border-orange-200/60 bg-orange-50/40 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Total (incl. VAT)</p>
+          <div className="flex items-end justify-between">
+            <p className="text-3xl font-bold text-slate-900 tabular-nums">€{vatInfo.total.toFixed(2)}</p>
+            <div className="text-right">
+              <p className="text-xs text-slate-500 tabular-nums">Net €{vatInfo.net.toFixed(2)}</p>
+              <p className="text-xs text-slate-500 tabular-nums">VAT €{vatInfo.vat.toFixed(2)} ({Math.round(vatInfo.rate * 100)}%)</p>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2.5 py-0.5">
+              {glCode} — {signal.funding || 'General'} <Pencil className="h-2.5 w-2.5 text-slate-400" />
+            </span>
+            <span className="text-[11px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2.5 py-0.5">
+              {signal.funding || 'General'}
+            </span>
+            <span className="text-[11px] font-medium text-slate-600 bg-white border border-slate-200 rounded-full px-2.5 py-0.5">
+              {signal.funding || 'General'} / {signal.category || 'Unclassified'}
+            </span>
+          </div>
+        </div>
+
+        {/* ── Financial Details ── */}
+        <div className="px-5 pb-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-900 mb-2">Financial Details</p>
+          <div className="rounded-lg border border-slate-200 divide-y divide-slate-200">
+            <div className="grid grid-cols-2 divide-x divide-slate-200">
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] text-slate-400 mb-0.5">Cost Center</p>
+                <p className="text-sm font-medium text-slate-800">{deriveCostCenter(signal.location, signal.funding)}</p>
+              </div>
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] text-slate-400 mb-0.5">Budget Period</p>
+                <p className="text-sm font-medium text-slate-800">{deriveBudgetPeriod(signal.created_at)}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 divide-x divide-slate-200">
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] text-slate-400 mb-0.5">Payment Terms</p>
+                <p className="text-sm font-medium text-slate-800">Immediate</p>
+              </div>
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] text-slate-400 mb-0.5">Funding Stream</p>
+                <p className="text-sm font-medium text-slate-800">{signal.funding || 'General'}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── AI Confidence Bar ── */}
+        <div className="px-5 pb-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-900">AI Confidence</p>
+            </div>
+            <span className="text-sm font-semibold text-slate-700 tabular-nums">{confidencePercent}%</span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className={cn(
+                'h-full rounded-full transition-all',
+                confidencePercent >= 70 ? 'bg-emerald-500' : confidencePercent >= 40 ? 'bg-amber-500' : 'bg-red-400'
+              )}
+              style={{ width: `${confidencePercent}%` }}
+            />
+          </div>
+        </div>
+
+        {/* ── AI Reasoning ── */}
+        <div className="mx-4 mb-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="h-4 w-4 text-slate-400" />
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">AI Reasoning</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-900">AI Reasoning</p>
           </div>
-          <p className="text-sm text-slate-700 leading-relaxed">
+          <p className="text-sm text-slate-600 leading-relaxed">
             {signal.ai_reasoning || `Coded as ${glCode} because ${signal.submitter_name} submitted from ${signal.location}. ${signal.funding ? `Funding: ${signal.funding}.` : ''}`}
           </p>
-          {/* Compliance mini-checks */}
-          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-200">
-            {complianceChecks.slice(0, 3).map((check, i) => (
-              <div key={i} className="flex items-center gap-1">
-                {check.passed ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                ) : (
-                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+        </div>
+
+        {/* ── Compliance ── */}
+        <div className="px-5 pb-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-900 mb-2">Compliance</p>
+          <div className="grid grid-cols-2 gap-2">
+            {complianceChecks.map((check, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'rounded-lg px-3 py-2.5',
+                  check.passed ? 'bg-emerald-50' : 'bg-amber-50'
                 )}
-                <span className="text-xs text-slate-500">{check.label}</span>
+              >
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  {check.passed ? (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                  ) : (
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                  )}
+                  <p className="text-xs font-semibold text-slate-800">{check.label}</p>
+                </div>
+                <p className={cn('text-[11px]', check.passed ? 'text-emerald-700' : 'text-amber-700')}>
+                  {check.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Financial details - compact */}
-        <div className="px-4 pb-4">
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="text-xs text-slate-400">Cost Center</p>
-              <p className="font-medium text-slate-700">{deriveCostCenter(signal.location, signal.funding)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">GL Code</p>
-              <p className="font-medium text-slate-700">{glCode}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Net / VAT</p>
-              <p className="font-medium text-slate-700 tabular-nums">€{vatInfo.net.toFixed(2)} / €{vatInfo.vat.toFixed(2)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Funding</p>
-              <p className="font-medium text-slate-700">{signal.funding || 'General'}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Warning banner if flagged */}
+        {/* ── Warning banner ── */}
         {signal.flag_reason && (
           <div className="mx-4 mb-4">
-            <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2.5 border border-amber-200">
+            <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-3 border border-amber-200">
               <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
               <p className="text-sm text-amber-700">{signal.flag_reason}</p>
             </div>
           </div>
         )}
+
+        {/* ── Receipt Image ── */}
+        <div className="mx-4 mb-4 rounded-xl border border-slate-200 overflow-hidden">
+          <img
+            src={getSignalImage(signal)}
+            alt="Receipt"
+            className="w-full h-36 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => {
+              toast({
+                title: "Full image view",
+                description: "Opening receipt in full screen...",
+              });
+            }}
+          />
+          <div className="flex items-center justify-center gap-1.5 py-2 bg-slate-50/80">
+            {hasAttachments ? (
+              <p className="text-xs text-emerald-600 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> AI validated
+              </p>
+            ) : (
+              <p className="text-xs text-amber-600 flex items-center gap-1">
+                <AlertTriangle className="h-3 w-3" /> Missing
+              </p>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* BOTTOM: Actions — Chat-first hierarchy when AI is uncertain */}
@@ -461,109 +560,168 @@ const MatchSidebar = ({
     }
   };
 
+  const matchChecks = [
+    { label: 'Purchase Order', passed: !!match.po, description: match.po || 'Missing' },
+    { label: 'Goods Receipt', passed: !!match.grn, description: match.grn || 'Missing' },
+    { label: 'Invoice', passed: true, description: match.invoice },
+  ];
+  const matchPassedCount = matchChecks.filter(c => c.passed).length;
+  const matchConfidence = isVariance ? Math.max(10, 100 - (match.variance || 0) * 5) : isMissingPO ? 25 : 90;
+
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* Scrollable content area (image + details scroll together) */}
+      {/* Scrollable content area */}
       <div className="flex-1 overflow-y-auto">
-        {/* TOP: Invoice/Receipt Image */}
-        <div className="relative h-64 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
-          <img 
-            src={demoImages.invoice} 
-            alt="Invoice" 
-            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-            onClick={() => {
-              toast({
-                title: "📄 Full invoice view",
-                description: "Opening invoice in full screen...",
-              });
-            }}
-          />
-          <div className="absolute top-3 left-3">
-            <ConfidenceTag level={isMissingPO ? 'low' : 'medium'} />
-          </div>
-          <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
-          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-            <p className="text-white text-lg tabular-nums drop-shadow-sm">
-              €{match.invoiceAmount.toFixed(2)}
-            </p>
-            <p className="text-white/80 text-xs drop-shadow-sm">
-              {match.invoice}
-            </p>
-          </div>
-        </div>
-        {/* Header info */}
-        <div className="px-4 py-3 border-b border-slate-100">
-          <h3 className="text-base font-semibold text-slate-900 leading-snug">
+
+        {/* ── Header ── */}
+        <div className="px-5 pt-4 pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-500 font-medium">{match.invoice}</span>
+              <Badge variant="outline" className={cn(
+                'text-[11px] font-semibold',
+                isVariance ? 'border-amber-300 text-amber-600 bg-amber-50' :
+                isMissingPO ? 'border-red-300 text-red-600 bg-red-50' :
+                'border-emerald-300 text-emerald-600 bg-emerald-50'
+              )}>
+                {isVariance ? 'Variance' : isMissingPO ? 'Missing PO' : 'Matched'}
+              </Badge>
+            </div>
+            <Badge
+              variant="outline"
+              className={cn(
+                'text-[11px] font-semibold',
+                matchPassedCount < 3 ? 'border-amber-300 text-amber-600 bg-amber-50' : 'border-emerald-300 text-emerald-600 bg-emerald-50'
+              )}
+            >
+              {matchPassedCount}/{matchChecks.length} matched
+            </Badge>
+           </div>
+          <h3 className="text-xl font-bold text-slate-900 leading-snug">
             {match.supplier}
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
-            {match.invoice} · {isVariance ? `+${match.variance}% variance` : isMissingPO ? 'Missing PO' : 'Matched'}
-          </p>
         </div>
 
-        {/* AI Reasoning Panel */}
-        <div className="mx-4 my-4 rounded-lg bg-slate-50 p-4">
+        {/* ── Supplier info ── */}
+        <div className="px-5 pb-3 flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center text-sm font-semibold text-slate-600 shrink-0">
+            {match.supplier.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-slate-800">{match.supplier}</p>
+            <p className="text-xs text-slate-500">
+              {isVariance ? `+${match.variance}% variance · Avg ${match.vendorAvgVariance}%` : isMissingPO ? 'No matching purchase order' : 'All documents matched'}
+            </p>
+          </div>
+        </div>
+
+        {/* ── Invoice Amount Card ── */}
+        <div className="mx-4 mb-4 rounded-xl border border-orange-200/60 bg-orange-50/40 p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Invoice Amount</p>
+          <div className="flex items-end justify-between">
+            <p className="text-3xl font-bold text-slate-900 tabular-nums">€{match.invoiceAmount.toFixed(2)}</p>
+            <div className="text-right">
+              <p className="text-xs text-slate-500 tabular-nums">PO {match.poAmount ? `€${match.poAmount.toFixed(2)}` : '—'}</p>
+              {isVariance && (
+                <p className="text-xs text-amber-600 font-medium tabular-nums">+{match.variance}% variance</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── Document Details ── */}
+        <div className="px-5 pb-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-900 mb-2">Document Details</p>
+          <div className="rounded-lg border border-slate-200 divide-y divide-slate-200">
+            <div className="grid grid-cols-2 divide-x divide-slate-200">
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] text-slate-400 mb-0.5">Purchase Order</p>
+                <p className="text-sm font-medium text-slate-800">{match.po || '—'}</p>
+              </div>
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] text-slate-400 mb-0.5">Goods Receipt</p>
+                <p className="text-sm font-medium text-slate-800">{match.grn || '—'}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 divide-x divide-slate-200">
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] text-slate-400 mb-0.5">PO Amount</p>
+                <p className="text-sm font-medium text-slate-800 tabular-nums">{match.poAmount ? `€${match.poAmount.toFixed(2)}` : '—'}</p>
+              </div>
+              <div className="px-3 py-2.5">
+                <p className="text-[10px] text-slate-400 mb-0.5">Invoice Amount</p>
+                <p className="text-sm font-medium text-slate-800 tabular-nums">€{match.invoiceAmount.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── AI Confidence Bar ── */}
+        <div className="px-5 pb-4">
+          <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-900">AI Confidence</p>
+            </div>
+            <span className="text-sm font-semibold text-slate-700 tabular-nums">{matchConfidence}%</span>
+          </div>
+          <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className={cn(
+                'h-full rounded-full transition-all',
+                matchConfidence >= 70 ? 'bg-emerald-500' : matchConfidence >= 40 ? 'bg-amber-500' : 'bg-red-400'
+              )}
+              style={{ width: `${matchConfidence}%` }}
+            />
+          </div>
+        </div>
+
+        {/* ── AI Reasoning ── */}
+        <div className="mx-4 mb-4 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Brain className="h-4 w-4 text-slate-400" />
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">AI Reasoning</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-900">AI Reasoning</p>
           </div>
-          <p className="text-sm text-slate-700 leading-relaxed">
+          <p className="text-sm text-slate-600 leading-relaxed">
             {match.aiNote || (isVariance 
               ? `Invoice amount €${match.invoiceAmount.toFixed(2)} differs from PO amount €${match.poAmount.toFixed(2)} by ${match.variance}%. This vendor's average variance is ${match.vendorAvgVariance}%.`
               : `No purchase order found for this invoice. Recommend creating retroactive PO or rejecting.`
             )}
           </p>
-          {/* Three-way match status */}
-          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-200">
-            <div className="flex items-center gap-1">
-              {match.po ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              ) : (
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-              )}
-              <span className="text-xs text-slate-500">PO</span>
-            </div>
-            <div className="flex items-center gap-1">
-              {match.grn ? (
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              ) : (
-                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
-              )}
-              <span className="text-xs text-slate-500">GRN</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-              <span className="text-xs text-slate-500">Invoice</span>
-            </div>
+        </div>
+
+        {/* ── Match Status ── */}
+        <div className="px-5 pb-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-900 mb-2">Match Status</p>
+          <div className="grid grid-cols-3 gap-2">
+            {matchChecks.map((check, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'rounded-lg px-3 py-2.5 text-center',
+                  check.passed ? 'bg-emerald-50' : 'bg-amber-50'
+                )}
+              >
+                <div className="flex items-center justify-center gap-1 mb-0.5">
+                  {check.passed ? (
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                  ) : (
+                    <AlertTriangle className="h-3.5 w-3.5 text-amber-600" />
+                  )}
+                </div>
+                <p className="text-xs font-semibold text-slate-800">{check.label}</p>
+                <p className={cn('text-[10px]', check.passed ? 'text-emerald-700' : 'text-amber-700')}>
+                  {check.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Document details */}
-        <div className="px-4 pb-4">
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            <div>
-              <p className="text-xs text-slate-400">Purchase Order</p>
-              <p className="font-medium text-slate-700">{match.po || '—'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Goods Receipt</p>
-              <p className="font-medium text-slate-700">{match.grn || '—'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">PO Amount</p>
-              <p className="font-medium text-slate-700 tabular-nums">{match.poAmount ? `€${match.poAmount.toFixed(2)}` : '—'}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-400">Invoice Amount</p>
-              <p className="font-medium text-slate-700 tabular-nums">€{match.invoiceAmount.toFixed(2)}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Warning banner */}
+        {/* ── Warning banner ── */}
         {(isVariance || isMissingPO) && (
           <div className="mx-4 mb-4">
-            <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2.5 border border-amber-200">
+            <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-3 border border-amber-200">
               <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
               <p className="text-sm text-amber-700">
                 {isVariance 
@@ -574,6 +732,26 @@ const MatchSidebar = ({
             </div>
           </div>
         )}
+
+        {/* ── Invoice Image ── */}
+        <div className="mx-4 mb-4 rounded-xl border border-slate-200 overflow-hidden">
+          <img
+            src={demoImages.invoice}
+            alt="Invoice"
+            className="w-full h-36 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => {
+              toast({
+                title: "Full invoice view",
+                description: "Opening invoice in full screen...",
+              });
+            }}
+          />
+          <div className="flex items-center justify-center gap-1.5 py-2 bg-slate-50/80">
+            <p className="text-xs text-emerald-600 flex items-center gap-1">
+              <CheckCircle2 className="h-3 w-3" /> AI validated
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* BOTTOM: Actions */}

@@ -4,9 +4,9 @@
 export const pulseActions = {
   // Primary state transitions
   assignOwner: 'Assign Owner',           // replaces "Assign supplier", "Assign contractor"
-  advancePulse: 'Advance Pulse',         // replaces "Generate Auto-PO", "Process"
-  escalatePulse: 'Escalate Pulse',       // replaces "Escalate"
-  resolvePulse: 'Resolve Pulse',         // replaces "Mark Complete", "Close"
+  advancePulse: 'Advance',               // replaces "Generate Auto-PO", "Process"
+  escalatePulse: 'Escalate',             // replaces "Escalate"
+  resolvePulse: 'Resolve',               // replaces "Mark Complete", "Close"
   blockPulse: 'Mark Blocked',            // new - explicit blocked state
   
   // Secondary actions

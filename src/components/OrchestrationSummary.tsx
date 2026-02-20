@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, CheckCircle2, Clock, AlertTriangle, TrendingUp } from 'lucide-react';
 
 interface OrchestrationSummaryProps {
-  totalPulses: number;
+  totalPulses: number;  // Total requests processed
   autoHandled: number;
   decisionsNeeded: number;
   timeSavedMinutes?: number;
@@ -60,7 +60,7 @@ const OrchestrationSummary = ({
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {/* Pulses Awaiting Action */}
+        {/* Requests Awaiting Action */}
         <div className="text-center">
           <motion.p 
             className="text-3xl font-bold text-signal-red"
@@ -71,11 +71,11 @@ const OrchestrationSummary = ({
           >
             {decisionsNeeded}
           </motion.p>
-          <p className="text-xs font-medium mt-1">Pulses Awaiting</p>
-          <p className="text-[10px] text-signal-red">Your Action</p>
+          <p className="text-xs font-medium mt-1">Needs Action</p>
+          <p className="text-[10px] text-signal-red">Your Decision</p>
         </div>
 
-        {/* Pulses In Motion */}
+        {/* Requests In Progress */}
         <div className="text-center">
           <motion.p 
             className="text-3xl font-bold text-signal-amber"
@@ -86,7 +86,7 @@ const OrchestrationSummary = ({
           >
             {totalPulses - autoHandled - decisionsNeeded}
           </motion.p>
-          <p className="text-xs font-medium mt-1">Pulses In Motion</p>
+          <p className="text-xs font-medium mt-1">In Progress</p>
           <p className="text-[10px] text-signal-amber">Being processed</p>
         </div>
 
@@ -106,9 +106,9 @@ const OrchestrationSummary = ({
         </div>
       </div>
 
-      {/* Pulse Pipeline Summary */}
+      {/* Request Pipeline Summary */}
       <div className="mt-4 pt-4 border-t border-border/50">
-        <p className="text-xs text-muted-foreground mb-2">Pulse Pipeline — {totalPulses} total today:</p>
+        <p className="text-xs text-muted-foreground mb-2">Request Pipeline — {totalPulses} total today:</p>
         <div className="flex flex-wrap gap-2">
           <span className="text-xs px-2 py-1 rounded-full bg-hero-purple-soft text-hero-purple">
             🟣 {autoHandled} Auto-Handled

@@ -9,19 +9,25 @@ import ImageThumbnail from '@/components/ImageThumbnail';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { 
-  Check, MessageSquare, X, FileCheck2, ShieldAlert, Zap, 
-  ArrowUpDown, CheckCheck, AlertTriangle, Clock, Pencil,
-  Receipt, Image, Sparkles, Send, ChevronRight, Filter, Calendar, Euro,
-  Brain, ArrowRight, CheckCircle2, DollarSign, Tag, FileText
+  Check, MessageSquare, X, Filter,
+  ArrowUpDown, CheckCheck, AlertTriangle, Clock,
+  Sparkles, Send, ChevronRight, Zap, ShieldAlert, FileCheck2, FileText, Pencil,
+  Brain, CheckCircle2, TrendingUp, Users, FileWarning, Euro
 } from 'lucide-react';
 import { Signal } from '@/data/types';
 import { demoImages } from '@/data/mockData';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
-import AnomalyHeatmap from '@/components/AnomalyHeatmap';
-import OrchestrationFlow from '@/components/OrchestrationFlow';
-import AutoResolveStack from '@/components/AutoResolveStack';
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROHAN VIEW — Finance Dashboard (Organizer-Workspace Pattern)
+   
+   UX Principles Applied:
+   - Organizer-Workspace Pattern (About Face): Split-screen with persistent sidebar
+   - Kill Navigational Excise: No page changes, modeless detail panel
+   - Data Density: Condensed KPI row, high-density list
+   - Visual Hierarchy: Soft tags, clear selected state
+   ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Mock Data ─── */
 const threeWayMatches = [
@@ -43,7 +49,6 @@ const missingDataFixes = [
 ];
 
 type ThreeWayMatch = typeof threeWayMatches[number];
-
 type SortMode = 'amount' | 'risk' | 'deadline' | 'vendor';
 
 /* ─── GL Code Map ─── */
@@ -100,6 +105,15 @@ const deriveBudgetPeriod = (dateStr: string) => {
   }
 };
 
+const formatDate = (dateStr: string) => {
+  try {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+  } catch {
+    return dateStr;
+  }
+};
+
 interface ComplianceCheck {
   label: string;
   description: string;
@@ -145,23 +159,41 @@ const formatDrawerDate = (dateStr: string) => {
   }
 };
 
-/* ─── Confidence Flag Component ─── */
-const ConfidenceFlag = ({ level }: { level: 'high' | 'medium' | 'low' }) => {
+/* ─── Confidence Tag Component (Soft, Low-Contrast per Refactoring UI) ─── */
+const ConfidenceTag = ({ level }: { level: 'high' | 'medium' | 'low' }) => {
   const config = {
-    high: { label: 'High', className: 'confidence-high', dot: '🟢' },
-    medium: { label: 'Review', className: 'confidence-review', dot: '🟡' },
-    low: { label: 'Query', className: 'confidence-query', dot: '🔴' },
+    high: { 
+      label: 'Spot-check', 
+      bg: 'bg-emerald-50', 
+      text: 'text-emerald-700',
+      dot: '🟢' 
+    },
+    medium: { 
+      label: 'Review', 
+      bg: 'bg-amber-50', 
+      text: 'text-amber-700',
+      dot: '🟡' 
+    },
+    low: { 
+      label: 'Query', 
+      bg: 'bg-red-50', 
+      text: 'text-red-700',
+      dot: '🔴' 
+    },
   };
   const c = config[level];
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${c.className}`}>
-      <span>{c.dot}</span> {c.label}
+    <span className={cn(
+      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium',
+      c.bg, c.text
+    )}>
+      <span className="text-[10px]">{c.dot}</span> {c.label}
     </span>
   );
 };
 
-/* ─── Exception Row for Desktop ─── */
-const ExceptionRow = ({ 
+/* ─── Dense List Row (Organizer-Workspace Pattern) ─── */
+const ExceptionListRow = ({ 
   signal, 
   onSelect, 
   isSelected 
@@ -173,43 +205,217 @@ const ExceptionRow = ({
   return (
     <button
       onClick={onSelect}
-      className={`w-full text-left p-4 rounded-xl transition-all ${
+      className={cn(
+        'w-full text-left px-4 py-3 transition-all border-l-4',
         isSelected 
-          ? 'bg-card shadow-elevation-medium ring-2 ring-foreground/10' 
-          : 'bg-card/50 hover:bg-card hover:shadow-elevation-low'
-      }`}
+          ? 'bg-slate-100 border-l-teal-600' 
+          : 'bg-white hover:bg-slate-50 border-l-transparent'
+      )}
     >
       <div className="flex items-center gap-4">
-        {/* Confidence flag */}
-        <ConfidenceFlag level={signal.riskLevel} />
+        {/* Confidence tag */}
+        <ConfidenceTag level={signal.riskLevel} />
         
-        {/* Main content */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold truncate">{signal.description}</p>
-          <p className="text-xs text-muted-foreground">
-            {signal.submitter_name} · {signal.location}
-          </p>
-        </div>
-        
-        {/* Amount */}
-        <div className="text-right shrink-0">
-          <p className="text-sm font-bold tabular-nums">
+        {/* Amount - prominent */}
+        <div className="w-24 shrink-0">
+          <p className="text-sm font-bold tabular-nums text-slate-900">
             €{(signal.amount || 0).toFixed(2)}
           </p>
-          {signal.ai_reasoning && (
-            <p className="text-[10px] text-muted-foreground flex items-center gap-1 justify-end">
-              <Sparkles className="h-2.5 w-2.5" /> AI flagged
-            </p>
-          )}
         </div>
         
-        <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${isSelected ? 'rotate-90' : ''}`} />
+        {/* Vendor/Description */}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-slate-900 truncate">
+            {signal.supplier_suggestion || signal.title || signal.description}
+          </p>
+        </div>
+        
+        {/* Date */}
+        <div className="w-20 shrink-0 text-right">
+          <p className="text-xs text-slate-500">
+            {formatDate(signal.created_at)}
+          </p>
+        </div>
+        
+        {/* Submitter */}
+        <div className="w-28 shrink-0 text-right">
+          <p className="text-xs text-slate-500 truncate">
+            {signal.submitter_name}
+          </p>
+        </div>
       </div>
     </button>
   );
 };
 
-/* ─── Detail Drawer Content ─── */
+/* ─── Detail Sidebar Content (Modeless, Persistent) ─── */
+const DetailSidebar = ({ 
+  signal, 
+  onApprove,
+  onReject,
+  onAskQuestion
+}: { 
+  signal: ClassifiedSignal;
+  onApprove: () => void;
+  onReject: () => void;
+  onAskQuestion: (question: string) => void;
+}) => {
+  const [chatInput, setChatInput] = useState('');
+  const vatInfo = computeVAT(signal.amount || 0);
+  const complianceChecks = getComplianceChecks(signal);
+  const passedCount = complianceChecks.filter(c => c.passed).length;
+  const glCode = glCodeMap[signal.signal_type] || '4900';
+
+  const handleSendQuestion = () => {
+    if (chatInput.trim()) {
+      onAskQuestion(chatInput);
+      setChatInput('');
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-white">
+      {/* TOP: Receipt Image — taller container (h-64 = 256px) for better readability */}
+      <div className="relative h-64 bg-slate-100 overflow-hidden">
+        <img 
+          src={getSignalImage(signal)} 
+          alt="Receipt" 
+          className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+          onClick={() => {
+            toast({
+              title: "📷 Full image view",
+              description: "Opening receipt in full screen...",
+            });
+          }}
+        />
+        <div className="absolute top-3 left-3">
+          <ConfidenceTag level={signal.riskLevel} />
+        </div>
+        <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+          <p className="text-white text-lg font-bold tabular-nums drop-shadow-sm">
+            €{vatInfo.total.toFixed(2)}
+          </p>
+          <p className="text-white/80 text-xs drop-shadow-sm">
+            {signal.submitter_name}
+          </p>
+        </div>
+      </div>
+
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Header info */}
+        <div className="px-4 py-3 border-b border-slate-100">
+          <h3 className="text-base font-semibold text-slate-900 leading-snug">
+            {signal.supplier_suggestion || signal.title || signal.description}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            #{signal.signal_number} · {signal.location} · {formatDrawerDate(signal.created_at)}
+          </p>
+        </div>
+
+        {/* MIDDLE: AI Reasoning Panel — visually distinct */}
+        <div className="mx-4 my-4 rounded-lg bg-slate-50 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Brain className="h-4 w-4 text-slate-400" />
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">AI Reasoning</p>
+          </div>
+          <p className="text-sm text-slate-700 leading-relaxed">
+            {signal.ai_reasoning || `Coded as ${glCode} because ${signal.submitter_name} submitted from ${signal.location}. ${signal.funding ? `Funding: ${signal.funding}.` : ''}`}
+          </p>
+          {/* Compliance mini-checks */}
+          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-200">
+            {complianceChecks.slice(0, 3).map((check, i) => (
+              <div key={i} className="flex items-center gap-1">
+                {check.passed ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                ) : (
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                )}
+                <span className="text-xs text-slate-500">{check.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Financial details - compact */}
+        <div className="px-4 pb-4">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-xs text-slate-400">Cost Center</p>
+              <p className="font-medium text-slate-700">{deriveCostCenter(signal.location, signal.funding)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">GL Code</p>
+              <p className="font-medium text-slate-700">{glCode}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Net / VAT</p>
+              <p className="font-medium text-slate-700 tabular-nums">€{vatInfo.net.toFixed(2)} / €{vatInfo.vat.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Funding</p>
+              <p className="font-medium text-slate-700">{signal.funding || 'General'}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Warning banner if flagged */}
+        {signal.flag_reason && (
+          <div className="mx-4 mb-4">
+            <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2.5 border border-amber-200">
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+              <p className="text-sm text-amber-700">{signal.flag_reason}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* BOTTOM: Actions — Chat-first hierarchy when AI is uncertain */}
+      <div className="border-t border-slate-200 bg-white p-4 space-y-3">
+        {/* PRIMARY: Inline chat input to ask care worker (top position = primary action) */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendQuestion()}
+            placeholder={`Ask ${signal.submitter_name} a question...`}
+            className="flex-1 px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+          />
+          <Button 
+            size="sm"
+            className="gap-1.5 bg-teal-600 hover:bg-teal-700 px-4"
+            onClick={handleSendQuestion}
+            disabled={!chatInput.trim()}
+          >
+            <Send className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+        
+        {/* SECONDARY: De-emphasized action buttons */}
+        <div className="flex items-center gap-3 pt-1">
+          <Button 
+            variant="outline"
+            className="flex-1 gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50" 
+            size="sm"
+            onClick={onApprove}
+          >
+            <Check className="h-3.5 w-3.5" /> Approve
+          </Button>
+          <button 
+            className="text-sm text-red-500 hover:text-red-600 hover:underline px-2"
+            onClick={onReject}
+          >
+            Reject
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Legacy Detail Drawer Content (for Sheet fallback) ─── */
 const DetailDrawerContent = ({ 
   signal, 
   onEdit,
@@ -258,14 +464,16 @@ const DetailDrawerContent = ({
         </div>
       </div>
 
-      {/* Description line */}
-      {signal.description && (
-        <div className="px-4 py-3 border-b border-border">
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            {signal.description} — submitted by {signal.submitter_name}
-          </p>
+      {/* AI Reasoning - prominent */}
+      <div className="mx-4 my-4 rounded-lg bg-slate-50 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Brain className="h-4 w-4 text-slate-400" />
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">AI Reasoning</p>
         </div>
-      )}
+        <p className="text-sm text-slate-700 leading-relaxed">
+          {signal.ai_reasoning || `Coded as ${glCode} because ${signal.submitter_name} submitted from ${signal.location}.`}
+        </p>
+      </div>
 
       {/* Financial summary card */}
       <div className="px-4 py-4 border-b border-border">
@@ -278,100 +486,8 @@ const DetailDrawerContent = ({
               <p className="text-xs text-muted-foreground tabular-nums">VAT €{vatInfo.vat.toFixed(2)} (21%)</p>
             </div>
           </div>
-          {/* Category tags */}
-          <div className="flex flex-wrap gap-2 mt-3">
-            <Badge variant="outline" className="text-[11px] gap-1">
-              <Sparkles className="h-3 w-3" /> {glCode} — {signal.category || 'General'}
-            </Badge>
-            <Badge variant="outline" className="text-[11px] capitalize">{signal.category || 'General'}</Badge>
-            <Badge variant="outline" className="text-[11px]">{signal.category || 'General'} / {signal.signal_type === 'general' ? 'Unclassified' : signal.signal_type}</Badge>
-          </div>
         </div>
       </div>
-
-      {/* Financial details grid */}
-      <div className="px-4 py-4 border-b border-border">
-        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">Financial Details</p>
-        <div className="border border-border rounded-lg overflow-hidden">
-          <div className="grid grid-cols-2">
-            <div className="p-3 border-b border-r border-border">
-              <p className="text-[11px] text-muted-foreground mb-0.5">Cost Center</p>
-              <p className="text-sm font-semibold">{deriveCostCenter(signal.location, signal.funding)}</p>
-            </div>
-            <div className="p-3 border-b border-border">
-              <p className="text-[11px] text-muted-foreground mb-0.5">Budget Period</p>
-              <p className="text-sm font-semibold">{deriveBudgetPeriod(signal.created_at)}</p>
-            </div>
-            <div className="p-3 border-r border-border">
-              <p className="text-[11px] text-muted-foreground mb-0.5">Payment Terms</p>
-              <p className="text-sm font-semibold">Immediate</p>
-            </div>
-            <div className="p-3">
-              <p className="text-[11px] text-muted-foreground mb-0.5">Funding Stream</p>
-              <p className="text-sm font-semibold">{signal.funding || 'General'}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* AI Confidence bar */}
-      <div className="px-4 py-4 border-b border-border">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5">
-            <Sparkles className="h-3.5 w-3.5" /> AI Confidence
-          </p>
-          <p className="text-sm font-bold tabular-nums">{confidencePercent}%</p>
-        </div>
-        <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all ${confidenceColor}`}
-            style={{ width: `${confidencePercent}%` }}
-          />
-        </div>
-      </div>
-
-      {/* AI Reasoning */}
-      {signal.ai_reasoning && (
-        <div className="px-4 py-4 border-b border-border">
-          <div className="rounded-xl bg-secondary/40 p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <Brain className="h-4 w-4 text-muted-foreground" />
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">AI Reasoning</p>
-            </div>
-            <p className="text-sm leading-relaxed text-muted-foreground">{signal.ai_reasoning}</p>
-          </div>
-        </div>
-      )}
-
-      {/* Compliance section */}
-      <div className="px-4 py-4 border-b border-border">
-        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold mb-3">Compliance</p>
-        <div className="grid grid-cols-2 gap-3">
-          {complianceChecks.map((check, i) => (
-            <div key={i} className="flex items-start gap-2">
-              {check.passed ? (
-                <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0 mt-0.5" />
-              ) : (
-                <AlertTriangle className="h-4 w-4 text-signal-amber shrink-0 mt-0.5" />
-              )}
-              <div>
-                <p className="text-sm font-medium leading-tight">{check.label}</p>
-                <p className="text-xs text-muted-foreground">{check.description}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Warning banner */}
-      {signal.flag_reason && (
-        <div className="px-4 py-3 border-b border-border">
-          <div className="flex items-center gap-2 rounded-lg bg-signal-amber-bg/50 px-3 py-2.5">
-            <AlertTriangle className="h-4 w-4 text-signal-amber shrink-0" />
-            <p className="text-sm text-signal-amber font-medium">{signal.flag_reason}</p>
-          </div>
-        </div>
-      )}
 
       {/* Signal image — constrained cover with tap-to-expand */}
       <div className="px-4 py-4 border-b border-border">
@@ -387,8 +503,8 @@ const DetailDrawerContent = ({
           <Button variant="outline" className="gap-1.5" size="sm" onClick={onQuery}>
             <MessageSquare className="h-3.5 w-3.5" /> Ask
           </Button>
-          <Button variant="outline" className="gap-1.5" size="sm" onClick={onEdit}>
-            <ArrowRight className="h-3.5 w-3.5" /> Reassign
+          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive px-2.5" onClick={onEdit}>
+            <X className="h-4 w-4" />
           </Button>
           <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive px-2.5">
             <X className="h-4 w-4" />
@@ -956,76 +1072,134 @@ const RohanView = () => {
     setEditOpen(true);
   };
 
+  const handleApprove = (signal: ClassifiedSignal) => {
+    toast({
+      title: "✅ Approved",
+      description: `${signal.title || signal.description} approved and posted to GL.`,
+    });
+    setSelectedSignal(null);
+  };
+
+  const handleReject = (signal: ClassifiedSignal) => {
+    toast({
+      title: "❌ Rejected",
+      description: `${signal.title || signal.description} rejected. Notification sent to ${signal.submitter_name}.`,
+    });
+    setSelectedSignal(null);
+  };
+
+  const handleAskQuestion = (signal: ClassifiedSignal, question: string) => {
+    toast({
+      title: "💬 Question sent",
+      description: `Message sent to ${signal.submitter_name}: "${question.slice(0, 40)}${question.length > 40 ? '...' : ''}"`,
+    });
+  };
+
   return (
-    <div className="min-h-screen">
-      {/* Sovereign header — full width, data-dense */}
-      <div className="border-b border-border bg-card/50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="font-display text-3xl font-bold tracking-tight">
-                €{totalExposure.toLocaleString('nl-NL', { minimumFractionDigits: 0 })}
-                <span className="text-lg font-normal text-muted-foreground ml-2">exposure</span>
-              </h1>
-              <div className="flex items-center gap-4 mt-1 text-sm">
-                {highRiskCount > 0 && (
-                  <span className="flex items-center gap-1.5 text-signal-red font-medium">
-                    🔴 {highRiskCount} Pulses need action
-                  </span>
-                )}
-                <span className="text-muted-foreground">{exceptions.length} flagged Pulses</span>
-                <span className="text-muted-foreground">{approvals.length} in motion</span>
-                <span className="text-muted-foreground">{matchedCount} auto-handled</span>
-              </div>
-            </div>
-            
-            {/* Bulk actions */}
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      {/* ═══ HEADER: Page Title + Condensed KPI Row ═══ */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
+          {/* Title row */}
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="font-display text-2xl font-bold text-slate-900">
+              Finance Dashboard
+            </h1>
             {lowRiskExceptions.length > 0 && !resolvedLowRisk && (
               <Button 
-                className="gap-2 shadow-elevation-low"
+                className="gap-2"
                 onClick={() => handleResolveLowRisk(lowRiskExceptions.length)}
               >
                 <CheckCheck className="h-4 w-4" />
-                Resolve {lowRiskExceptions.length} Pulses
+                Bulk Approve {lowRiskExceptions.length} Low-Risk
               </Button>
             )}
           </div>
           
-          {/* Tab navigation — Pulse Pipeline states */}
-          <div className="flex items-center gap-1 mt-4 border-b border-border -mb-px">
-            {[
-              { key: 'exceptions', label: 'Needs Action', count: exceptions.length + actionableMatches.length },
-              { key: 'approvals', label: 'In Motion', count: approvals.length },
-              { key: 'monitoring', label: 'Monitoring', count: shadowSpendItems.length },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
-                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab.key 
-                    ? 'border-foreground text-foreground' 
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {tab.label}
-                <span className="ml-2 text-xs bg-secondary px-1.5 py-0.5 rounded-full">{tab.count}</span>
-              </button>
-            ))}
+          {/* ═══ CONDENSED KPI ROW (Replaces Heatmap Column) ═══ */}
+          <div className="grid grid-cols-4 gap-4">
+            {/* Total Exposure */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Euro className="h-4 w-4 text-slate-400" />
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Exposure</p>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 tabular-nums">
+                €{totalExposure.toLocaleString('nl-NL', { minimumFractionDigits: 0 })}
+              </p>
+            </div>
+            
+            {/* Exceptions to Review */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <FileWarning className="h-4 w-4 text-amber-500" />
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Exceptions</p>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 tabular-nums">
+                {exceptions.length + actionableMatches.length}
+                <span className="text-sm font-normal text-slate-500 ml-1">to review</span>
+              </p>
+            </div>
+            
+            {/* Spot-Checks Pending */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <Users className="h-4 w-4 text-emerald-500" />
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Spot-Checks</p>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 tabular-nums">
+                {approvals.length}
+                <span className="text-sm font-normal text-slate-500 ml-1">pending</span>
+              </p>
+            </div>
+            
+            {/* Auto-Handled */}
+            <div className="bg-slate-50 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-1">
+                <TrendingUp className="h-4 w-4 text-blue-500" />
+                <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Auto-Handled</p>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 tabular-nums">
+                {matchedCount}
+                <span className="text-sm font-normal text-slate-500 ml-1">this week</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Main content */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid lg:grid-cols-4 gap-6">
-          {/* Left sidebar — Heatmap + Auto-resolved */}
-          <div className="lg:col-span-1 space-y-4">
-            <AnomalyHeatmap onLocationClick={(loc) => console.log('Navigate to', loc)} />
-            <AutoResolveStack autoDemo={true} />
+      {/* ═══ ORGANIZER-WORKSPACE LAYOUT (60/40 Split) ═══ */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* ─── INDEX PANE (Left, ~60%) ─── */}
+        <div className="w-[60%] flex flex-col border-r border-slate-200 bg-white">
+          {/* Tab navigation */}
+          <div className="flex items-center gap-1 px-4 pt-3 border-b border-slate-200">
+            {[
+              { key: 'exceptions', label: 'Needs Action', count: exceptions.length + actionableMatches.length },
+              { key: 'approvals', label: 'In Motion', count: approvals.length },
+              { key: 'monitoring', label: 'Monitoring', count: 0 },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key as any)}
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-colors ${
+                  activeTab === tab.key 
+                    ? 'border-slate-900 text-slate-900' 
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                {tab.label}
+                {tab.count > 0 && (
+                  <span className="ml-2 text-xs bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-full">
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
-
-          {/* Main feed area */}
-          <div className="lg:col-span-3 space-y-4">
+          
+          {/* Sort controls */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-100 bg-slate-50/50">
             {/* Sort & Filter controls */}
             <div className="flex items-center justify-between flex-wrap gap-3">
               <div className="flex items-center gap-2">
@@ -1073,153 +1247,48 @@ const RohanView = () => {
               </div>
             </div>
             
-            {/* Filter panel */}
-            <AnimatePresence>
-              {showFilters && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="p-4 rounded-xl bg-card border border-border space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-semibold">Filters</h3>
-                      {activeFilterCount > 0 && (
-                        <button
-                          onClick={() => setFilters({ riskLevel: 'all', amountRange: 'all', dateRange: 'all' })}
-                          className="text-xs text-muted-foreground hover:text-foreground"
-                        >
-                          Clear all
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div className="grid grid-cols-3 gap-4">
-                      {/* Risk Level */}
-                      <div className="space-y-2">
-                        <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                          <AlertTriangle className="h-3.5 w-3.5" /> Risk Level
-                        </label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[
-                            { value: 'all', label: 'All' },
-                            { value: 'high', label: '🔴 High' },
-                            { value: 'medium', label: '🟡 Medium' },
-                            { value: 'low', label: '🟢 Low' },
-                          ].map(opt => (
-                            <button
-                              key={opt.value}
-                              onClick={() => setFilters(f => ({ ...f, riskLevel: opt.value as any }))}
-                              className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
-                                filters.riskLevel === opt.value
-                                  ? 'bg-foreground text-background font-medium'
-                                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                              }`}
-                            >
-                              {opt.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {/* Amount Range */}
-                      <div className="space-y-2">
-                        <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                          <Euro className="h-3.5 w-3.5" /> Amount
-                        </label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[
-                            { value: 'all', label: 'All' },
-                            { value: 'under50', label: '< €50' },
-                            { value: '50to200', label: '€50-200' },
-                            { value: 'over200', label: '> €200' },
-                          ].map(opt => (
-                            <button
-                              key={opt.value}
-                              onClick={() => setFilters(f => ({ ...f, amountRange: opt.value as any }))}
-                              className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
-                                filters.amountRange === opt.value
-                                  ? 'bg-foreground text-background font-medium'
-                                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                              }`}
-                            >
-                              {opt.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {/* Date Range */}
-                      <div className="space-y-2">
-                        <label className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
-                          <Calendar className="h-3.5 w-3.5" /> Date
-                        </label>
-                        <div className="flex flex-wrap gap-1.5">
-                          {[
-                            { value: 'all', label: 'All' },
-                            { value: 'today', label: 'Today' },
-                            { value: 'week', label: 'This week' },
-                            { value: 'month', label: 'This month' },
-                          ].map(opt => (
-                            <button
-                              key={opt.value}
-                              onClick={() => setFilters(f => ({ ...f, dateRange: opt.value as any }))}
-                              className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
-                                filters.dateRange === opt.value
-                                  ? 'bg-foreground text-background font-medium'
-                                  : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
-                              }`}
-                            >
-                              {opt.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
+          </div>
+          
+          {/* Scrollable list area */}
+          <div className="flex-1 overflow-y-auto">
             {/* Exception list */}
             {activeTab === 'exceptions' && (
               <div className="space-y-2">
-                {/* Three-way match exceptions */}
+                {/* Three-way match exceptions — uniform row style, no buttons/arrows */}
                 {actionableMatches.filter(m => !reconciledIds.has(m.id)).map(match => (
-                  <div
+                  <button
                     key={match.id}
                     onClick={() => { setSelectedMatch(match); setSelectedSignal(null); }}
-                    className={`w-full text-left p-4 rounded-xl transition-all cursor-pointer ${
+                    className={cn(
+                      'w-full text-left px-4 py-3 transition-all border-l-4',
                       selectedMatch?.id === match.id
-                        ? 'bg-card shadow-elevation-medium ring-2 ring-foreground/10'
-                        : 'bg-card/50 hover:bg-card hover:shadow-elevation-low'
-                    }`}
+                        ? 'bg-slate-100 border-l-teal-600'
+                        : 'bg-white hover:bg-slate-50 border-l-transparent'
+                    )}
                   >
                     <div className="flex items-center gap-4">
-                      <ConfidenceFlag level={match.status === 'missing-po' ? 'low' : 'medium'} />
+                      <ConfidenceTag level={match.status === 'missing-po' ? 'low' : 'medium'} />
+                      <div className="w-24 shrink-0">
+                        <p className="text-sm font-bold tabular-nums text-slate-900">€{match.invoiceAmount.toFixed(2)}</p>
+                      </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold">{match.supplier}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {match.invoice} · {match.status === 'variance' ? `+${match.variance}% variance` : 'Missing PO'}
+                        <p className="text-sm font-medium text-slate-900 truncate">{match.supplier}</p>
+                      </div>
+                      <div className="w-28 shrink-0 text-right">
+                        <p className="text-xs text-slate-500">{match.invoice}</p>
+                      </div>
+                      <div className="w-24 shrink-0 text-right">
+                        <p className="text-xs text-slate-500">
+                          {match.status === 'variance' ? `+${match.variance}%` : 'No PO'}
                         </p>
                       </div>
-                      <p className="text-sm font-bold tabular-nums">€{match.invoiceAmount.toFixed(2)}</p>
-                      <Button
-                        size="sm"
-                        className="gap-1.5 shrink-0"
-                        onClick={(e) => { e.stopPropagation(); handleReconcile(match); }}
-                      >
-                        <Check className="h-3.5 w-3.5" /> Reconcile
-                      </Button>
-                      <ChevronRight className={`h-4 w-4 text-muted-foreground transition-transform ${selectedMatch?.id === match.id ? 'rotate-90' : ''}`} />
                     </div>
-                  </div>
+                  </button>
                 ))}
                 
                 {/* Signal exceptions */}
                 {sortItems(filterItems(exceptions)).map(signal => (
-                  <ExceptionRow
+                  <ExceptionListRow
                     key={signal.id}
                     signal={signal}
                     onSelect={() => { setSelectedSignal(signal); setSelectedMatch(null); }}
@@ -1247,7 +1316,7 @@ const RohanView = () => {
             {activeTab === 'approvals' && (
               <div className="space-y-2">
                 {sortItems(filterItems(approvals)).map(signal => (
-                  <ExceptionRow
+                  <ExceptionListRow
                     key={signal.id}
                     signal={signal}
                     onSelect={() => { setSelectedSignal(signal); setSelectedMatch(null); }}
@@ -1382,42 +1451,30 @@ const RohanView = () => {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Detail Drawer — slides in from right */}
-      <Sheet
-        open={!!selectedSignal || !!selectedMatch}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSelectedSignal(null);
-            setSelectedMatch(null);
-          }
-        }}
-      >
-        <SheetContent side="right" className="w-[600px] sm:w-[680px] p-0 overflow-y-auto">
-          <SheetHeader className="sr-only">
-            <SheetTitle>
-              {selectedSignal ? (selectedSignal.title || selectedSignal.description) : selectedMatch?.supplier}
-            </SheetTitle>
-          </SheetHeader>
-          {selectedSignal && (
-            <DetailDrawerContent
+        
+        {/* ─── DETAIL SIDEBAR (Right, ~40%) — Persistent, Modeless ─── */}
+        <div className="w-[40%] bg-white border-l border-slate-200 flex flex-col">
+          {selectedSignal ? (
+            <DetailSidebar
               signal={selectedSignal}
-              onEdit={() => openEdit(selectedSignal)}
-              onQuery={() => {}}
+              onApprove={() => handleApprove(selectedSignal)}
+              onReject={() => handleReject(selectedSignal)}
+              onAskQuestion={(q) => handleAskQuestion(selectedSignal, q)}
             />
+          ) : (
+            /* Empty state when nothing selected */
+            <div className="flex-1 flex items-center justify-center p-8">
+              <div className="text-center">
+                <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                  <FileWarning className="h-8 w-8 text-slate-300" />
+                </div>
+                <p className="text-sm font-medium text-slate-500">Select an item to review</p>
+                <p className="text-xs text-slate-400 mt-1">Click any row in the list to see details</p>
+              </div>
+            </div>
           )}
-          {selectedMatch && (
-            <ReconcileDetailContent
-              match={selectedMatch}
-              onReconcile={() => {
-                handleReconcile(selectedMatch);
-                setSelectedMatch(null);
-              }}
-            />
-          )}
-        </SheetContent>
-      </Sheet>
+        </div>
+      </div>
 
       {/* Edit drawer */}
       <PulseEditDrawer signal={editSignal} open={editOpen} onOpenChange={setEditOpen} />

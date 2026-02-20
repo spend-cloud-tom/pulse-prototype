@@ -149,7 +149,7 @@ const PulseSearch = ({ signals, activeRole, onSelectSignal, onFullSearch }: Puls
           onChange={e => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
           onKeyDown={handleKeyDown}
-          placeholder="Search pulses, suppliers, people…"
+          placeholder="Search requests, suppliers, people…"
           className="h-8 pl-8 pr-8 text-xs bg-secondary/50 border-border focus:bg-card"
         />
         {query && (
@@ -186,15 +186,15 @@ const PulseSearch = ({ signals, activeRole, onSelectSignal, onFullSearch }: Puls
           {/* No results */}
           {filtered.length === 0 && matchedShortcuts.length === 0 && (
             <div className="p-4 text-center">
-              <p className="text-sm text-muted-foreground">No pulses found matching "{query}"</p>
+              <p className="text-sm text-muted-foreground">No results found matching "{query}"</p>
               <p className="text-xs text-muted-foreground/60 mt-1">Try expanding your date range or clearing filters.</p>
             </div>
           )}
 
-          {/* Pulses section */}
+          {/* Requests section */}
           {grouped.pulses.length > 0 && (
             <div className="p-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 pb-1">Pulses</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-2 pb-1">Requests</p>
               {grouped.pulses.map(signal => {
                 const typeInfo = signalTypeConfig[signal.signal_type] || signalTypeConfig.general;
                 const status = statusDisplay[signal.status];
@@ -241,7 +241,7 @@ const PulseSearch = ({ signals, activeRole, onSelectSignal, onFullSearch }: Puls
                 >
                   <Package className="h-3 w-3 text-muted-foreground shrink-0" />
                   <span className="font-medium">{sup.name}</span>
-                  <span className="text-muted-foreground ml-auto">{sup.count} pulses</span>
+                  <span className="text-muted-foreground ml-auto">{sup.count} items</span>
                 </button>
               ))}
             </div>
@@ -259,7 +259,7 @@ const PulseSearch = ({ signals, activeRole, onSelectSignal, onFullSearch }: Puls
                 >
                   <User className="h-3 w-3 text-muted-foreground shrink-0" />
                   <span className="font-medium">{person.name}</span>
-                  <span className="text-muted-foreground ml-auto">{person.count} pulses</span>
+                  <span className="text-muted-foreground ml-auto">{person.count} items</span>
                 </button>
               ))}
             </div>
@@ -277,7 +277,7 @@ const PulseSearch = ({ signals, activeRole, onSelectSignal, onFullSearch }: Puls
                 >
                   <MapPin className="h-3 w-3 text-muted-foreground shrink-0" />
                   <span className="font-medium">{loc.name}</span>
-                  <span className="text-muted-foreground ml-auto">{loc.count} pulses</span>
+                  <span className="text-muted-foreground ml-auto">{loc.count} items</span>
                 </button>
               ))}
             </div>

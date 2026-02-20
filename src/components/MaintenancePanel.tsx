@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Wrench, User, Phone, Calendar, Check, Clock, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { Wrench, User, Phone, Calendar, Check, Clock, AlertTriangle, CheckCircle2, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import type { MaintenanceTicket } from '@/hooks/useMaintenanceTickets';
 import { demoImages } from '@/data/mockData';
@@ -104,7 +104,7 @@ const MaintenancePanel = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-          <Wrench className="h-4 w-4" /> Maintenance Tickets
+          <Wrench className="h-4 w-4" /> Maintenance Requests
         </h2>
         <Badge variant="secondary" className="text-xs">{tickets.length}</Badge>
       </div>
@@ -120,15 +120,19 @@ const MaintenancePanel = () => {
             const ticketImage = getMaintenanceImage(ticket.issue_description);
             return (
               <div key={ticket.id} className="rounded-xl border border-signal-red/20 bg-card p-4 space-y-3">
+                {/* Object type label */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Maintenance Request
+                  </span>
+                  <Badge className={`text-[11px] border-0 gap-1 shrink-0 ${sc.color}`}>
+                    {sc.icon} {sc.label}
+                  </Badge>
+                </div>
+                
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-sm font-semibold">{ticket.issue_description}</p>
-                      <Badge className={`text-[11px] border-0 gap-1 shrink-0 ${sc.color}`}>
-                        {sc.icon} {sc.label}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{ticket.location} · {ticket.room_or_area}</p>
+                    <p className="text-sm font-semibold">{ticket.issue_description}</p>
                     <Badge className={`text-[10px] border-0 ${ticket.priority === 'critical' ? 'bg-signal-red-bg text-signal-red' : ticket.priority === 'urgent' ? 'bg-signal-amber-bg text-signal-amber' : 'bg-secondary text-muted-foreground'}`}>
                       {ticket.priority}
                     </Badge>
@@ -137,6 +141,25 @@ const MaintenancePanel = () => {
                     <ImageThumbnail src={ticketImage} alt="Issue" size="sm" />
                   )}
                 </div>
+                
+                {/* Metadata footer — Creator, Location, Time */}
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-2 border-t border-border/40">
+                  <span className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    <span className="font-medium">Care Staff</span>
+                  </span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    <span>{ticket.location} · {ticket.room_or_area}</span>
+                  </span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">
+                    <Clock className="h-3 w-3" />
+                    <span>{new Date(ticket.created_at).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</span>
+                  </span>
+                </div>
+                
                 <Button size="sm" onClick={() => openAssignDialog(ticket)} className="gap-1.5 text-xs h-8">
                   <User className="h-3.5 w-3.5" /> Assign Contractor
                 </Button>
@@ -156,23 +179,49 @@ const MaintenancePanel = () => {
             const sc = statusConfig[ticket.status];
             return (
               <div key={ticket.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <p className="text-sm font-semibold">{ticket.issue_description}</p>
-                    <p className="text-xs text-muted-foreground">{ticket.location} · {ticket.room_or_area}</p>
-                  </div>
+                {/* Object type label */}
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Maintenance Request
+                  </span>
                   <Badge className={`text-[11px] border-0 gap-1 ${sc.color}`}>
                     {sc.icon} {sc.label}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                
+                <p className="text-sm font-semibold">{ticket.issue_description}</p>
+                
+                {/* Metadata footer — Creator, Location, Contractor */}
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-2 border-t border-border/40">
+                  <span className="flex items-center gap-1">
+                    <User className="h-3 w-3" />
+                    <span className="font-medium">Care Staff</span>
+                  </span>
+                  <span>·</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="h-3 w-3" />
+                    <span>{ticket.location}</span>
+                  </span>
                   {ticket.contractor_name && (
-                    <span className="flex items-center gap-1"><User className="h-3 w-3" /> {ticket.contractor_name}</span>
+                    <>
+                      <span>·</span>
+                      <span className="flex items-center gap-1">
+                        <Wrench className="h-3 w-3" />
+                        <span>{ticket.contractor_name}</span>
+                      </span>
+                    </>
                   )}
                   {ticket.scheduled_date && (
-                    <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {ticket.scheduled_date}</span>
+                    <>
+                      <span>·</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        <span>{ticket.scheduled_date}</span>
+                      </span>
+                    </>
                   )}
                 </div>
+                
                 <div className="flex gap-2">
                   {ticket.status === 'assigned' && (
                     <Button size="sm" variant="outline" onClick={() => handleStartWork(ticket)} className="gap-1.5 text-xs h-7">

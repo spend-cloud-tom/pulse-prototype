@@ -26,20 +26,21 @@ const FloatingCard = ({
 
   return (
     <motion.div
-      className="absolute rounded-xl bg-white px-4 py-3 w-56"
+      className="absolute rounded-2xl bg-white px-5 py-4 w-64 border border-slate-100"
       style={{ 
         left: x, 
         top: y,
-        boxShadow: '0 4px 6px hsla(0, 0%, 0%, 0.05), 0 10px 24px hsla(0, 0%, 0%, 0.1)',
+        boxShadow: '0 4px 6px hsla(0, 0%, 0%, 0.04), 0 12px 32px hsla(0, 0%, 0%, 0.08), 0 24px 48px hsla(0, 0%, 0%, 0.06)',
       }}
-      initial={{ opacity: 0, y: 30, rotate: rotate - 2 }}
+      initial={{ opacity: 0, y: 40, rotate: rotate - 3 }}
       animate={{ opacity: 1, y: 0, rotate }}
-      transition={{ delay: 0.6 + delay, duration: 0.7, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ delay: 0.4 + delay, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+      whileHover={{ scale: 1.02, y: -2 }}
     >
-      <p className="text-xs font-medium text-foreground truncate">{title}</p>
-      <div className="flex items-center gap-1.5 mt-1.5">
-        <Icon className="h-3 w-3" />
-        <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full ${cfg.className}`}>{cfg.label}</span>
+      <p className="text-sm font-semibold text-slate-800 truncate">{title}</p>
+      <div className="flex items-center gap-2 mt-2">
+        <Icon className="h-3.5 w-3.5" />
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${cfg.className}`}>{cfg.label}</span>
       </div>
     </motion.div>
   );
@@ -104,8 +105,9 @@ const PillarCard = ({
       transition={{ delay, duration: 0.5 }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className="group relative rounded-2xl bg-white p-6 md:p-8 transition-all cursor-default"
-      style={{ boxShadow: '0 2px 4px hsla(0, 0%, 0%, 0.02), 0 4px 12px hsla(0, 0%, 0%, 0.04)' }}
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className="group relative rounded-2xl bg-white p-6 md:p-8 transition-all cursor-default border border-slate-100"
+      style={{ boxShadow: '0 2px 4px hsla(0, 0%, 0%, 0.02), 0 8px 24px hsla(0, 0%, 0%, 0.06)' }}
     >
       <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-hero-teal-soft to-hero-purple-soft flex items-center justify-center mb-4">
         {icon}
@@ -152,23 +154,30 @@ const DemoSection = ({ onDemoAccess }: { onDemoAccess: () => void }) => {
 
   return (
     <motion.section
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
-      className="py-20 md:py-28"
+      transition={{ duration: 0.6 }}
+      className="py-24 md:py-32"
     >
-      <div className="text-center mb-12">
-        <h2 className="font-display text-2xl md:text-3xl font-bold tracking-tight mb-3">
+      <div className="text-center mb-14">
+        <p className="text-sm font-semibold text-hero-purple uppercase tracking-widest mb-4">Live Demo</p>
+        <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight mb-4 text-slate-900">
           See AI in Action
         </h2>
-        <p className="text-muted-foreground max-w-lg mx-auto text-sm md:text-base">
+        <p className="text-slate-500 max-w-lg mx-auto text-base md:text-lg">
           Click, speak, or watch: the co-pilot shows you exactly what's happening and why.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
         {/* Interactive flow demo */}
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-5">
+        <motion.div 
+          className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5"
+          style={{ boxShadow: '0 4px 6px hsla(0, 0%, 0%, 0.02), 0 12px 24px hsla(0, 0%, 0%, 0.06)' }}
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.2 }}
+        >
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Live flow</p>
           <div className="flex items-center justify-between gap-2">
             {steps.map((s, i) => {
@@ -202,10 +211,15 @@ const DemoSection = ({ onDemoAccess }: { onDemoAccess: () => void }) => {
               transition={{ duration: 0.5 }}
             />
           </div>
-        </div>
+        </motion.div>
 
         {/* Notification drawer preview */}
-        <div className="rounded-2xl border border-border bg-card p-6 space-y-4">
+        <motion.div 
+          className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4"
+          style={{ boxShadow: '0 4px 6px hsla(0, 0%, 0%, 0.02), 0 12px 24px hsla(0, 0%, 0%, 0.06)' }}
+          whileHover={{ y: -2 }}
+          transition={{ duration: 0.2 }}
+        >
           <div className="flex items-center gap-2">
             <Bell className="h-4 w-4 text-muted-foreground" />
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">AI-prioritized alerts</p>
@@ -230,12 +244,12 @@ const DemoSection = ({ onDemoAccess }: { onDemoAccess: () => void }) => {
             </motion.div>
           ))}
           <button
-            className="flex items-center gap-1.5 text-[11px] font-medium text-hero-teal hover:underline"
+            className="flex items-center gap-1.5 text-xs font-semibold text-hero-teal hover:text-hero-teal/80 transition-colors"
             onClick={onDemoAccess}
           >
-            <Volume2 className="h-3 w-3" /> "What happened?" — try it live
+            <Volume2 className="h-3.5 w-3.5" /> "What happened?" — try it live
           </button>
-        </div>
+        </motion.div>
       </div>
     </motion.section>
   );
@@ -546,10 +560,17 @@ const Landing = () => {
               </motion.div>
 
               {/* Right — floating card illustration with two-part shadow */}
-              <div className="relative h-80 md:h-[420px] hidden lg:block">
-                <FloatingCard title="Plumber repair — kitchen sink" status="pending" delay={0} x="10%" y="5%" rotate={-2} />
-                <FloatingCard title="Cleaning wipes (Ward B)" status="resolved" delay={0.2} x="40%" y="38%" rotate={1.5} />
-                <FloatingCard title="Pharmacy receipt €67.40" status="auto" delay={0.4} x="8%" y="68%" rotate={-1} />
+              <div className="relative h-96 md:h-[480px] hidden lg:block">
+                {/* Decorative background circle */}
+                <motion.div 
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 rounded-full bg-gradient-to-br from-hero-teal-soft/60 to-hero-purple-soft/40"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3, duration: 0.8 }}
+                />
+                <FloatingCard title="Plumber repair — kitchen sink" status="pending" delay={0} x="5%" y="8%" rotate={-3} />
+                <FloatingCard title="Cleaning wipes (Ward B)" status="resolved" delay={0.15} x="45%" y="35%" rotate={2} />
+                <FloatingCard title="Pharmacy receipt €67.40" status="auto" delay={0.3} x="12%" y="62%" rotate={-1.5} />
 
                 {/* Connecting lines SVG */}
                 <motion.svg
@@ -569,16 +590,22 @@ const Landing = () => {
 
         {/* ─── VALUE PILLARS ─── */}
         {/* Alternating background for section separation (no borders) */}
-        <section className="py-24 md:py-32 bg-slate-50">
-          <div className="mx-auto max-w-6xl px-6">
+        <section className="py-28 md:py-36 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
+          {/* Subtle decorative elements */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-hero-teal-soft/20 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-hero-purple-soft/15 rounded-full blur-[100px] pointer-events-none" />
+          
+          <div className="mx-auto max-w-6xl px-6 relative">
             <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
               className="text-center mb-16"
             >
-              <p className="text-sm font-semibold text-hero-teal uppercase tracking-widest mb-3">Why Pulse</p>
-              <h2 className="font-display text-3xl md:text-4xl font-bold tracking-tight text-slate-900">Built for how care actually works</h2>
+              <p className="text-sm font-semibold text-hero-teal uppercase tracking-widest mb-4">Why Pulse</p>
+              <h2 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900">Built for how care actually works</h2>
+              <p className="mt-4 text-lg text-slate-500 max-w-2xl mx-auto">Three pillars that transform chaotic operations into calm, predictable workflows.</p>
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-8">
@@ -614,19 +641,19 @@ const Landing = () => {
       </main>
 
       {/* ─── FOOTER ─── */}
-      <footer className="py-16 bg-slate-50">
-        <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+      <footer className="py-12 bg-slate-900">
+        <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-400">
           <div className="flex items-center gap-2">
-            <span className="font-display text-lg font-bold text-slate-900">pulse<span className="text-hero-coral">.</span></span>
-            <span className="text-slate-400">·</span>
+            <span className="font-display text-lg font-bold text-white">pulse<span className="text-hero-coral">.</span></span>
+            <span className="text-slate-600">·</span>
             <span>© {new Date().getFullYear()}</span>
           </div>
           <span className="text-center">
             Operational clarity for care organizations — powered by{' '}
             <motion.span
-              className="inline-block font-semibold text-slate-700"
-              animate={{ textShadow: ['0 0 0px transparent', '0 0 8px hsl(var(--hero-teal) / 0.3)', '0 0 0px transparent'] }}
-              transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
+              className="inline-block font-semibold text-hero-teal"
+              animate={{ opacity: [0.7, 1, 0.7] }}
+              transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }}
             >
               AI you can trust
             </motion.span>

@@ -3,10 +3,28 @@ import { Signal } from '@/data/types';
 // Decision type classification — system-wide
 export type DecisionType = 'approval' | 'exception' | 'alert';
 
+// DECISION LAYER — For Jolanda's Decision Cockpit
+// Layer 1: Human Judgment Required (financial decisions)
+// Layer 2: Exceptions & Risk Alerts (anomalies, compliance)
+// Layer 3: Informational (clinical handovers, awareness-only)
+export type DecisionLayer = 'judgment' | 'exception' | 'informational';
+
+// URGENCY HIERARCHY — Visual differentiation
+export type UrgencyTier = 'critical' | 'high' | 'normal';
+
+// SIGNAL DOMAIN — Separates financial from clinical
+export type SignalDomain = 'financial' | 'clinical' | 'operational';
+
 export interface ClassifiedSignal extends Signal {
   decisionType: DecisionType;
   riskLevel: 'low' | 'medium' | 'high';
   dueLabel: string | null;
+  // New fields for Decision Cockpit
+  decisionLayer: DecisionLayer;
+  urgencyTier: UrgencyTier;
+  signalDomain: SignalDomain;
+  financialExposure: number; // €0 if not financial
+  requiresManagerApproval: boolean;
 }
 
 // Classify a signal into approval / exception / alert
@@ -46,7 +64,64 @@ export function classifySignal(signal: Signal): ClassifiedSignal {
     dueLabel = 'Overdue';
   }
 
-  return { ...signal, decisionType, riskLevel, dueLabel };
+  // === NEW: Decision Cockpit Classification ===
+  
+  // Signal Domain — What type of decision is this?
+  let signalDomain: SignalDomain = 'operational';
+  if (signal.signal_type === 'purchase' || (amt > 0)) {
+    signalDomain = 'financial';
+  } else if (
+    signal.signal_type === 'incident' ||
+    signal.signal_type === 'shift-handover'
+  ) {
+    signalDomain = 'clinical';
+  }
+
+  // Decision Layer — Where should this appear in the cockpit?
+  let decisionLayer: DecisionLayer = 'informational';
+  
+  // Layer 1: Judgment — Financial decisions requiring manager approval
+  const requiresManagerApproval = 
+    signalDomain === 'financial' && 
+    (amt > 100 || !!signal.flag_reason || signal.funding === 'uncertain');
+  
+  if (requiresManagerApproval) {
+    decisionLayer = 'judgment';
+  }
+  // Layer 2: Exception — Anomalies, compliance, pattern alerts
+  else if (
+    signal.signal_type === 'compliance' ||
+    signal.flag_reason?.includes('Anomaly') ||
+    signal.flag_reason?.includes('pattern') ||
+    (signal.confidence !== null && signal.confidence < 70)
+  ) {
+    decisionLayer = 'exception';
+  }
+  // Layer 3: Informational — Clinical handovers, awareness-only
+  // (default)
+
+  // Urgency Tier — Visual hierarchy
+  let urgencyTier: UrgencyTier = 'normal';
+  if (signal.urgency === 'critical' || riskLevel === 'high') {
+    urgencyTier = 'critical';
+  } else if (signal.urgency === 'urgent' || riskLevel === 'medium') {
+    urgencyTier = 'high';
+  }
+
+  // Financial Exposure — For summary calculations
+  const financialExposure = signalDomain === 'financial' ? amt : 0;
+
+  return { 
+    ...signal, 
+    decisionType, 
+    riskLevel, 
+    dueLabel,
+    decisionLayer,
+    urgencyTier,
+    signalDomain,
+    financialExposure,
+    requiresManagerApproval,
+  };
 }
 
 // Classify a batch and group by type
@@ -59,6 +134,76 @@ export function classifyAndGroup(signals: Signal[]) {
     all: classified,
   };
 }
+
+// === NEW: Decision Cockpit Grouping ===
+// Groups signals by layer for Jolanda's 3-layer view
+export function groupByDecisionLayer(signals: Signal[]) {
+  const classified = signals.map(classifySignal);
+  
+  // Layer 1: Human Judgment Required (max 3-5 visible)
+  const judgmentPulses = classified
+    .filter(s => s.decisionLayer === 'judgment')
+    .sort((a, b) => {
+      // Sort by urgency tier, then by amount
+      const tierOrder: Record<UrgencyTier, number> = { critical: 0, high: 1, normal: 2 };
+      const tierDiff = tierOrder[a.urgencyTier] - tierOrder[b.urgencyTier];
+      if (tierDiff !== 0) return tierDiff;
+      return (b.financialExposure || 0) - (a.financialExposure || 0);
+    });
+
+  // Layer 2: Exceptions & Risk Alerts
+  const exceptionPulses = classified
+    .filter(s => s.decisionLayer === 'exception')
+    .sort((a, b) => {
+      const tierOrder: Record<UrgencyTier, number> = { critical: 0, high: 1, normal: 2 };
+      return tierOrder[a.urgencyTier] - tierOrder[b.urgencyTier];
+    });
+
+  // Layer 3: Informational (clinical, handovers, awareness)
+  const informationalPulses = classified
+    .filter(s => s.decisionLayer === 'informational');
+
+  // Calculate totals
+  const totalFinancialExposure = judgmentPulses.reduce(
+    (sum, s) => sum + s.financialExposure, 0
+  );
+
+  return {
+    judgment: judgmentPulses,
+    exceptions: exceptionPulses,
+    informational: informationalPulses,
+    all: classified,
+    stats: {
+      judgmentCount: judgmentPulses.length,
+      exceptionCount: exceptionPulses.length,
+      informationalCount: informationalPulses.length,
+      totalFinancialExposure,
+      criticalCount: classified.filter(s => s.urgencyTier === 'critical').length,
+    },
+  };
+}
+
+// Urgency tier config for visual styling
+export const urgencyTierConfig: Record<UrgencyTier, { label: string; dotColor: string; bgColor: string; textColor: string }> = {
+  critical: { 
+    label: 'Critical', 
+    dotColor: 'bg-signal-red', 
+    bgColor: 'bg-signal-red-bg', 
+    textColor: 'text-signal-red' 
+  },
+  high: { 
+    label: 'High', 
+    dotColor: 'bg-signal-amber', 
+    bgColor: 'bg-signal-amber-bg', 
+    textColor: 'text-signal-amber' 
+  },
+  normal: { 
+    label: 'Normal', 
+    dotColor: 'bg-muted-foreground', 
+    bgColor: 'bg-secondary', 
+    textColor: 'text-muted-foreground' 
+  },
+};
 
 // Workflow stages
 export function getWorkflowStage(status: string): { stage: number; total: number; label: string } {

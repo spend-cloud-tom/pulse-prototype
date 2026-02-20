@@ -25,20 +25,33 @@ const createDemoSignal = (partial: {
   flag_reason?: string | null;
   expected_date?: string | null;
   created_at: string;
-}): DbSignal => ({
-  ...partial,
-  submitter_avatar: partial.submitter_avatar ?? null,
-  flag_reason: partial.flag_reason ?? null,
-  expected_date: partial.expected_date ?? null,
-  updated_at: new Date().toISOString(),
-  // Additional fields with defaults
-  attachments: null,
-  bottleneck: null,
-  confidence_level: partial.confidence >= 90 ? 'high' : partial.confidence >= 70 ? 'medium' : 'low',
-  cost_comparison: null,
-  supplier_confidence: null,
-  supplier_suggestion: null,
-});
+  current_owner?: string | null;
+  lifecycle_stage?: string | null;
+  sla_hours?: number | null;
+  escalated_at?: string | null;
+}): DbSignal => {
+  const base: DbSignal = {
+    ...partial,
+    submitter_avatar: partial.submitter_avatar ?? null,
+    flag_reason: partial.flag_reason ?? null,
+    expected_date: partial.expected_date ?? null,
+    updated_at: new Date().toISOString(),
+    attachments: null,
+    bottleneck: null,
+    confidence_level: partial.confidence >= 90 ? 'high' : partial.confidence >= 70 ? 'medium' : 'low',
+    cost_comparison: null,
+    supplier_confidence: null,
+    supplier_suggestion: null,
+  };
+  // Accountability metadata (extended fields not yet in DB schema)
+  return {
+    ...base,
+    current_owner: partial.current_owner ?? null,
+    lifecycle_stage: partial.lifecycle_stage ?? null,
+    sla_hours: partial.sla_hours ?? null,
+    escalated_at: partial.escalated_at ?? null,
+  } as DbSignal;
+};
 
 // Fallback demo signals for when database is empty — ensures demo always works
 const DEMO_SIGNALS: DbSignal[] = [
@@ -60,6 +73,9 @@ const DEMO_SIGNALS: DbSignal[] = [
     confidence: 78,
     flag_reason: 'Non-contracted supplier',
     created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+    current_owner: 'Finance',
+    lifecycle_stage: 'requested',
+    sla_hours: 24,
   }),
   createDemoSignal({
     id: 'demo-2',
@@ -113,6 +129,9 @@ const DEMO_SIGNALS: DbSignal[] = [
     confidence: 87,
     flag_reason: 'Invoice variance +2.5%',
     created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    current_owner: 'Finance',
+    lifecycle_stage: 'requested',
+    sla_hours: 24,
   }),
   // Auto-resolved Pulses (AI handled) - shows orchestration power
   createDemoSignal({
@@ -169,6 +188,9 @@ const DEMO_SIGNALS: DbSignal[] = [
     confidence: 95,
     expected_date: 'Tomorrow 10:00',
     created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    current_owner: 'Maintenance',
+    lifecycle_stage: 'in-progress',
+    sla_hours: 48,
   }),
   createDemoSignal({
     id: 'demo-8',

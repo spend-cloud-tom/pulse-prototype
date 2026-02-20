@@ -23,7 +23,7 @@ export const users: UserProfile[] = [
     role: 'Care Worker',
     focus: 'Get things done',
     avatar: '/avatars/anouk.jpg',  // Image 1: nurse in blue Healthcare Service uniform
-    bannerMessage: "We've handled everything for you today. Just <strong>1 thing</strong> needs your attention.",
+    bannerMessage: "We've handled everything for you today. Just <strong>1 request</strong> needs your attention.",
   },
   {
     id: 'rohan',
@@ -31,7 +31,7 @@ export const users: UserProfile[] = [
     role: 'Finance Admin',
     focus: 'Control risk',
     avatar: '/avatars/rohan.jpg',  // Image 3: man at desk with monitors
-    bannerMessage: 'AI processed <strong>42 pulses</strong> today. <strong>6</strong> require financial review.',
+    bannerMessage: 'AI processed <strong>42 requests</strong> today. <strong>6</strong> require financial review.',
   },
   {
     id: 'sarah',
@@ -39,7 +39,7 @@ export const users: UserProfile[] = [
     role: 'Procurement Officer',
     focus: 'Supply continuity',
     avatar: '/avatars/sarah.jpg',  // Image 4: woman at laptop with headset
-    bannerMessage: '<strong>4 pulses</strong> awaiting your action. AI matched suppliers for 2.',
+    bannerMessage: '<strong>4 requests</strong> awaiting your action. AI matched suppliers for 2.',
   },
   {
     id: 'jolanda',
@@ -47,7 +47,7 @@ export const users: UserProfile[] = [
     role: 'Team Lead',
     focus: 'Approvals',
     avatar: '/avatars/jolanda.jpg',  // Image 2: woman in blazer with tablet
-    bannerMessage: '<strong>3 team pulses</strong> need your approval.',
+    bannerMessage: '<strong>3 team requests</strong> need your approval.',
   },
 ];
 
@@ -109,17 +109,17 @@ export const aiAlerts = [
   },
 ];
 
-// PULSE TYPE CONFIG — Every item is a Pulse with a type tag
-// Format: "[Type] Pulse" to reinforce the unified mental model
-export const signalTypeConfig: Record<string, { label: string; pulseLabel: string }> = {
-  purchase: { label: 'Purchase', pulseLabel: 'Purchase Pulse' },
-  maintenance: { label: 'Maintenance', pulseLabel: 'Maintenance Pulse' },
-  incident: { label: 'Incident', pulseLabel: 'Incident Pulse' },
-  'shift-handover': { label: 'Handover', pulseLabel: 'Handover Pulse' },
-  compliance: { label: 'Compliance', pulseLabel: 'Compliance Pulse' },
-  event: { label: 'Event', pulseLabel: 'Event Pulse' },
-  resource: { label: 'Resource', pulseLabel: 'Resource Pulse' },
-  general: { label: 'General', pulseLabel: 'Pulse' },
+// SIGNAL TYPE CONFIG — SaaS object naming convention
+// Each signal type has a specific domain object name for clarity
+export const signalTypeConfig: Record<string, { label: string; objectName: string; objectNamePlural: string }> = {
+  purchase: { label: 'Purchase', objectName: 'Purchase Request', objectNamePlural: 'Purchase Requests' },
+  maintenance: { label: 'Maintenance', objectName: 'Maintenance Request', objectNamePlural: 'Maintenance Requests' },
+  incident: { label: 'Incident', objectName: 'Incident Report', objectNamePlural: 'Incident Reports' },
+  'shift-handover': { label: 'Handover', objectName: 'Handover Note', objectNamePlural: 'Handover Notes' },
+  compliance: { label: 'Compliance', objectName: 'Compliance Alert', objectNamePlural: 'Compliance Alerts' },
+  event: { label: 'Event', objectName: 'Event Request', objectNamePlural: 'Event Requests' },
+  resource: { label: 'Resource', objectName: 'Resource Request', objectNamePlural: 'Resource Requests' },
+  general: { label: 'General', objectName: 'Request', objectNamePlural: 'Requests' },
 };
 
 // PULSE STATE CONFIG — Unified state labels and colors
@@ -129,6 +129,148 @@ export const pulseStateConfig: Record<string, { label: string; color: string; bg
   'blocked': { label: 'Blocked', color: 'text-muted-foreground', bgColor: 'bg-secondary', icon: '⚫' },
   'auto-handled': { label: 'Auto-Handled', color: 'text-hero-purple', bgColor: 'bg-hero-purple-soft', icon: '🟣' },
   'resolved': { label: 'Resolved', color: 'text-signal-green', bgColor: 'bg-signal-green-bg', icon: '🟢' },
+};
+
+// TYPE-DEPENDENT LIFECYCLE CONFIG — Each Pulse type has its own workflow stages
+export const lifecycleConfig: Record<string, { stages: string[]; defaultOwners: Record<string, string>; defaultSlaHours: number | null }> = {
+  maintenance: {
+    stages: ['Logged', 'Assigned', 'In Progress', 'Resolved'],
+    defaultOwners: {
+      'logged': 'Care Team',
+      'assigned': 'Maintenance',
+      'in-progress': 'Maintenance',
+      'resolved': 'Completed',
+    },
+    defaultSlaHours: 48,
+  },
+  purchase: {
+    stages: ['Requested', 'Approved', 'Ordered', 'Delivered', 'Reconciled'],
+    defaultOwners: {
+      'requested': 'Requester',
+      'approved': 'Finance',
+      'ordered': 'Procurement',
+      'delivered': 'Requester',
+      'reconciled': 'Finance',
+    },
+    defaultSlaHours: 24,
+  },
+  incident: {
+    stages: ['Logged', 'Reviewed', 'Actioned', 'Closed'],
+    defaultOwners: {
+      'logged': 'Care Team',
+      'reviewed': 'Team Lead',
+      'actioned': 'Care Team',
+      'closed': 'Completed',
+    },
+    defaultSlaHours: 4,
+  },
+  'shift-handover': {
+    stages: ['Sent', 'Acknowledged'],
+    defaultOwners: {
+      'sent': 'Outgoing Shift',
+      'acknowledged': 'Incoming Shift',
+    },
+    defaultSlaHours: null,
+  },
+  compliance: {
+    stages: ['Flagged', 'Under Review', 'Resolved'],
+    defaultOwners: {
+      'flagged': 'System',
+      'under-review': 'Compliance',
+      'resolved': 'Completed',
+    },
+    defaultSlaHours: 72,
+  },
+  event: {
+    stages: ['Planned', 'Confirmed', 'In Progress', 'Completed'],
+    defaultOwners: {
+      'planned': 'Coordinator',
+      'confirmed': 'Coordinator',
+      'in-progress': 'Event Team',
+      'completed': 'Completed',
+    },
+    defaultSlaHours: null,
+  },
+  resource: {
+    stages: ['Requested', 'Approved', 'Allocated', 'Closed'],
+    defaultOwners: {
+      'requested': 'Requester',
+      'approved': 'Manager',
+      'allocated': 'HR/Resources',
+      'closed': 'Completed',
+    },
+    defaultSlaHours: 24,
+  },
+  general: {
+    stages: ['Submitted', 'In Review', 'Resolved', 'Closed'],
+    defaultOwners: {
+      'submitted': 'Submitter',
+      'in-review': 'Reviewer',
+      'resolved': 'Completed',
+      'closed': 'Completed',
+    },
+    defaultSlaHours: null,
+  },
+};
+
+// Map legacy status to lifecycle stage per type
+export const statusToLifecycleStage: Record<string, Record<string, string>> = {
+  maintenance: {
+    'pending': 'logged',
+    'needs-clarity': 'logged',
+    'approved': 'assigned',
+    'in-motion': 'in-progress',
+    'awaiting-supplier': 'in-progress',
+    'delivered': 'resolved',
+    'closed': 'resolved',
+  },
+  purchase: {
+    'pending': 'requested',
+    'needs-clarity': 'requested',
+    'approved': 'approved',
+    'auto-approved': 'approved',
+    'in-motion': 'ordered',
+    'awaiting-supplier': 'ordered',
+    'delivered': 'delivered',
+    'closed': 'reconciled',
+  },
+  incident: {
+    'pending': 'logged',
+    'needs-clarity': 'logged',
+    'approved': 'reviewed',
+    'in-motion': 'actioned',
+    'delivered': 'closed',
+    'closed': 'closed',
+  },
+  'shift-handover': {
+    'pending': 'sent',
+    'approved': 'acknowledged',
+    'closed': 'acknowledged',
+  },
+  compliance: {
+    'pending': 'flagged',
+    'needs-clarity': 'flagged',
+    'in-motion': 'under-review',
+    'closed': 'resolved',
+  },
+  event: {
+    'pending': 'planned',
+    'approved': 'confirmed',
+    'in-motion': 'in-progress',
+    'closed': 'completed',
+  },
+  resource: {
+    'pending': 'requested',
+    'approved': 'approved',
+    'in-motion': 'allocated',
+    'closed': 'closed',
+  },
+  general: {
+    'pending': 'submitted',
+    'needs-clarity': 'submitted',
+    'in-motion': 'in-review',
+    'closed': 'resolved',
+  },
 };
 
 // Upcoming events for event coordination view

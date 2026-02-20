@@ -1,14 +1,29 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRole } from '@/context/RoleContext';
-import { teamSignals, demoImages } from '@/data/mockData';
-import { Mic, Camera, ChevronRight, Package, Truck, CheckCircle2, AlertCircle, Clock, ShoppingCart, Wrench, Receipt, HelpCircle } from 'lucide-react';
+import { teamSignals, demoImages, signalTypeConfig } from '@/data/mockData';
+import { Mic, Camera, ChevronRight, Package, Truck, CheckCircle2, AlertCircle, Clock, ShoppingCart, Wrench, Receipt, HelpCircle, User, MapPin } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
 import ImageThumbnail from '@/components/ImageThumbnail';
 import { Signal } from '@/data/types';
 import { cn } from '@/lib/utils';
+
+const formatTimeAgo = (ts: string) => {
+  try {
+    const d = new Date(ts);
+    const now = new Date();
+    const diffMin = Math.round((now.getTime() - d.getTime()) / 60000);
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffH = Math.round(diffMin / 60);
+    if (diffH < 24) return `${diffH}h ago`;
+    const diffD = Math.round(diffH / 24);
+    if (diffD === 1) return 'Yesterday';
+    return `${diffD}d ago`;
+  } catch { return ts; }
+};
 
 
 const getSignalImage = (signal: Signal): string | null => {
@@ -199,6 +214,7 @@ const StatusCard = ({
   const isNeedsInput = variant === 'needs-input';
   const isCompleted = variant === 'completed';
   const isDelivered = signal.status === 'delivered' || signal.status === 'closed';
+  const typeConfig = signalTypeConfig[signal.signal_type] || signalTypeConfig.general;
   
   const handleReportIssue = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -225,6 +241,18 @@ const StatusCard = ({
           : '0 2px 4px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)' 
       }}
     >
+      {/* Object type label */}
+      <div className="flex items-center gap-2 mb-3">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          {typeConfig.objectName}
+        </span>
+        {signal.amount != null && signal.amount > 0 && (
+          <span className="text-sm font-bold text-slate-700 tabular-nums ml-auto">
+            €{signal.amount.toFixed(2)}
+          </span>
+        )}
+      </div>
+      
       <div className="flex items-start gap-4">
         {/* Icon */}
         <div className={`flex items-center justify-center h-11 w-11 rounded-xl shrink-0 ${
@@ -237,7 +265,7 @@ const StatusCard = ({
         
         {/* Content — tight spacing within, more padding around */}
         <div className="flex-1 min-w-0">
-          {/* Title + meta + thumbnail row */}
+          {/* Title + thumbnail row */}
           <div className="flex items-start gap-3">
             <div className="flex-1 min-w-0 space-y-1">
               <p className={`text-[15px] font-semibold leading-snug ${
@@ -245,17 +273,6 @@ const StatusCard = ({
               }`}>
                 {signal.description}
               </p>
-              
-              {/* Meta row: amount + location */}
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                {signal.amount != null && signal.amount > 0 && (
-                  <span className="text-slate-500 tabular-nums font-medium">
-                    €{signal.amount.toFixed(2)}
-                  </span>
-                )}
-                <span>·</span>
-                <span>{signal.location}</span>
-              </div>
             </div>
             
             {/* Small square thumbnail — visual anchor, tap to expand */}
@@ -314,6 +331,24 @@ const StatusCard = ({
               Report an issue
             </button>
           )}
+          
+          {/* METADATA FOOTER — Creator, Location, Time */}
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+            <span className="flex items-center gap-1">
+              <User className="h-3 w-3" />
+              <span className="font-medium text-slate-500">{signal.submitter_name}</span>
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <MapPin className="h-3 w-3" />
+              <span>{signal.location}</span>
+            </span>
+            <span>·</span>
+            <span className="flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              <span>{formatTimeAgo(signal.created_at)}</span>
+            </span>
+          </div>
         </div>
       </div>
     </motion.div>
@@ -350,11 +385,11 @@ const AnoukView = () => {
 
   const hasNeedsInput = needsInputPulses.length > 0;
 
-  // Resolve a pulse (moves it out of "needs input")
+  // Resolve a request (moves it out of "needs input")
   const handleResolve = (signalId: string, description: string) => {
     setResolvedIds(prev => new Set([...prev, signalId]));
     toast({
-      title: "✅ Pulse advanced",
+      title: "✅ Request submitted",
       description: `"${description?.slice(0, 35)}..." is now in motion.`,
     });
   };
@@ -366,26 +401,26 @@ const AnoukView = () => {
         {/* Constrained width container — max 680px, centered */}
         <div className="max-w-[680px] mx-auto px-5 py-8 space-y-8">
           
-          {/* ─── GREETING — Pulse-centric language ─── */}
+          {/* ─── GREETING ─── */}
           <motion.header 
             initial={{ opacity: 0, y: 16 }} 
             animate={{ opacity: 1, y: 0 }}
             className="space-y-2"
           >
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              {hasNeedsInput ? 'Pulses need you' : 'All Pulses handled'}
+              {hasNeedsInput ? 'Action needed' : 'All clear'}
             </h1>
             <p className="text-base text-slate-500 leading-relaxed">
               {hasNeedsInput 
-                ? `${needsInputPulses.length} ${needsInputPulses.length === 1 ? 'Pulse needs' : 'Pulses need'} your input.`
+                ? `${needsInputPulses.length} ${needsInputPulses.length === 1 ? 'request needs' : 'requests need'} your input.`
                 : inProgressPulses.length > 0 
-                  ? `${inProgressPulses.length} ${inProgressPulses.length === 1 ? 'Pulse is' : 'Pulses are'} in motion.`
-                  : 'All Pulses resolved. Enjoy your shift!'
+                  ? `${inProgressPulses.length} ${inProgressPulses.length === 1 ? 'request is' : 'requests are'} in progress.`
+                  : 'All requests handled. Enjoy your shift!'
               }
             </p>
           </motion.header>
 
-          {/* ─── NEEDS ACTION — Pulses requiring your input ─── */}
+          {/* ─── NEEDS ACTION — Requests requiring your input ─── */}
           {hasNeedsInput && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -395,7 +430,7 @@ const AnoukView = () => {
             >
               <h2 className="text-sm font-semibold text-signal-red uppercase tracking-wider flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-signal-red animate-pulse" />
-                Pulses Awaiting Your Action
+                Needs Your Input
               </h2>
               <div className="space-y-4">
                 {needsInputPulses.map((signal) => (
@@ -411,7 +446,7 @@ const AnoukView = () => {
             </motion.section>
           )}
 
-          {/* ─── IN MOTION — Pulses being processed ─── */}
+          {/* ─── IN MOTION — Requests being processed ─── */}
           {inProgressPulses.length > 0 && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -421,7 +456,7 @@ const AnoukView = () => {
             >
               <h2 className="text-sm font-semibold text-signal-amber uppercase tracking-wider flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-signal-amber" />
-                Pulses In Motion
+                In Progress
               </h2>
               <div className="space-y-4">
                 {inProgressPulses.map((signal) => (
@@ -431,7 +466,7 @@ const AnoukView = () => {
             </motion.section>
           )}
 
-          {/* ─── RESOLVED — Completed Pulses ─── */}
+          {/* ─── RESOLVED — Completed Requests ─── */}
           {completedPulses.length > 0 && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -441,7 +476,7 @@ const AnoukView = () => {
             >
               <h2 className="text-sm font-semibold text-signal-green uppercase tracking-wider flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-signal-green" />
-                Resolved Pulses
+                Completed
               </h2>
               <div className="space-y-4">
                 {completedPulses.slice(0, 5).map((signal) => (

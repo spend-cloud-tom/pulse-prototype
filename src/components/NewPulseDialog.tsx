@@ -54,8 +54,8 @@ const roleFlows: Record<Role, {
     ],
   },
   jolanda: {
-    title: 'Start a team pulse',
-    subtitle: 'Initiate something for your locations.',
+    title: 'Start a team request',
+    subtitle: 'Initiate something for your locations',
     chips: [
       { label: 'Request on behalf of team', icon: <Users className="h-4 w-4" />, signalType: 'general' },
       { label: 'Plan an event', icon: <Calendar className="h-4 w-4" />, signalType: 'event' },
@@ -161,7 +161,7 @@ const NewPulseDialog = ({ open, onOpenChange }: NewPulseDialogProps) => {
     const confidenceVal = cl.confidence || 65;
 
     await addSignal({
-      title: description || selectedChip?.label || 'New pulse',
+      title: description || selectedChip?.label || 'New request',
       description: `${description || selectedChip?.label} — submitted by ${submitterName}`,
       amount: parseFloat(amount) || 0,
       submitter_name: submitterName,
@@ -179,7 +179,7 @@ const NewPulseDialog = ({ open, onOpenChange }: NewPulseDialogProps) => {
       attachments: photoUrl ? [photoUrl] : [],
     });
 
-    toast.success("Pulse sent — we'll handle the rest", {
+    toast.success("Request submitted — we'll handle the rest", {
       description: 'You can track progress from your overview.',
     });
 

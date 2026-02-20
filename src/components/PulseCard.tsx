@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Signal, ConfidenceLevel, statusToPulseState, PulseState } from '@/data/types';
-import { signalTypeConfig, pulseStateConfig } from '@/data/mockData';
+import { signalTypeConfig, pulseStateConfig, lifecycleConfig, statusToLifecycleStage } from '@/data/mockData';
 import { classifySignal, riskConfig, getWorkflowStage } from '@/lib/decisionTypes';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { HelpCircle, ChevronDown, TrendingUp, AlertTriangle, CheckCircle2, Zap } from 'lucide-react';
+import { HelpCircle, ChevronDown, TrendingUp, AlertTriangle, CheckCircle2, Zap, User, Clock, ArrowRight } from 'lucide-react';
 
 interface PulseCardProps {
   signal: Signal;
@@ -82,24 +82,60 @@ const formatTimeAgo = (ts: string) => {
   } catch { return ts; }
 };
 
-// Workflow stage labels per signal type
-const workflowLabels: Record<string, string[]> = {
-  purchase: ['Submitted', 'Approved', 'Ordered', 'Delivered', 'Invoiced', 'Closed'],
-  maintenance: ['Reported', 'Assessed', 'Scheduled', 'In repair', 'Completed'],
-  incident: ['Reported', 'Reviewed', 'Resolved', 'Closed'],
-  'shift-handover': ['Submitted', 'Acknowledged'],
-  compliance: ['Flagged', 'Under review', 'Resolved'],
-  event: ['Planned', 'Confirmed', 'In progress', 'Completed'],
-  resource: ['Requested', 'Approved', 'Allocated', 'Closed'],
-  general: ['Submitted', 'In review', 'Resolved', 'Closed'],
+// Get type-dependent lifecycle info
+const getLifecycleInfo = (signal: Signal) => {
+  const config = lifecycleConfig[signal.signal_type] || lifecycleConfig.general;
+  const stageMap = statusToLifecycleStage[signal.signal_type] || statusToLifecycleStage.general;
+  const currentStageKey = signal.lifecycle_stage || stageMap[signal.status] || 'submitted';
+  const stageIndex = config.stages.findIndex(s => s.toLowerCase().replace(' ', '-') === currentStageKey);
+  const currentIndex = stageIndex >= 0 ? stageIndex : 0;
+  const currentOwner = signal.current_owner || config.defaultOwners[currentStageKey] || 'Unassigned';
+  const slaHours = signal.sla_hours ?? config.defaultSlaHours;
+  
+  return {
+    stages: config.stages,
+    currentIndex,
+    currentStage: config.stages[currentIndex] || config.stages[0],
+    nextStage: currentIndex < config.stages.length - 1 ? config.stages[currentIndex + 1] : null,
+    currentOwner,
+    slaHours,
+  };
 };
 
-const getDetailedWorkflow = (signal: Signal) => {
-  const labels = workflowLabels[signal.signal_type] || workflowLabels.general;
-  const total = labels.length;
-  const workflow = getWorkflowStage(signal.status);
-  const stage = Math.min(Math.round((workflow.stage / workflow.total) * total), total);
-  return { labels, total, stage, currentLabel: labels[Math.max(0, stage - 1)] || labels[0] };
+// Calculate SLA status
+const getSlaStatus = (signal: Signal, slaHours: number | null): { label: string; isOverdue: boolean; isWarning: boolean } | null => {
+  if (!slaHours) return null;
+  
+  try {
+    const created = new Date(signal.created_at);
+    const now = new Date();
+    const hoursElapsed = (now.getTime() - created.getTime()) / (1000 * 60 * 60);
+    const hoursRemaining = slaHours - hoursElapsed;
+    
+    if (hoursRemaining < 0) {
+      const overdue = Math.abs(Math.round(hoursRemaining));
+      return { label: `${overdue}h overdue`, isOverdue: true, isWarning: false };
+    } else if (hoursRemaining < slaHours * 0.25) {
+      return { label: `${Math.round(hoursRemaining)}h remaining`, isOverdue: false, isWarning: true };
+    } else {
+      return { label: `SLA: ${slaHours}h`, isOverdue: false, isWarning: false };
+    }
+  } catch {
+    return { label: `SLA: ${slaHours}h`, isOverdue: false, isWarning: false };
+  }
+};
+
+// Format exact timestamp for hover
+const formatExactTime = (ts: string): string => {
+  try {
+    const d = new Date(ts);
+    return d.toLocaleString('nl-NL', { 
+      day: 'numeric', 
+      month: 'short', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+  } catch { return ts; }
 };
 
 // Action clarity — does this need the user's action?
@@ -146,7 +182,8 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
   const accent = typeAccent[signal.signal_type] || typeAccent.general;
   const classified = classifySignal(signal);
   const risk = riskConfig[classified.riskLevel];
-  const detailedWorkflow = getDetailedWorkflow(signal);
+  const lifecycle = getLifecycleInfo(signal);
+  const slaStatus = getSlaStatus(signal, lifecycle.slaHours);
   const amt = signal.amount || 0;
   const urgency = urgencyBadge[signal.urgency];
   const needsAction = isActionRequired(signal);
@@ -171,17 +208,16 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
     >
       <div className={cn('flex items-start gap-3', dense ? 'p-2.5' : 'p-3.5')}>
         <div className="flex-1 min-w-0 space-y-1.5">
-          {/* Header row — PULSE TYPE TAG prominently displayed */}
+          {/* Header row — Object type tag prominently displayed */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              {/* PULSE TYPE TAG — The key identifier */}
+              {/* OBJECT TYPE TAG — The key identifier */}
               <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/80">
-                <Zap className="h-2.5 w-2.5 text-hero-purple" />
+                <PulseTypeIcon type={signal.signal_type} className="h-2.5 w-2.5 text-hero-purple" />
                 <span className="text-[10px] font-semibold uppercase tracking-wide text-foreground/80">
-                  {typeInfo.pulseLabel || `${typeInfo.label} Pulse`}
+                  {typeInfo.objectName || typeInfo.label}
                 </span>
               </div>
-              <span className="text-[11px] text-muted-foreground/60 shrink-0">{formatTimeAgo(signal.created_at)}</span>
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {/* PULSE STATE badge — Unified state language */}
@@ -291,24 +327,27 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
             </div>
           )}
 
-          {/* Workflow progress bar */}
+          {/* Type-dependent lifecycle progress bar */}
           {(isProgress || isAction) && (
             <div className="space-y-1 pt-0.5">
               <div className="flex items-center gap-0.5">
-                {detailedWorkflow.labels.map((label, i) => (
+                {lifecycle.stages.map((stage, i) => (
                   <div
                     key={i}
                     className={cn(
                       'h-1 flex-1 rounded-full transition-all',
-                      i < detailedWorkflow.stage ? 'bg-foreground/50' : 'bg-secondary'
+                      i <= lifecycle.currentIndex ? 'bg-foreground/50' : 'bg-secondary'
                     )}
                   />
                 ))}
               </div>
               <div className="flex items-center justify-between text-[10px] text-muted-foreground">
-                <span>{detailedWorkflow.currentLabel}</span>
-                {detailedWorkflow.stage < detailedWorkflow.total && (
-                  <span className="text-muted-foreground/60">Next: {detailedWorkflow.labels[detailedWorkflow.stage]}</span>
+                <span className="font-medium">{lifecycle.currentStage}</span>
+                {lifecycle.nextStage && (
+                  <span className="flex items-center gap-1 text-muted-foreground/60">
+                    <ArrowRight className="h-2.5 w-2.5" />
+                    {lifecycle.nextStage}
+                  </span>
                 )}
               </div>
             </div>
@@ -347,6 +386,42 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
 
           {/* Actions */}
           {actions && <div className={cn(dense ? 'mt-1' : 'mt-1.5')}>{actions}</div>}
+
+          {/* METADATA FOOTER — Creator, Location, Time — Always visible */}
+          <div className={cn(
+            'flex items-center justify-between gap-2 pt-2 mt-2 border-t border-border/40',
+            dense && 'pt-1.5 mt-1.5'
+          )}>
+            <div className="flex items-center gap-2.5 text-[10px] text-muted-foreground min-w-0">
+              {/* Creator */}
+              <span className="flex items-center gap-1 shrink-0" title={`Created by ${signal.submitter_name}`}>
+                <User className="h-2.5 w-2.5" />
+                <span className="truncate max-w-[80px] font-medium">{signal.submitter_name}</span>
+              </span>
+              {/* Location */}
+              <span className="flex items-center gap-1 shrink-0 text-muted-foreground/70">
+                <span>·</span>
+                <span className="truncate max-w-[80px]">{signal.location}</span>
+              </span>
+              {/* Relative time with exact time on hover */}
+              <span className="flex items-center gap-1 shrink-0 text-muted-foreground/70" title={formatExactTime(signal.created_at)}>
+                <span>·</span>
+                <Clock className="h-2.5 w-2.5" />
+                <span>{formatTimeAgo(signal.created_at)}</span>
+              </span>
+            </div>
+            {/* SLA indicator */}
+            {slaStatus && (
+              <span className={cn(
+                'text-[10px] font-medium shrink-0 px-1.5 py-0.5 rounded',
+                slaStatus.isOverdue && 'bg-signal-red-bg text-signal-red',
+                slaStatus.isWarning && !slaStatus.isOverdue && 'bg-signal-amber-bg text-signal-amber',
+                !slaStatus.isOverdue && !slaStatus.isWarning && 'text-muted-foreground/60'
+              )}>
+                {slaStatus.label}
+              </span>
+            )}
+          </div>
         </div>
       </div>
     </div>

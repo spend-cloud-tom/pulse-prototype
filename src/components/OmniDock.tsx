@@ -112,7 +112,7 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 pointer-events-none pb-safe">
+    <div className="fixed bottom-0 left-0 right-0 z-[100] pointer-events-none pb-safe">
       {/* Gradient fade for content scrolling underneath */}
       <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-50 via-slate-50/80 to-transparent" />
       
@@ -168,7 +168,7 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           className={`
-            mx-auto max-w-[600px] 
+            mx-auto max-w-[700px] 
             bg-white rounded-[24px] 
             p-2 
             flex items-center gap-2
@@ -177,7 +177,7 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
           `}
           style={{
             /* 2-Part Shadow for true physical depth (Refactoring UI) */
-            boxShadow: '0 10px 24px hsla(212, 20%, 15%, 0.1), 0 4px 6px hsla(212, 20%, 15%, 0.05)',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.1), 0 4px 10px rgba(0,0,0,0.05)',
           }}
         >
           {/* Input area — relative container for overlays */}

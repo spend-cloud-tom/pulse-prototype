@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRole } from '@/context/RoleContext';
+import { signalTypeConfig } from '@/data/mockData';
 import MaintenancePanel from '@/components/MaintenancePanel';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
 import { Button } from '@/components/ui/button';
@@ -8,10 +9,25 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { 
   Check, Sparkles, Brain, Package, Truck, FileText, 
-  ChevronRight, Clock, AlertCircle, CheckCircle2, Zap
+  ChevronRight, Clock, AlertCircle, CheckCircle2, Zap, User, MapPin
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
+
+const formatTimeAgo = (ts: string) => {
+  try {
+    const d = new Date(ts);
+    const now = new Date();
+    const diffMin = Math.round((now.getTime() - d.getTime()) / 60000);
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffH = Math.round(diffMin / 60);
+    if (diffH < 24) return `${diffH}h ago`;
+    const diffD = Math.round(diffH / 24);
+    if (diffD === 1) return 'Yesterday';
+    return `${diffD}d ago`;
+  } catch { return ts; }
+};
 
 /* ─── Mock Data ─── */
 const vendorSuggestions = [
@@ -140,8 +156,20 @@ const QueueItem = ({
   suggestion?: { vendor: string; confidence: number; savings: string };
   onAssign: () => void;
 }) => {
+  const typeConfig = signalTypeConfig[signal.signal_type] || signalTypeConfig.general;
+  
   return (
     <div className="rounded-2xl bg-card p-4 shadow-elevation-low space-y-3">
+      {/* Object type header */}
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {typeConfig.objectName}
+        </span>
+        {signal.amount && (
+          <p className="font-semibold tabular-nums text-lg">€{signal.amount.toFixed(2)}</p>
+        )}
+      </div>
+      
       <div className="flex items-start gap-3">
         <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-signal-amber-bg shrink-0">
           <Package className="h-5 w-5 text-signal-amber" />
@@ -149,14 +177,25 @@ const QueueItem = ({
         
         <div className="flex-1 min-w-0">
           <p className="font-semibold">{signal.description}</p>
-          <p className="text-sm text-muted-foreground">
-            {signal.submitter_name} · {signal.location}
-          </p>
         </div>
-        
-        {signal.amount && (
-          <p className="font-semibold tabular-nums shrink-0">€{signal.amount.toFixed(2)}</p>
-        )}
+      </div>
+      
+      {/* Metadata footer — Creator, Location, Time */}
+      <div className="flex items-center gap-2 text-[11px] text-muted-foreground pt-2 border-t border-border/40">
+        <span className="flex items-center gap-1">
+          <User className="h-3 w-3" />
+          <span className="font-medium">{signal.submitter_name}</span>
+        </span>
+        <span>·</span>
+        <span className="flex items-center gap-1">
+          <MapPin className="h-3 w-3" />
+          <span>{signal.location}</span>
+        </span>
+        <span>·</span>
+        <span className="flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          <span>{formatTimeAgo(signal.created_at)}</span>
+        </span>
       </div>
       
       {/* AI Suggestion */}
@@ -292,10 +331,10 @@ const SarahView = () => {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="font-display text-3xl font-bold tracking-tight">
-                Pulse Pipeline
+                Procurement Pipeline
               </h1>
               <p className="text-muted-foreground mt-1">
-                {actionPulses.length} Pulses awaiting action · {activeOrders.filter(o => o.status !== 'delivered').length} Pulses in motion
+                {actionPulses.length} requests awaiting action · {activeOrders.filter(o => o.status !== 'delivered').length} orders in progress
               </p>
             </div>
             
@@ -373,19 +412,19 @@ const SarahView = () => {
                 ) : (
                   <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
                     <CheckCircle2 className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                    <p className="font-semibold text-signal-green">All Pulses handled</p>
+                    <p className="font-semibold text-signal-green">All requests handled</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      No Pulses awaiting your action
+                      No requests awaiting your action
                     </p>
                   </div>
                 )}
                 
-                {/* Blocked Pulses */}
+                {/* Blocked Requests */}
                 {bottlenecks.length > 0 && (
                   <div className="space-y-3 pt-4">
                     <div className="flex items-center gap-2">
                       <AlertCircle className="h-4 w-4 text-signal-amber" />
-                      <h3 className="text-sm font-semibold">Blocked Pulses</h3>
+                      <h3 className="text-sm font-semibold">Blocked Requests</h3>
                     </div>
                     {bottlenecks.map((b, i) => (
                       <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-signal-amber-bg/30 border border-signal-amber/20">
@@ -401,7 +440,7 @@ const SarahView = () => {
                             className="mt-1 text-xs h-7"
                             onClick={() => handleEscalate(b.item)}
                           >
-                            Escalate Pulse
+                            Escalate
                           </Button>
                         </div>
                       </div>

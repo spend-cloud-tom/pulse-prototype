@@ -103,7 +103,7 @@ const SearchResultsView = ({ query, signals, onClose, onSelectSignal }: SearchRe
             Results for "{query}"
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {results.length} {results.length === 1 ? 'pulse' : 'pulses'} found
+            {results.length} {results.length === 1 ? 'result' : 'results'} found
             {totalExposure > 0 && <span> · €{totalExposure.toLocaleString('nl-NL', { minimumFractionDigits: 2 })} total</span>}
             {actionCount > 0 && <span> · {actionCount} need action</span>}
           </p>
@@ -141,7 +141,7 @@ const SearchResultsView = ({ query, signals, onClose, onSelectSignal }: SearchRe
         <div className="text-center py-12 space-y-3">
           <Search className="h-8 w-8 text-muted-foreground/30 mx-auto" />
           <p className="text-sm text-muted-foreground">
-            No pulses found matching "{query}" with current filters.
+            No results found matching "{query}" with current filters.
           </p>
           <Button
             variant="outline"

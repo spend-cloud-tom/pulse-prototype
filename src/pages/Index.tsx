@@ -264,7 +264,7 @@ const PulseApp = () => {
                 className="text-[26px] font-extrabold"
                 style={{ 
                   fontFamily: "'Nunito', sans-serif",
-                  color: 'hsl(12, 76%, 61%)'  /* Soft coral accent - the "heartbeat" */
+                  color: 'hsl(174, 72%, 40%)'  /* Brand teal accent */
                 }}
               >
                 .

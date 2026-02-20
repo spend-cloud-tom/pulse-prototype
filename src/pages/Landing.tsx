@@ -290,7 +290,7 @@ const Landing = () => {
           {/* Friendly 'pulse.' logo */}
           <div className="flex items-center justify-center mb-8">
             <span className="font-display text-3xl font-bold tracking-tight text-foreground">
-              pulse<span className="text-hero-coral">.</span>
+              pulse<span className="text-hero-teal">.</span>
             </span>
           </div>
 
@@ -322,7 +322,7 @@ const Landing = () => {
                 <button 
                   onClick={handleEmailNext} 
                   disabled={!email}
-                  className="w-full h-14 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground font-semibold rounded-xl flex items-center justify-center gap-2 transition-all"
+                  className="w-full h-14 bg-hero-teal hover:bg-hero-teal/90 disabled:bg-muted disabled:text-muted-foreground text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
                 >
                   Continue <ArrowRight className="h-4 w-4" />
                 </button>
@@ -420,7 +420,7 @@ const Landing = () => {
                 <button 
                   onClick={handleLogin} 
                   disabled={!password}
-                  className="w-full h-14 bg-primary hover:bg-primary/90 disabled:bg-muted disabled:text-muted-foreground text-primary-foreground font-semibold rounded-xl flex items-center justify-center gap-2 transition-all"
+                  className="w-full h-14 bg-hero-teal hover:bg-hero-teal/90 disabled:bg-muted disabled:text-muted-foreground text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm"
                 >
                   Log in
                 </button>
@@ -472,7 +472,7 @@ const Landing = () => {
           {/* Friendly lowercase 'pulse.' logo */}
           <div className="flex items-center">
             <span className="font-display text-2xl font-bold tracking-tight text-slate-900">
-              pulse<span className="text-hero-coral">.</span>
+              pulse<span className="text-hero-teal">.</span>
             </span>
           </div>
           <div className="flex items-center gap-4">
@@ -644,7 +644,7 @@ const Landing = () => {
       <footer className="py-12 bg-slate-900">
         <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-slate-400">
           <div className="flex items-center gap-2">
-            <span className="font-display text-lg font-bold text-white">pulse<span className="text-hero-coral">.</span></span>
+            <span className="font-display text-lg font-bold text-white">pulse<span className="text-hero-teal">.</span></span>
             <span className="text-slate-600">·</span>
             <span>© {new Date().getFullYear()}</span>
           </div>

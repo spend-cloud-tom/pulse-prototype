@@ -180,8 +180,8 @@ const ConfidenceTag = ({ level }: { level: 'high' | 'medium' | 'low' }) => {
     },
     low: { 
       label: 'Query', 
-      bg: 'bg-red-50', 
-      text: 'text-red-700',
+      bg: 'bg-state-risk-bg', 
+      text: 'text-state-risk',
       dot: '🔴' 
     },
   };
@@ -685,7 +685,7 @@ const DetailDrawerContent = ({
             {passedCount}/{complianceChecks.length} checks
           </Badge>
         </div>
-        <h3 className="text-lg font-bold leading-snug">{signal.title || signal.description}</h3>
+        <h3 className="text-lg font-semibold leading-snug">{signal.title || signal.description}</h3>
       </div>
 
       {/* Submitter info */}
@@ -717,7 +717,7 @@ const DetailDrawerContent = ({
         <div className="rounded-xl bg-secondary/40 p-4">
           <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mb-1">Total (incl. VAT)</p>
           <div className="flex items-baseline justify-between">
-            <p className="text-2xl font-bold tabular-nums">€{vatInfo.total.toFixed(2)}</p>
+            <p className="text-2xl text-muted-foreground tabular-nums">€{vatInfo.total.toFixed(2)}</p>
             <div className="text-right">
               <p className="text-xs text-muted-foreground tabular-nums">Net €{vatInfo.net.toFixed(2)}</p>
               <p className="text-xs text-muted-foreground tabular-nums">VAT €{vatInfo.vat.toFixed(2)} (21%)</p>
@@ -1059,7 +1059,7 @@ const ReconcileDetailContent = ({
             {isVariance ? 'Variance detected' : isMissingPO ? 'Missing PO' : 'Matched'}
           </Badge>
         </div>
-        <h3 className="text-lg font-bold leading-snug">{match.supplier}</h3>
+        <h3 className="text-lg font-semibold leading-snug">{match.supplier}</h3>
         <p className="text-xs text-muted-foreground mt-1">Invoice {match.invoice}</p>
       </div>
 
@@ -1076,14 +1076,14 @@ const ReconcileDetailContent = ({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Invoice Amount</span>
-              <span className="text-sm font-bold tabular-nums">€{match.invoiceAmount.toFixed(2)}</span>
+              <span className="text-sm text-muted-foreground tabular-nums">€{match.invoiceAmount.toFixed(2)}</span>
             </div>
             {isVariance && (
               <>
                 <div className="border-t border-border" />
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-state-blocked">Variance</span>
-                  <span className="text-sm font-bold tabular-nums text-state-blocked">
+                  <span className="text-sm tabular-nums text-state-blocked">
                     +€{varianceAmount.toFixed(2)} ({variancePct}%)
                   </span>
                 </div>
@@ -1362,7 +1362,7 @@ const RohanView = () => {
                 <Euro className="h-4 w-4 text-slate-400" />
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Exposure</p>
               </div>
-              <p className="text-2xl font-bold text-slate-900 tabular-nums">
+              <p className="text-2xl text-muted-foreground tabular-nums">
                 €{totalExposure.toLocaleString('nl-NL', { minimumFractionDigits: 0 })}
               </p>
             </div>
@@ -1373,9 +1373,9 @@ const RohanView = () => {
                 <FileWarning className="h-4 w-4 text-amber-500" />
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Exceptions</p>
               </div>
-              <p className="text-2xl font-bold text-slate-900 tabular-nums">
+              <p className="text-2xl text-muted-foreground tabular-nums">
                 {exceptions.length + actionableMatches.length}
-                <span className="text-sm font-normal text-slate-500 ml-1">to review</span>
+                <span className="text-sm font-normal text-muted-foreground ml-1">to review</span>
               </p>
             </div>
             
@@ -1385,9 +1385,9 @@ const RohanView = () => {
                 <Users className="h-4 w-4 text-emerald-500" />
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Spot-Checks</p>
               </div>
-              <p className="text-2xl font-bold text-slate-900 tabular-nums">
+              <p className="text-2xl text-muted-foreground tabular-nums">
                 {approvals.length}
-                <span className="text-sm font-normal text-slate-500 ml-1">pending</span>
+                <span className="text-sm font-normal text-muted-foreground ml-1">pending</span>
               </p>
             </div>
             
@@ -1397,9 +1397,9 @@ const RohanView = () => {
                 <TrendingUp className="h-4 w-4 text-blue-500" />
                 <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Auto-Handled</p>
               </div>
-              <p className="text-2xl font-bold text-slate-900 tabular-nums">
+              <p className="text-2xl text-muted-foreground tabular-nums">
                 {matchedCount}
-                <span className="text-sm font-normal text-slate-500 ml-1">this week</span>
+                <span className="text-sm font-normal text-muted-foreground ml-1">this week</span>
               </p>
             </div>
           </div>
@@ -1509,7 +1509,7 @@ const RohanView = () => {
                       <div className="flex justify-start">
                         <ConfidenceTag level={match.status === 'missing-po' ? 'low' : 'medium'} />
                       </div>
-                      <p className="text-sm font-bold tabular-nums text-slate-900 text-right">
+                      <p className="text-sm text-muted-foreground tabular-nums text-right">
                         €{match.invoiceAmount.toFixed(2)}
                       </p>
                       <p className="text-sm font-medium text-slate-900 truncate text-left">
@@ -1595,7 +1595,7 @@ const RohanView = () => {
                         <p className="text-xs text-muted-foreground">{item.count} transactions · {item.trend}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold tabular-nums">€{item.amount.toLocaleString()}</p>
+                        <p className="text-lg text-muted-foreground tabular-nums">€{item.amount.toLocaleString()}</p>
                         <Button 
                           size="sm" 
                           variant="outline" 

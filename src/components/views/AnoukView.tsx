@@ -6,10 +6,12 @@ import { Mic, Camera, ChevronRight, Package, Truck, CheckCircle2, AlertCircle, C
 import { toast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
+import PulseTypeTag from '@/components/PulseTypeTag';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
 import ImageThumbnail from '@/components/ImageThumbnail';
 import { Signal } from '@/data/types';
 import { cn } from '@/lib/utils';
+import { pulseActions } from '@/lib/pulseActions';
 
 const formatTimeAgo = (ts: string) => {
   try {
@@ -221,7 +223,7 @@ const StatusCard = ({
     e.stopPropagation();
     toast({
       title: "Issue reported",
-      description: "Someone will look into this shortly. The item will remain visible until resolved.",
+      description: "Someone will look into this Pulse shortly.",
     });
   };
 
@@ -242,11 +244,9 @@ const StatusCard = ({
           : '0 2px 4px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03)' 
       }}
     >
-      {/* Object type label */}
+      {/* PULSE TYPE TAG — The key identifier */}
       <div className="flex items-center gap-2 mb-3">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-          {typeConfig.objectName}
-        </span>
+        <PulseTypeTag type={signal.signal_type} size="sm" />
         {signal.amount != null && signal.amount > 0 && (
           <span className="text-sm font-bold text-slate-700 tabular-nums ml-auto">
             €{signal.amount.toFixed(2)}
@@ -404,11 +404,11 @@ const AnoukView = () => {
 
   const hasNeedsInput = needsInputPulses.length > 0;
 
-  // Resolve a request (moves it out of "needs input")
+  // Advance a Pulse (moves it out of "needs action")
   const handleResolve = (signalId: string, description: string) => {
     setResolvedIds(prev => new Set([...prev, signalId]));
     toast({
-      title: "✅ Request submitted",
+      title: "✅ Pulse advanced",
       description: `"${description?.slice(0, 35)}..." is now in motion.`,
     });
   };
@@ -420,26 +420,26 @@ const AnoukView = () => {
         {/* Constrained width container — max 680px, centered */}
         <div className="max-w-[680px] mx-auto px-5 py-8 space-y-8">
           
-          {/* ─── GREETING ─── */}
+          {/* ─── PULSE SUMMARY HEADER ─── */}
           <motion.header 
             initial={{ opacity: 0, y: 16 }} 
             animate={{ opacity: 1, y: 0 }}
             className="space-y-2"
           >
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              {hasNeedsInput ? 'Action needed' : 'All clear'}
+              {hasNeedsInput ? 'Pulses Need You' : 'All Clear'}
             </h1>
             <p className="text-base text-slate-500 leading-relaxed">
               {hasNeedsInput 
-                ? `${needsInputPulses.length} ${needsInputPulses.length === 1 ? 'request needs' : 'requests need'} your input.`
+                ? `${needsInputPulses.length} ${needsInputPulses.length === 1 ? 'Pulse needs' : 'Pulses need'} your input.`
                 : inProgressPulses.length > 0 
-                  ? `${inProgressPulses.length} ${inProgressPulses.length === 1 ? 'request is' : 'requests are'} in progress.`
-                  : 'All requests handled. Enjoy your shift!'
+                  ? `${inProgressPulses.length} ${inProgressPulses.length === 1 ? 'Pulse is' : 'Pulses are'} in motion.`
+                  : 'All Pulses handled. Enjoy your shift!'
               }
             </p>
           </motion.header>
 
-          {/* ─── NEEDS ACTION — Requests requiring your input ─── */}
+          {/* ─── NEEDS ACTION — Pulses requiring your input ─── */}
           {hasNeedsInput && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -449,7 +449,7 @@ const AnoukView = () => {
             >
               <h2 className="text-sm font-semibold text-signal-red uppercase tracking-wider flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-signal-red animate-pulse" />
-                Needs Your Input
+                Needs Action
               </h2>
               <div className="space-y-4">
                 {needsInputPulses.map((signal) => (
@@ -465,7 +465,7 @@ const AnoukView = () => {
             </motion.section>
           )}
 
-          {/* ─── IN MOTION — Requests being processed ─── */}
+          {/* ─── IN MOTION — Pulses being processed ─── */}
           {inProgressPulses.length > 0 && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -475,7 +475,7 @@ const AnoukView = () => {
             >
               <h2 className="text-sm font-semibold text-signal-amber uppercase tracking-wider flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-signal-amber" />
-                In Progress
+                In Motion
               </h2>
               <div className="space-y-4">
                 {inProgressPulses.map((signal) => (
@@ -485,7 +485,7 @@ const AnoukView = () => {
             </motion.section>
           )}
 
-          {/* ─── RESOLVED — Completed Requests ─── */}
+          {/* ─── RESOLVED — Completed Pulses ─── */}
           {completedPulses.length > 0 && (
             <motion.section
               initial={{ opacity: 0 }}
@@ -495,7 +495,7 @@ const AnoukView = () => {
             >
               <h2 className="text-sm font-semibold text-signal-green uppercase tracking-wider flex items-center gap-2">
                 <span className="h-2 w-2 rounded-full bg-signal-green" />
-                Completed
+                Resolved
               </h2>
               <div className="space-y-4">
                 {completedPulses.slice(0, 5).map((signal) => (
@@ -515,9 +515,9 @@ const AnoukView = () => {
               <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 className="h-8 w-8 text-emerald-500" />
               </div>
-              <p className="text-lg font-medium text-slate-700">Nothing to show</p>
+              <p className="text-lg font-medium text-slate-700">No Pulses</p>
               <p className="text-sm text-slate-500 mt-1">
-                Use the input below to request something
+                Use the input below to create a new Pulse
               </p>
             </motion.div>
           )}

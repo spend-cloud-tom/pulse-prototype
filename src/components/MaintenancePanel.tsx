@@ -11,6 +11,8 @@ import { toast } from 'sonner';
 import type { MaintenanceTicket } from '@/hooks/useMaintenanceTickets';
 import { demoImages } from '@/data/mockData';
 import ImageThumbnail from '@/components/ImageThumbnail';
+import PulseTypeTag from '@/components/PulseTypeTag';
+import { pulseActions } from '@/lib/pulseActions';
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   open: { label: 'Open', color: 'bg-signal-red-bg text-signal-red', icon: <AlertTriangle className="h-3 w-3" /> },
@@ -53,11 +55,11 @@ const MaintenancePanel = () => {
         scheduled_date: scheduledDate || null,
         status: 'assigned',
       });
-      toast.success('Contractor assigned!', { description: `${contractorName} will handle this repair.` });
+      toast.success('Owner assigned!', { description: `${contractorName} will handle this Pulse.` });
       setAssignDialogOpen(false);
       resetForm();
     } catch {
-      toast.error('Failed to assign contractor');
+      toast.error('Failed to assign owner');
     }
   };
 
@@ -68,9 +70,9 @@ const MaintenancePanel = () => {
         completion_date: new Date().toISOString().split('T')[0],
         resolution_notes: resolutionNotes || 'Completed',
       });
-      toast.success('Ticket closed!', { description: 'Maintenance completed.' });
+      toast.success('Pulse resolved!', { description: 'Maintenance Pulse completed.' });
     } catch {
-      toast.error('Failed to update ticket');
+      toast.error('Failed to resolve Pulse');
     }
   };
 
@@ -104,7 +106,8 @@ const MaintenancePanel = () => {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-          <Wrench className="h-4 w-4" /> Maintenance Requests
+          <span className="h-2 w-2 rounded-full bg-orange-400" />
+          Maintenance Pulses
         </h2>
         <Badge variant="secondary" className="text-xs">{tickets.length}</Badge>
       </div>
@@ -120,11 +123,9 @@ const MaintenancePanel = () => {
             const ticketImage = getMaintenanceImage(ticket.issue_description);
             return (
               <div key={ticket.id} className="rounded-xl border border-signal-red/20 bg-card p-4 space-y-3">
-                {/* Object type label */}
+                {/* PULSE TYPE TAG */}
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Maintenance Request
-                  </span>
+                  <PulseTypeTag type="maintenance" size="sm" />
                   <Badge className={`text-[11px] border-0 gap-1 shrink-0 ${sc.color}`}>
                     {sc.icon} {sc.label}
                   </Badge>
@@ -161,7 +162,7 @@ const MaintenancePanel = () => {
                 </div>
                 
                 <Button size="sm" onClick={() => openAssignDialog(ticket)} className="gap-1.5 text-xs h-8">
-                  <User className="h-3.5 w-3.5" /> Assign Contractor
+                  <User className="h-3.5 w-3.5" /> {pulseActions.assignOwner}
                 </Button>
               </div>
             );
@@ -179,11 +180,9 @@ const MaintenancePanel = () => {
             const sc = statusConfig[ticket.status];
             return (
               <div key={ticket.id} className="rounded-xl border border-border bg-card p-4 space-y-3">
-                {/* Object type label */}
+                {/* PULSE TYPE TAG */}
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    Maintenance Request
-                  </span>
+                  <PulseTypeTag type="maintenance" size="sm" />
                   <Badge className={`text-[11px] border-0 gap-1 ${sc.color}`}>
                     {sc.icon} {sc.label}
                   </Badge>
@@ -229,7 +228,7 @@ const MaintenancePanel = () => {
                     </Button>
                   )}
                   <Button size="sm" variant="outline" onClick={() => handleMarkComplete(ticket)} className="gap-1.5 text-xs h-7 text-signal-green hover:text-signal-green">
-                    <Check className="h-3 w-3" /> Mark Complete
+                    <Check className="h-3 w-3" /> {pulseActions.resolvePulse}
                   </Button>
                 </div>
               </div>
@@ -260,18 +259,18 @@ const MaintenancePanel = () => {
         </div>
       )}
 
-      {/* Assign contractor dialog */}
+      {/* Assign owner dialog */}
       <Dialog open={assignDialogOpen} onOpenChange={(v) => { setAssignDialogOpen(v); if (!v) resetForm(); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-display text-xl">Assign Contractor</DialogTitle>
+            <DialogTitle className="font-display text-xl">{pulseActions.assignOwner}</DialogTitle>
             <DialogDescription>
               {selectedTicket?.issue_description} — {selectedTicket?.location}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground">Contractor name *</label>
+              <label className="text-xs font-medium text-muted-foreground">Owner name *</label>
               <Input
                 placeholder="e.g., Bouwbedrijf Jansen"
                 value={contractorName}
@@ -295,7 +294,7 @@ const MaintenancePanel = () => {
               />
             </div>
             <Button onClick={handleAssign} disabled={!contractorName} className="w-full gap-1.5">
-              <Check className="h-4 w-4" /> Assign & Notify
+              <Check className="h-4 w-4" /> {pulseActions.assignOwner} & Notify
             </Button>
           </div>
         </DialogContent>

@@ -4,6 +4,7 @@ import { Signal, ConfidenceLevel, statusToPulseState, PulseState } from '@/data/
 import { signalTypeConfig, pulseStateConfig, lifecycleConfig, statusToLifecycleStage } from '@/data/mockData';
 import { classifySignal, riskConfig, getWorkflowStage } from '@/lib/decisionTypes';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
+import PulseTypeTag from '@/components/PulseTypeTag';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { HelpCircle, ChevronDown, TrendingUp, AlertTriangle, CheckCircle2, Zap, User, Clock, ArrowRight } from 'lucide-react';
@@ -208,16 +209,11 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
     >
       <div className={cn('flex items-start gap-3', dense ? 'p-2.5' : 'p-3.5')}>
         <div className="flex-1 min-w-0 space-y-1.5">
-          {/* Header row — Object type tag prominently displayed */}
+          {/* Header row — PULSE TYPE TAG prominently displayed */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0">
-              {/* OBJECT TYPE TAG — The key identifier */}
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/80">
-                <PulseTypeIcon type={signal.signal_type} className="h-2.5 w-2.5 text-hero-purple" />
-                <span className="text-[10px] font-semibold uppercase tracking-wide text-foreground/80">
-                  {typeInfo.objectName || typeInfo.label}
-                </span>
-              </div>
+              {/* PULSE TYPE TAG — The key identifier */}
+              <PulseTypeTag type={signal.signal_type} size="sm" />
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {/* PULSE STATE badge — Unified state language */}

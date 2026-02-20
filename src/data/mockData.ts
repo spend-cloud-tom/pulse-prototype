@@ -109,17 +109,71 @@ export const aiAlerts = [
   },
 ];
 
-// SIGNAL TYPE CONFIG — SaaS object naming convention
-// Each signal type has a specific domain object name for clarity
-export const signalTypeConfig: Record<string, { label: string; objectName: string; objectNamePlural: string }> = {
-  purchase: { label: 'Purchase', objectName: 'Purchase Request', objectNamePlural: 'Purchase Requests' },
-  maintenance: { label: 'Maintenance', objectName: 'Maintenance Request', objectNamePlural: 'Maintenance Requests' },
-  incident: { label: 'Incident', objectName: 'Incident Report', objectNamePlural: 'Incident Reports' },
-  'shift-handover': { label: 'Handover', objectName: 'Handover Note', objectNamePlural: 'Handover Notes' },
-  compliance: { label: 'Compliance', objectName: 'Compliance Alert', objectNamePlural: 'Compliance Alerts' },
-  event: { label: 'Event', objectName: 'Event Request', objectNamePlural: 'Event Requests' },
-  resource: { label: 'Resource', objectName: 'Resource Request', objectNamePlural: 'Resource Requests' },
-  general: { label: 'General', objectName: 'Request', objectNamePlural: 'Requests' },
+// SIGNAL TYPE CONFIG — Pulse-centric naming convention
+// Everything is a Pulse, just different types
+export const signalTypeConfig: Record<string, { 
+  label: string; 
+  objectName: string; 
+  objectNamePlural: string;
+  pulseLabel: string;  // The visible "X Pulse" tag
+  color: string;       // Tailwind color class for the type
+}> = {
+  purchase: { 
+    label: 'Purchase', 
+    objectName: 'Purchase Pulse', 
+    objectNamePlural: 'Purchase Pulses',
+    pulseLabel: 'Purchase Pulse',
+    color: 'blue',
+  },
+  maintenance: { 
+    label: 'Maintenance', 
+    objectName: 'Maintenance Pulse', 
+    objectNamePlural: 'Maintenance Pulses',
+    pulseLabel: 'Maintenance Pulse',
+    color: 'orange',
+  },
+  incident: { 
+    label: 'Incident', 
+    objectName: 'Incident Pulse', 
+    objectNamePlural: 'Incident Pulses',
+    pulseLabel: 'Incident Pulse',
+    color: 'red',
+  },
+  'shift-handover': { 
+    label: 'Handover', 
+    objectName: 'Handover Pulse', 
+    objectNamePlural: 'Handover Pulses',
+    pulseLabel: 'Handover Pulse',
+    color: 'violet',
+  },
+  compliance: { 
+    label: 'Compliance', 
+    objectName: 'Compliance Pulse', 
+    objectNamePlural: 'Compliance Pulses',
+    pulseLabel: 'Compliance Pulse',
+    color: 'yellow',
+  },
+  event: { 
+    label: 'Event', 
+    objectName: 'Event Pulse', 
+    objectNamePlural: 'Event Pulses',
+    pulseLabel: 'Event Pulse',
+    color: 'emerald',
+  },
+  resource: { 
+    label: 'Resource', 
+    objectName: 'Resource Pulse', 
+    objectNamePlural: 'Resource Pulses',
+    pulseLabel: 'Resource Pulse',
+    color: 'cyan',
+  },
+  general: { 
+    label: 'General', 
+    objectName: 'Pulse', 
+    objectNamePlural: 'Pulses',
+    pulseLabel: 'Pulse',
+    color: 'slate',
+  },
 };
 
 // PULSE STATE CONFIG — Unified state labels and colors

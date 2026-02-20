@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { RoleProvider, useRole } from '@/context/RoleContext';
@@ -19,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Search, Bell, LogOut, ChevronDown, MapPin, Calendar, Filter } from 'lucide-react';
 import OmniDock from '@/components/OmniDock';
 import CommandPalette from '@/components/CommandPalette';
-import { Signal } from '@/data/types';
+import { Signal, statusToPulseState } from '@/data/types';
 import { cn } from '@/lib/utils';
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -91,7 +91,7 @@ const InlineFilters = ({
 
       <span className="text-slate-300">·</span>
 
-      {/* My actions toggle */}
+      {/* My Pulses toggle */}
       <button
         onClick={() => onFiltersChange({ ...filters, myActionOnly: !filters.myActionOnly })}
         className={cn(
@@ -100,7 +100,7 @@ const InlineFilters = ({
         )}
       >
         <Filter className="h-3.5 w-3.5" />
-        <span>My actions</span>
+        <span>My Pulses</span>
       </button>
     </div>
   );

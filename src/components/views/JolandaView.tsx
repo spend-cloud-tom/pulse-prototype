@@ -7,6 +7,7 @@ import PulseDetailDrawer from '@/components/PulseDetailDrawer';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
 import OrchestrationSummary from '@/components/OrchestrationSummary';
 import BudgetRadar from '@/components/BudgetRadar';
+import PulseTypeTag from '@/components/PulseTypeTag';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -17,6 +18,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
 import AutoResolveStack from '@/components/AutoResolveStack';
+import { pulseActions } from '@/lib/pulseActions';
 
 const formatTimeAgo = (ts: string) => {
   try {
@@ -33,7 +35,7 @@ const formatTimeAgo = (ts: string) => {
   } catch { return ts; }
 };
 
-/* ─── LAYER 1: Judgment Card — Financial decisions requiring approval ─── */
+/* ─── LAYER 1: Judgment Card — Pulses requiring approval ─── */
 const JudgmentCard = ({ 
   signal, 
   onSelect,
@@ -64,11 +66,9 @@ const JudgmentCard = ({
         signal.urgencyTier === 'high' ? 'border-l-signal-amber' : 'border-l-hero-teal'
       }`}
     >
-      {/* Object type + urgency header */}
+      {/* PULSE TYPE TAG + urgency header */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {typeConfig.objectName}
-        </span>
+        <PulseTypeTag type={signal.signal_type} size="sm" />
         <div className="flex items-center gap-2">
           {isCritical && (
             <Badge className="text-[10px] bg-signal-red-bg text-signal-red border-0 shrink-0 animate-pulse">
@@ -134,16 +134,16 @@ const JudgmentCard = ({
         </div>
       )}
       
-      {/* EXPLICIT CTAs — No ambiguous "Advance Pulse" */}
+      {/* EXPLICIT CTAs — Pulse-centric action language */}
       <div className="flex items-center gap-2 pt-2">
         <Button onClick={onApprove} className="gap-1.5 flex-1 bg-signal-green hover:bg-signal-green/90">
-          <Check className="h-4 w-4" /> Approve
+          <Check className="h-4 w-4" /> {pulseActions.approvePulse}
         </Button>
         <Button variant="outline" onClick={onEscalate} className="gap-1.5">
-          <ArrowUpRight className="h-4 w-4" /> Escalate
+          <ArrowUpRight className="h-4 w-4" /> {pulseActions.escalatePulse}
         </Button>
         <Button variant="outline" onClick={onRequestClarification} className="gap-1.5">
-          <HelpCircle className="h-4 w-4" /> Clarify
+          <HelpCircle className="h-4 w-4" /> {pulseActions.requestInfo}
         </Button>
         <Button variant="ghost" onClick={onReject} className="text-destructive hover:text-destructive hover:bg-destructive/10">
           <X className="h-4 w-4" />
@@ -255,13 +255,13 @@ const JolandaView = () => {
     setTimeout(() => setShowSuccessCheck(false), 800);
     setApprovedIds(prev => new Set([...prev, signal.id]));
     toast({
-      title: "✅ Approved",
-      description: `€${(signal.amount || 0).toFixed(2)} — routed to procurement.`,
+      title: "✅ Pulse Approved",
+      description: `€${(signal.amount || 0).toFixed(2)} — Pulse advancing to procurement.`,
     });
     setTimeout(() => {
       toast({
-        title: "📦 In motion",
-        description: `Sarah is now processing this request.`,
+        title: "📦 Pulse In Motion",
+        description: `Sarah is now handling this Pulse.`,
       });
     }, 2500);
   };
@@ -269,8 +269,8 @@ const JolandaView = () => {
   const handleEscalate = (signal: ClassifiedSignal) => {
     setApprovedIds(prev => new Set([...prev, signal.id]));
     toast({
-      title: "⬆️ Escalated",
-      description: `Sent to regional manager for review.`,
+      title: "⬆️ Pulse Escalated",
+      description: `Pulse sent to regional manager for review.`,
     });
   };
 
@@ -282,8 +282,8 @@ const JolandaView = () => {
   const handleReject = (signal: ClassifiedSignal) => {
     setDismissedIds(prev => new Set([...prev, signal.id]));
     toast({
-      title: "❌ Rejected",
-      description: `${signal.submitter_name} will be notified.`,
+      title: "❌ Pulse Rejected",
+      description: `${signal.submitter_name} will be notified about this Pulse.`,
     });
   };
 
@@ -324,17 +324,17 @@ const JolandaView = () => {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="font-display text-3xl font-bold tracking-tight">
-                Decision Cockpit
+                Pulse Cockpit
               </h1>
               <p className="text-muted-foreground mt-1 flex items-center gap-3">
                 <span className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-signal-red animate-pulse" />
-                  <strong className="text-foreground">{judgmentPulses.length || 3}</strong> require your decision
+                  <strong className="text-foreground">{judgmentPulses.length || 3} Pulses</strong> awaiting your decision
                 </span>
                 <span className="text-border">·</span>
                 <span className="flex items-center gap-1">
                   <Euro className="h-3.5 w-3.5" />
-                  <strong className="text-foreground">{(totalFinancialExposure || 670).toLocaleString()}</strong> at risk
+                  <strong className="text-foreground">€{(totalFinancialExposure || 670).toLocaleString()}</strong> at risk
                 </span>
                 {criticalCount > 0 && (
                   <>
@@ -374,17 +374,14 @@ const JolandaView = () => {
           ───────────────────────────────────────────────────────────── */}
           <div className="lg:col-span-2 space-y-8">
             
-            {/* ═══ LAYER 1: HUMAN JUDGMENT REQUIRED ═══
-                Dominant, max 3-5 visible, financial decisions only */}
+            {/* ═══ NEEDS ACTION — Pulses requiring your decision ═══ */}
             <section>
               <div className="flex items-center gap-3 mb-4">
-                <div className="flex items-center justify-center h-8 w-8 rounded-lg bg-signal-red-bg">
-                  <Activity className="h-4 w-4 text-signal-red" />
-                </div>
+                <span className="h-2.5 w-2.5 rounded-full bg-signal-red animate-pulse" />
                 <div>
-                  <h2 className="font-semibold text-lg">Requires Your Decision</h2>
+                  <h2 className="font-semibold text-lg uppercase tracking-wider text-signal-red">Needs Action</h2>
                   <p className="text-xs text-muted-foreground">
-                    Financial approvals above auto-limit
+                    Pulses above auto-approval threshold
                   </p>
                 </div>
                 <Badge className="ml-auto text-sm bg-signal-red-bg text-signal-red border-0">
@@ -410,9 +407,9 @@ const JolandaView = () => {
                 {judgmentPulses.length === 0 && (
                   <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
                     <Check className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                    <p className="font-semibold text-signal-green">All decisions made</p>
+                    <p className="font-semibold text-signal-green">All Pulses handled</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      No financial approvals pending
+                      No Pulses awaiting your decision
                     </p>
                   </div>
                 )}
@@ -582,7 +579,7 @@ const JolandaView = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-2xl font-bold">{completedPulses.length + judgmentPulses.length + 38}</p>
-                  <p className="text-xs text-muted-foreground">Total pulses</p>
+                  <p className="text-xs text-muted-foreground">Total Pulses</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-signal-green">94%</p>

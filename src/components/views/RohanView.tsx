@@ -6,6 +6,7 @@ import { classifyAndGroup, ClassifiedSignal } from '@/lib/decisionTypes';
 import PulseEditDrawer from '@/components/PulseEditDrawer';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
 import ImageThumbnail from '@/components/ImageThumbnail';
+import PulseTypeTag from '@/components/PulseTypeTag';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -19,15 +20,17 @@ import {
 import { Signal } from '@/data/types';
 import { demoImages } from '@/data/mockData';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
+import { pulseActions } from '@/lib/pulseActions';
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   ROHAN VIEW — Finance Dashboard (Organizer-Workspace Pattern)
+   ROHAN VIEW — Finance Pulse Pipeline (Organizer-Workspace Pattern)
    
    UX Principles Applied:
    - Organizer-Workspace Pattern (About Face): Split-screen with persistent sidebar
    - Kill Navigational Excise: No page changes, modeless detail panel
    - Data Density: Condensed KPI row, high-density list
    - Visual Hierarchy: Soft tags, clear selected state
+   - Everything is a Pulse: Finance Pulses, Reconciliation Pulses
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── Mock Data ─── */
@@ -1221,7 +1224,7 @@ const RohanView = () => {
   const { approvals, exceptions, alerts } = useMemo(() => classifyAndGroup(actionPulses), [actionPulses]);
   const allItems = [...exceptions, ...approvals, ...alerts];
   
-  // Handle reconciling a 3-way match with success animation
+  // Handle reconciling a 3-way match Pulse with success animation
   const handleReconcile = (match: typeof threeWayMatches[0]) => {
     // Show success checkmark animation
     setShowSuccessCheck(true);
@@ -1229,12 +1232,12 @@ const RohanView = () => {
     
     setReconciledIds(prev => new Set([...prev, match.id]));
     toast({
-      title: "✅ Reconciled — posting to GL",
-      description: `${match.supplier} invoice ${match.invoice} matched to ${match.po}. Posting to GL 4210.`,
+      title: "✅ Pulse Resolved — posting to GL",
+      description: `${match.supplier} invoice ${match.invoice} matched. Pulse advancing to GL.`,
     });
     setTimeout(() => {
       toast({
-        title: "📊 GL Updated",
+        title: "📊 Pulse Complete",
         description: `Transaction posted. Budget impact: -€${match.invoiceAmount.toFixed(2)} from Hygiene & Cleaning.`,
       });
     }, 2000);
@@ -1249,17 +1252,17 @@ const RohanView = () => {
     });
   };
   
-  // Handle bulk resolve low-risk items
+  // Handle bulk resolve low-risk Pulses
   const handleResolveLowRisk = (count: number) => {
     setResolvedLowRisk(true);
     toast({
-      title: "✅ Bulk resolved",
-      description: `${count} low-risk exceptions auto-approved and posted to GL.`,
+      title: "✅ Pulses Bulk Resolved",
+      description: `${count} low-risk Pulses auto-approved and posted to GL.`,
     });
     setTimeout(() => {
       toast({
         title: "📧 Audit trail created",
-        description: "All transactions logged with AI confidence scores for compliance.",
+        description: "All Pulses logged with AI confidence scores for compliance.",
       });
     }, 1500);
   };
@@ -1310,16 +1313,16 @@ const RohanView = () => {
 
   const handleApprove = (signal: ClassifiedSignal) => {
     toast({
-      title: "✅ Approved",
-      description: `${signal.title || signal.description} approved and posted to GL.`,
+      title: "✅ Pulse Approved",
+      description: `${signal.title || signal.description} approved. Pulse advancing to GL.`,
     });
     setSelectedSignal(null);
   };
 
   const handleReject = (signal: ClassifiedSignal) => {
     toast({
-      title: "❌ Rejected",
-      description: `${signal.title || signal.description} rejected. Notification sent to ${signal.submitter_name}.`,
+      title: "❌ Pulse Rejected",
+      description: `${signal.title || signal.description} rejected. ${signal.submitter_name} notified.`,
     });
     setSelectedSignal(null);
   };
@@ -1339,7 +1342,7 @@ const RohanView = () => {
           {/* Title row */}
           <div className="flex items-center justify-between mb-4">
             <h1 className="font-display text-2xl font-bold text-slate-900">
-              Finance Dashboard
+              Finance Pulse Pipeline
             </h1>
             {lowRiskExceptions.length > 0 && !resolvedLowRisk && (
               <Button 

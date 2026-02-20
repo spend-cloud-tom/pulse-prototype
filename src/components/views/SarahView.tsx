@@ -4,15 +4,17 @@ import { useRole } from '@/context/RoleContext';
 import { signalTypeConfig } from '@/data/mockData';
 import MaintenancePanel from '@/components/MaintenancePanel';
 import SuccessCheckmark from '@/components/SuccessCheckmark';
+import PulseTypeTag from '@/components/PulseTypeTag';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { 
   Check, Sparkles, Brain, Package, Truck, FileText, 
-  ChevronRight, Clock, AlertCircle, CheckCircle2, Zap, User, MapPin
+  ChevronRight, Clock, AlertCircle, CheckCircle2, Zap, User, MapPin, ArrowRight
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
+import { pulseActions } from '@/lib/pulseActions';
 
 const formatTimeAgo = (ts: string) => {
   try {
@@ -146,8 +148,8 @@ const OrderCard = ({ order }: { order: typeof activeOrders[0] }) => {
   );
 };
 
-/* ─── Queue Item for Procurement ─── */
-const QueueItem = ({ 
+/* ─── Pulse Card for Procurement Pipeline ─── */
+const ProcurementPulseCard = ({ 
   signal, 
   suggestion,
   onAssign 
@@ -160,11 +162,9 @@ const QueueItem = ({
   
   return (
     <div className="rounded-2xl bg-card p-4 shadow-elevation-low space-y-3">
-      {/* Object type header */}
+      {/* PULSE TYPE TAG — The key identifier */}
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {typeConfig.objectName}
-        </span>
+        <PulseTypeTag type={signal.signal_type} size="sm" />
         {signal.amount && (
           <p className="font-semibold tabular-nums text-lg">€{signal.amount.toFixed(2)}</p>
         )}
@@ -214,11 +214,11 @@ const QueueItem = ({
             size="sm" 
             className="gap-1.5"
             onClick={() => toast({
-              title: "✅ Supplier Assigned",
-              description: `${suggestion.vendor} assigned. PO will be generated.`,
+              title: "✅ Owner Assigned",
+              description: `${suggestion.vendor} assigned. Pulse advancing...`,
             })}
           >
-            <Check className="h-3.5 w-3.5" /> Assign
+            <Check className="h-3.5 w-3.5" /> {pulseActions.assignOwner}
           </Button>
         </div>
       )}
@@ -229,24 +229,24 @@ const QueueItem = ({
           onClick={() => {
             onAssign();
             toast({
-              title: "📦 Assign Supplier",
-              description: "Opening supplier selection...",
+              title: "📦 Assign Owner",
+              description: "Opening owner selection...",
             });
           }} 
           className="w-full gap-1.5"
         >
-          <Package className="h-4 w-4" /> Assign supplier
+          <User className="h-4 w-4" /> {pulseActions.assignOwner}
         </Button>
       )}
     </div>
   );
 };
 
-/* ─── Main Sarah View ─── */
+/* ─── Main Sarah View — Pulse Pipeline for Procurement ─── */
 const SarahView = () => {
   const { signals } = useRole();
   const [copilotOpen, setCopilotOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<'queue' | 'orders' | 'auto'>('queue');
+  const [activeTab, setActiveTab] = useState<'needs-action' | 'in-motion' | 'auto-handled'>('needs-action');
   const [assignedIds, setAssignedIds] = useState<Set<string>>(new Set());
   const [generatedPOs, setGeneratedPOs] = useState<Set<string>>(new Set());
   const [orderStatuses, setOrderStatuses] = useState<Record<string, string>>({});
@@ -263,78 +263,79 @@ const SarahView = () => {
   const readyAutoPOs = autoPOCandidates.filter(c => c.ready && !generatedPOs.has(c.item));
   const pendingAutoPOs = autoPOCandidates.filter(c => !c.ready);
   
-  // Handle assigning a supplier to a pulse with success animation
-  const handleAssignSupplier = (signalId: string, description: string, vendor: string) => {
+  // Handle assigning an owner to a Pulse with success animation
+  const handleAssignOwner = (signalId: string, description: string, vendor: string) => {
     // Show success checkmark animation
     setShowSuccessCheck(true);
     setTimeout(() => setShowSuccessCheck(false), 800);
     
     setAssignedIds(prev => new Set([...prev, signalId]));
     toast({
-      title: "✅ Supplier assigned — PO created",
-      description: `${vendor} will fulfill "${description?.slice(0, 25)}..."`,
+      title: "✅ Owner assigned — Pulse advancing",
+      description: `${vendor} will handle "${description?.slice(0, 25)}..."`,
     });
     // Simulate order confirmation
     setTimeout(() => {
       toast({
-        title: "📧 Order confirmed",
-        description: `${vendor} confirmed. Expected delivery: Tomorrow 10:00`,
+        title: "📧 Pulse in motion",
+        description: `${vendor} confirmed. Expected completion: Tomorrow 10:00`,
       });
     }, 2000);
   };
   
-  // Handle generating auto-POs
-  const handleGenerateAutoPOs = () => {
+  // Handle advancing Pulses automatically
+  const handleAdvancePulses = () => {
     const items = readyAutoPOs.map(po => po.item);
     items.forEach(item => setGeneratedPOs(prev => new Set([...prev, item])));
     toast({
-      title: "📄 Auto-POs Generated",
-      description: `${items.length} purchase orders created and sent to suppliers.`,
+      title: "⚡ Pulses Advanced",
+      description: `${items.length} Pulses auto-handled and moving forward.`,
     });
     // Simulate supplier responses
     setTimeout(() => {
       toast({
-        title: "📧 Suppliers notified",
-        description: "All vendors have been emailed. Tracking will update automatically.",
+        title: "📧 Owners notified",
+        description: "All assigned owners have been notified. Tracking will update automatically.",
       });
     }, 1500);
   };
   
-  // Handle generating single PO
-  const handleGenerateSinglePO = (item: string, vendor: string) => {
+  // Handle advancing single Pulse
+  const handleAdvancePulse = (item: string, vendor: string) => {
     setGeneratedPOs(prev => new Set([...prev, item]));
     toast({
-      title: "📄 PO Generated",
-      description: `Purchase order for ${item} sent to ${vendor}.`,
+      title: "⚡ Pulse Advanced",
+      description: `${item} is now in motion with ${vendor}.`,
     });
   };
   
-  // Handle escalating a bottleneck
-  const handleEscalate = (item: string) => {
+  // Handle escalating a blocked Pulse
+  const handleEscalatePulse = (item: string) => {
     toast({
-      title: "⚠️ Escalated to Jolanda",
-      description: `${item} flagged for manager review. She'll see it in her feed.`,
+      title: "⚠️ Pulse Escalated",
+      description: `${item} escalated to Jolanda for review.`,
     });
     setTimeout(() => {
       toast({
         title: "👀 Jolanda notified",
-        description: "She's reviewing the escalation now.",
+        description: "She's reviewing the escalated Pulse now.",
       });
     }, 2000);
   };
 
   return (
     <div className="min-h-screen">
-      {/* Header */}
+      {/* Header — Pulse Summary */}
       <div className="border-b border-border bg-card/50">
         <div className="max-w-6xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="font-display text-3xl font-bold tracking-tight">
-                Procurement Pipeline
+                Pulse Pipeline
               </h1>
               <p className="text-muted-foreground mt-1">
-                {actionPulses.length} requests awaiting action · {activeOrders.filter(o => o.status !== 'delivered').length} orders in progress
+                <span className="text-signal-red font-medium">{actionPulses.length} Pulses</span> awaiting action · 
+                <span className="text-signal-amber font-medium"> {activeOrders.filter(o => o.status !== 'delivered').length} Pulses</span> in motion
               </p>
             </div>
             
@@ -342,10 +343,10 @@ const SarahView = () => {
               {readyAutoPOs.length > 0 && (
                 <Button 
                   className="gap-2 shadow-elevation-low"
-                  onClick={handleGenerateAutoPOs}
+                  onClick={handleAdvancePulses}
                 >
                   <Zap className="h-4 w-4" />
-                  Generate {readyAutoPOs.length} Auto-POs
+                  {pulseActions.advancePulse} ({readyAutoPOs.length})
                 </Button>
               )}
               
@@ -362,21 +363,22 @@ const SarahView = () => {
           {/* Tabs — Pulse Pipeline states */}
           <div className="flex items-center gap-1 border-b border-border -mb-px">
             {[
-              { key: 'queue', label: 'Needs Action', count: actionPulses.length },
-              { key: 'orders', label: 'In Motion', count: activeOrders.filter(o => o.status !== 'delivered').length },
-              { key: 'auto', label: 'Auto-Handled', count: autoPOCandidates.length },
+              { key: 'needs-action', label: 'Needs Action', count: actionPulses.length, dot: 'bg-signal-red' },
+              { key: 'in-motion', label: 'In Motion', count: activeOrders.filter(o => o.status !== 'delivered').length, dot: 'bg-signal-amber' },
+              { key: 'auto-handled', label: 'Auto-Handled', count: autoPOCandidates.length, dot: 'bg-hero-purple' },
             ].map(tab => (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as any)}
-                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-4 py-2.5 text-sm font-medium border-b-2 transition-colors flex items-center gap-2 ${
                   activeTab === tab.key 
                     ? 'border-foreground text-foreground' 
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
+                <span className={cn('h-2 w-2 rounded-full', tab.dot)} />
                 {tab.label}
-                <span className="ml-2 text-xs bg-secondary px-1.5 py-0.5 rounded-full">{tab.count}</span>
+                <span className="text-xs bg-secondary px-1.5 py-0.5 rounded-full">{tab.count}</span>
               </button>
             ))}
           </div>
@@ -388,8 +390,8 @@ const SarahView = () => {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left: Main content area */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Queue tab */}
-            {activeTab === 'queue' && (
+            {/* Needs Action tab */}
+            {activeTab === 'needs-action' && (
               <>
                 {actionPulses.length > 0 ? (
                   actionPulses.map((signal, i) => {
@@ -397,7 +399,7 @@ const SarahView = () => {
                       signal.description?.toLowerCase().includes(v.pulse.toLowerCase().split(' ')[0])
                     );
                     return (
-                      <QueueItem
+                      <ProcurementPulseCard
                         key={signal.id}
                         signal={signal}
                         suggestion={suggestion ? {
@@ -412,35 +414,36 @@ const SarahView = () => {
                 ) : (
                   <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
                     <CheckCircle2 className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                    <p className="font-semibold text-signal-green">All requests handled</p>
+                    <p className="font-semibold text-signal-green">All Pulses handled</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      No requests awaiting your action
+                      No Pulses awaiting your action
                     </p>
                   </div>
                 )}
                 
-                {/* Blocked Requests */}
+                {/* Blocked Pulses */}
                 {bottlenecks.length > 0 && (
                   <div className="space-y-3 pt-4">
                     <div className="flex items-center gap-2">
-                      <AlertCircle className="h-4 w-4 text-signal-amber" />
-                      <h3 className="text-sm font-semibold">Blocked Requests</h3>
+                      <span className="h-2 w-2 rounded-full bg-slate-400" />
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Blocked</h3>
                     </div>
                     {bottlenecks.map((b, i) => (
-                      <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-signal-amber-bg/30 border border-signal-amber/20">
+                      <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-secondary/50 border border-border">
                         <div>
                           <p className="font-medium">{b.item}</p>
                           <p className="text-sm text-muted-foreground">{b.blocker}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-medium text-signal-amber">{b.days} days</p>
+                          <p className="text-sm font-medium text-muted-foreground">{b.days} days blocked</p>
                           <Button 
                             size="sm" 
                             variant="outline" 
-                            className="mt-1 text-xs h-7"
-                            onClick={() => handleEscalate(b.item)}
+                            className="mt-1 text-xs h-7 gap-1"
+                            onClick={() => handleEscalatePulse(b.item)}
                           >
-                            Escalate
+                            <ArrowRight className="h-3 w-3" />
+                            {pulseActions.escalatePulse}
                           </Button>
                         </div>
                       </div>
@@ -450,8 +453,8 @@ const SarahView = () => {
               </>
             )}
 
-            {/* Orders tab */}
-            {activeTab === 'orders' && (
+            {/* In Motion tab */}
+            {activeTab === 'in-motion' && (
               <div className="space-y-3">
                 {activeOrders.map(order => (
                   <OrderCard key={order.id} order={order} />
@@ -459,31 +462,31 @@ const SarahView = () => {
               </div>
             )}
 
-            {/* Auto-PO tab */}
-            {activeTab === 'auto' && (
+            {/* Auto-Handled tab */}
+            {activeTab === 'auto-handled' && (
               <div className="space-y-6">
-                {/* Ready to generate */}
+                {/* Ready to advance */}
                 {readyAutoPOs.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Zap className="h-4 w-4 text-hero-teal" />
-                        <h3 className="text-sm font-semibold">Ready to generate</h3>
+                        <span className="h-2 w-2 rounded-full bg-hero-purple" />
+                        <h3 className="text-sm font-semibold uppercase tracking-wider text-hero-purple">Ready to Auto-Handle</h3>
                       </div>
                       <Button 
                         size="sm" 
                         className="gap-1.5"
-                        onClick={handleGenerateAutoPOs}
+                        onClick={handleAdvancePulses}
                       >
-                        <FileText className="h-3.5 w-3.5" /> Generate all
+                        <Zap className="h-3.5 w-3.5" /> {pulseActions.advancePulse} All
                       </Button>
                     </div>
                     {readyAutoPOs.map((po, i) => (
                       <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-card shadow-elevation-low">
                         <div className="flex items-center gap-3">
                           {po.recurring && (
-                            <Badge className="text-[10px] bg-hero-teal-soft text-hero-teal border-0">
-                              Recurring
+                            <Badge className="text-[10px] bg-hero-purple-soft text-hero-purple border-0">
+                              Recurring Pulse
                             </Badge>
                           )}
                           <div>
@@ -497,9 +500,9 @@ const SarahView = () => {
                             size="sm" 
                             variant="outline" 
                             className="gap-1.5"
-                            onClick={() => handleGenerateSinglePO(po.item, po.vendor)}
+                            onClick={() => handleAdvancePulse(po.item, po.vendor)}
                           >
-                            <FileText className="h-3.5 w-3.5" /> Generate
+                            <ArrowRight className="h-3.5 w-3.5" /> {pulseActions.advancePulse}
                           </Button>
                         </div>
                       </div>
@@ -507,12 +510,12 @@ const SarahView = () => {
                   </div>
                 )}
 
-                {/* Needs approval */}
+                {/* Needs approval before auto-handling */}
                 {pendingAutoPOs.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="text-sm font-semibold text-muted-foreground">Awaiting approval</h3>
+                      <span className="h-2 w-2 rounded-full bg-signal-amber" />
+                      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Needs Approval First</h3>
                     </div>
                     {pendingAutoPOs.map((po, i) => (
                       <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-secondary/30">
@@ -551,28 +554,28 @@ const SarahView = () => {
                       variant="outline" 
                       className="text-xs h-7 gap-1"
                       onClick={() => toast({
-                        title: "✅ Vendor Accepted",
-                        description: `${vs.vendor} selected for ${vs.pulse}. Savings: ${vs.savings}`,
+                        title: "✅ Owner Assigned",
+                        description: `${vs.vendor} assigned to ${vs.pulse}. Savings: ${vs.savings}`,
                       })}
                     >
-                      <Check className="h-3 w-3" /> {vs.vendor}
+                      <Check className="h-3 w-3" /> Assign
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Quick stats */}
+            {/* Pulse Stats */}
             <div className="rounded-xl bg-secondary/50 p-4 space-y-3">
-              <h4 className="text-sm font-medium">This week</h4>
+              <h4 className="text-sm font-medium">This Week</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-2xl font-bold">{activeOrders.length}</p>
-                  <p className="text-xs text-muted-foreground">Orders placed</p>
+                  <p className="text-xs text-muted-foreground">Pulses in motion</p>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-signal-green">€{readyAutoPOs.reduce((s, p) => s + p.amount, 0).toFixed(0)}</p>
-                  <p className="text-xs text-muted-foreground">Auto-PO ready</p>
+                  <p className="text-2xl font-bold text-hero-purple">{readyAutoPOs.length}</p>
+                  <p className="text-xs text-muted-foreground">Auto-handled</p>
                 </div>
               </div>
             </div>

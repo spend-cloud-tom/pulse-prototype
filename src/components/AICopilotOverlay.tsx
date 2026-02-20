@@ -168,18 +168,18 @@ const AICopilotOverlay = ({ open, onClose, role }: AICopilotOverlayProps) => {
     <AnimatePresence>
       {open && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — z-[200] to appear above OmniDock (z-100) */}
           <motion.div
-            className="fixed inset-0 z-50 bg-foreground/20 backdrop-blur-[2px]"
+            className="fixed inset-0 z-[200] bg-foreground/20 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
           />
 
-          {/* Overlay card */}
+          {/* Overlay card — z-[201] to appear above backdrop and OmniDock */}
           <motion.div
-            className="fixed bottom-6 left-1/2 z-50 w-[95vw] max-w-md -translate-x-1/2"
+            className="fixed bottom-6 left-1/2 z-[201] w-[95vw] max-w-md -translate-x-1/2"
             initial={{ opacity: 0, y: 60, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 40, scale: 0.95 }}

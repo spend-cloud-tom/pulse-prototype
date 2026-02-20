@@ -305,12 +305,12 @@ const AICopilotOverlay = ({ open, onClose, role }: AICopilotOverlayProps) => {
                         {/* Visual: Anomaly highlight */}
                         {current.visual === 'anomaly-highlight' && (
                           <motion.div
-                            className="rounded-lg border border-signal-amber/30 bg-signal-amber-bg p-3 space-y-1.5"
+                            className="rounded-lg border border-state-blocked/30 bg-state-blocked-bg p-3 space-y-1.5"
                             initial={{ opacity: 0, scale: 0.97 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.2 }}
                           >
-                            <div className="flex items-center gap-1.5 text-xs font-medium text-signal-amber">
+                            <div className="flex items-center gap-1.5 text-xs font-medium text-state-blocked">
                               <AlertTriangle className="h-3.5 w-3.5" />
                               Anomaly detected
                             </div>

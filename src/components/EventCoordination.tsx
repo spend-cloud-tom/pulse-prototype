@@ -32,8 +32,8 @@ const EventCoordination = () => {
                   variant="outline"
                   className={`text-[11px] border-0 ${
                     event.status === 'confirmed'
-                      ? 'bg-signal-green-bg text-signal-green'
-                      : 'bg-signal-amber-bg text-signal-amber'
+                      ? 'bg-state-resolved-bg text-state-resolved'
+                      : 'bg-state-blocked-bg text-state-blocked'
                   }`}
                 >
                   {event.status === 'confirmed' ? 'Confirmed' : 'Planning'}
@@ -53,7 +53,7 @@ const EventCoordination = () => {
                 </div>
                 <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all ${pct === 100 ? 'bg-signal-green' : 'bg-signal-amber'}`}
+                    className={`h-full rounded-full transition-all ${pct === 100 ? 'bg-state-resolved' : 'bg-state-blocked'}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
@@ -64,7 +64,7 @@ const EventCoordination = () => {
                 {event.tasks.map((task, i) => (
                   <div key={i} className="flex items-center gap-2 text-xs">
                     {task.done ? (
-                      <Check className="h-3 w-3 text-signal-green shrink-0" />
+                      <Check className="h-3 w-3 text-state-resolved shrink-0" />
                     ) : (
                       <Circle className="h-3 w-3 text-muted-foreground/40 shrink-0" />
                     )}

@@ -15,10 +15,10 @@ import PulseTypeTag from '@/components/PulseTypeTag';
 import { pulseActions } from '@/lib/pulseActions';
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
-  open: { label: 'Open', color: 'bg-signal-red-bg text-signal-red', icon: <AlertTriangle className="h-3 w-3" /> },
-  assigned: { label: 'Assigned', color: 'bg-signal-amber-bg text-signal-amber', icon: <User className="h-3 w-3" /> },
-  'in-progress': { label: 'In Progress', color: 'bg-signal-amber-bg text-signal-amber', icon: <Clock className="h-3 w-3" /> },
-  completed: { label: 'Completed', color: 'bg-signal-green-bg text-signal-green', icon: <CheckCircle2 className="h-3 w-3" /> },
+  open: { label: 'Open', color: 'bg-state-decision-bg text-state-decision', icon: <AlertTriangle className="h-3 w-3" /> },
+  assigned: { label: 'Assigned', color: 'bg-state-blocked-bg text-state-blocked', icon: <User className="h-3 w-3" /> },
+  'in-progress': { label: 'In Progress', color: 'bg-state-blocked-bg text-state-blocked', icon: <Clock className="h-3 w-3" /> },
+  completed: { label: 'Completed', color: 'bg-state-resolved-bg text-state-resolved', icon: <CheckCircle2 className="h-3 w-3" /> },
   cancelled: { label: 'Cancelled', color: 'bg-secondary text-muted-foreground', icon: null },
 };
 
@@ -115,14 +115,14 @@ const MaintenancePanel = () => {
       {/* Open tickets */}
       {openTickets.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-signal-red">
+          <p className="text-xs font-semibold uppercase tracking-wider text-state-decision">
             {openTickets.length} unassigned
           </p>
           {openTickets.map(ticket => {
             const sc = statusConfig[ticket.status];
             const ticketImage = getMaintenanceImage(ticket.issue_description);
             return (
-              <div key={ticket.id} className="rounded-xl border border-signal-red/20 bg-card p-4 space-y-3">
+              <div key={ticket.id} className="rounded-xl border border-state-decision/20 bg-card p-4 space-y-3">
                 {/* PULSE TYPE TAG */}
                 <div className="flex items-center justify-between">
                   <PulseTypeTag type="maintenance" size="sm" />
@@ -134,7 +134,7 @@ const MaintenancePanel = () => {
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0 space-y-1">
                     <p className="text-sm font-semibold">{ticket.issue_description}</p>
-                    <Badge className={`text-[10px] border-0 ${ticket.priority === 'critical' ? 'bg-signal-red-bg text-signal-red' : ticket.priority === 'urgent' ? 'bg-signal-amber-bg text-signal-amber' : 'bg-secondary text-muted-foreground'}`}>
+                    <Badge className={`text-[10px] border-0 ${ticket.priority === 'critical' ? 'bg-state-risk-bg text-state-risk' : ticket.priority === 'urgent' ? 'bg-state-blocked-bg text-state-blocked' : 'bg-secondary text-muted-foreground'}`}>
                       {ticket.priority}
                     </Badge>
                   </div>
@@ -173,7 +173,7 @@ const MaintenancePanel = () => {
       {/* Assigned / In Progress */}
       {assignedTickets.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-signal-amber">
+          <p className="text-xs font-semibold uppercase tracking-wider text-state-blocked">
             {assignedTickets.length} in progress
           </p>
           {assignedTickets.map(ticket => {
@@ -227,7 +227,7 @@ const MaintenancePanel = () => {
                       <Clock className="h-3 w-3" /> Start Work
                     </Button>
                   )}
-                  <Button size="sm" variant="outline" onClick={() => handleMarkComplete(ticket)} className="gap-1.5 text-xs h-7 text-signal-green hover:text-signal-green">
+                  <Button size="sm" variant="outline" onClick={() => handleMarkComplete(ticket)} className="gap-1.5 text-xs h-7 text-state-resolved hover:text-state-resolved">
                     <Check className="h-3 w-3" /> {pulseActions.resolvePulse}
                   </Button>
                 </div>
@@ -240,7 +240,7 @@ const MaintenancePanel = () => {
       {/* Completed */}
       {completedTickets.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-signal-green">
+          <p className="text-xs font-semibold uppercase tracking-wider text-state-resolved">
             {completedTickets.length} completed
           </p>
           {completedTickets.map(ticket => (
@@ -250,7 +250,7 @@ const MaintenancePanel = () => {
                   <p className="text-sm text-muted-foreground line-through">{ticket.issue_description}</p>
                   <p className="text-xs text-muted-foreground">{ticket.location} · {ticket.contractor_name}</p>
                 </div>
-                <Badge className="text-[11px] border-0 bg-signal-green-bg text-signal-green gap-1">
+                <Badge className="text-[11px] border-0 bg-state-resolved-bg text-state-resolved gap-1">
                   <CheckCircle2 className="h-3 w-3" /> Done
                 </Badge>
               </div>

@@ -15,10 +15,10 @@ interface TimelineSliderProps {
 
 const eventTypeConfig = {
   created: { color: 'bg-hero-purple', icon: ArrowRight },
-  auto_resolved: { color: 'bg-signal-green', icon: Zap },
-  approved: { color: 'bg-signal-green', icon: CheckCircle2 },
-  escalated: { color: 'bg-signal-amber', icon: AlertTriangle },
-  rejected: { color: 'bg-signal-red', icon: AlertTriangle },
+  auto_resolved: { color: 'bg-state-resolved', icon: Zap },
+  approved: { color: 'bg-state-resolved', icon: CheckCircle2 },
+  escalated: { color: 'bg-state-blocked', icon: AlertTriangle },
+  rejected: { color: 'bg-state-risk', icon: AlertTriangle },
   status_change: { color: 'bg-hero-teal', icon: ArrowRight },
 };
 
@@ -195,7 +195,7 @@ const TimelineSlider = ({ hoursBack = 24, onTimeChange, className }: TimelineSli
         <div className="flex items-center justify-between text-[10px]">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <div className="h-2 w-2 rounded-full bg-signal-green" />
+              <div className="h-2 w-2 rounded-full bg-state-resolved" />
               <span className="text-muted-foreground">{eventCounts.auto_resolved} auto-resolved</span>
             </span>
             <span className="flex items-center gap-1">
@@ -203,7 +203,7 @@ const TimelineSlider = ({ hoursBack = 24, onTimeChange, className }: TimelineSli
               <span className="text-muted-foreground">{eventCounts.created} created</span>
             </span>
             <span className="flex items-center gap-1">
-              <div className="h-2 w-2 rounded-full bg-signal-amber" />
+              <div className="h-2 w-2 rounded-full bg-state-blocked" />
               <span className="text-muted-foreground">{eventCounts.escalated} escalated</span>
             </span>
           </div>

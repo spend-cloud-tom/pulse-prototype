@@ -35,11 +35,11 @@ const PipelineSection = ({
       <div className="flex items-center gap-2">
         <span className={cn(
           'h-2 w-2 rounded-full',
-          state === 'needs-action' && 'bg-signal-red animate-pulse',
-          state === 'in-motion' && 'bg-signal-amber',
-          state === 'blocked' && 'bg-slate-400',
-          state === 'auto-handled' && 'bg-hero-purple',
-          state === 'resolved' && 'bg-signal-green',
+          state === 'needs-action' && 'bg-state-decision animate-pulse',
+          state === 'in-motion' && 'bg-state-blocked',
+          state === 'blocked' && 'bg-state-blocked',
+          state === 'auto-handled' && 'bg-state-resolved',
+          state === 'resolved' && 'bg-state-resolved',
         )} />
         <h2 className={cn(
           'text-sm font-semibold uppercase tracking-wider',

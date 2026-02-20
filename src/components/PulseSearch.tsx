@@ -25,15 +25,15 @@ const financialShortcuts = [
 
 // Status display config
 const statusDisplay: Record<string, { label: string; style: string }> = {
-  pending: { label: 'New', style: 'bg-signal-amber-bg text-signal-amber' },
-  'needs-clarity': { label: 'Awaiting info', style: 'bg-signal-red-bg text-signal-red' },
-  approved: { label: 'Approved', style: 'bg-signal-green-bg text-signal-green' },
-  'in-motion': { label: 'In progress', style: 'bg-secondary text-foreground' },
-  'awaiting-supplier': { label: 'Awaiting others', style: 'bg-secondary text-muted-foreground' },
-  'auto-approved': { label: 'Auto-handled', style: 'bg-signal-green-bg text-signal-green' },
-  delivered: { label: 'Completed', style: 'bg-signal-green-bg text-signal-green' },
-  closed: { label: 'Completed', style: 'bg-signal-green-bg text-signal-green' },
-  rejected: { label: 'Rejected', style: 'bg-signal-red-bg text-signal-red' },
+  pending: { label: 'Needs Decision', style: 'bg-state-decision-bg text-state-decision' },
+  'needs-clarity': { label: 'Needs Info', style: 'bg-state-blocked-bg text-state-blocked' },
+  approved: { label: 'Approved', style: 'bg-state-resolved-bg text-state-resolved' },
+  'in-motion': { label: 'In progress', style: 'bg-state-blocked-bg text-state-blocked' },
+  'awaiting-supplier': { label: 'Awaiting others', style: 'bg-state-blocked-bg text-state-blocked' },
+  'auto-approved': { label: 'Auto-handled', style: 'bg-state-resolved-bg text-state-resolved' },
+  delivered: { label: 'Completed', style: 'bg-state-resolved-bg text-state-resolved' },
+  closed: { label: 'Completed', style: 'bg-state-resolved-bg text-state-resolved' },
+  rejected: { label: 'Rejected', style: 'bg-state-risk-bg text-state-risk' },
 };
 
 // Search across all indexed fields
@@ -175,7 +175,7 @@ const PulseSearch = ({ signals, activeRole, onSelectSignal, onFullSearch }: Puls
                   }}
                   className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded-md hover:bg-secondary transition-colors"
                 >
-                  <AlertTriangle className="h-3 w-3 text-signal-amber shrink-0" />
+                  <AlertTriangle className="h-3 w-3 text-state-blocked shrink-0" />
                   <span className="font-medium">{sc.label}</span>
                   <span className="text-muted-foreground ml-auto">{signals.filter(sc.filter).length} items</span>
                 </button>

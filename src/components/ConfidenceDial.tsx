@@ -37,8 +37,8 @@ const ConfidenceDial = ({
   
   const getColor = () => {
     if (confidence >= 90) return 'text-signal-green stroke-signal-green';
-    if (confidence >= 70) return 'text-signal-amber stroke-signal-amber';
-    return 'text-signal-red stroke-signal-red';
+    if (confidence >= 70) return 'text-state-blocked stroke-state-blocked';
+    return 'text-state-risk stroke-state-risk';
   };
 
   const getGradientColors = () => {
@@ -118,7 +118,7 @@ const ConfidenceDial = ({
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-signal-red flex items-center justify-center"
+              className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-state-risk flex items-center justify-center"
             >
               <AlertTriangle className="h-2.5 w-2.5 text-white" />
             </motion.div>

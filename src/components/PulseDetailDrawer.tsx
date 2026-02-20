@@ -22,17 +22,17 @@ const formatDate = (ts: string) => {
   } catch { return ts; }
 };
 
-// Status config
+// Status config — uses action-state colors
 const statusConfig: Record<string, { label: string; style: string }> = {
-  pending: { label: 'New', style: 'bg-signal-amber-bg text-signal-amber' },
-  'needs-clarity': { label: 'Awaiting info', style: 'bg-signal-red-bg text-signal-red' },
-  approved: { label: 'Approved', style: 'bg-signal-green-bg text-signal-green' },
-  'in-motion': { label: 'In progress', style: 'bg-secondary text-foreground' },
-  'awaiting-supplier': { label: 'Awaiting others', style: 'bg-secondary text-muted-foreground' },
-  'auto-approved': { label: 'Auto-handled', style: 'bg-signal-green-bg text-signal-green' },
-  delivered: { label: 'Completed', style: 'bg-signal-green-bg text-signal-green' },
-  closed: { label: 'Completed', style: 'bg-signal-green-bg text-signal-green' },
-  rejected: { label: 'Rejected', style: 'bg-signal-red-bg text-signal-red' },
+  pending: { label: 'Needs Decision', style: 'bg-state-decision-bg text-state-decision' },
+  'needs-clarity': { label: 'Needs Info', style: 'bg-state-blocked-bg text-state-blocked' },
+  approved: { label: 'Approved', style: 'bg-state-resolved-bg text-state-resolved' },
+  'in-motion': { label: 'In progress', style: 'bg-state-blocked-bg text-state-blocked' },
+  'awaiting-supplier': { label: 'Awaiting others', style: 'bg-state-blocked-bg text-state-blocked' },
+  'auto-approved': { label: 'Auto-handled', style: 'bg-state-resolved-bg text-state-resolved' },
+  delivered: { label: 'Completed', style: 'bg-state-resolved-bg text-state-resolved' },
+  closed: { label: 'Completed', style: 'bg-state-resolved-bg text-state-resolved' },
+  rejected: { label: 'Rejected', style: 'bg-state-risk-bg text-state-risk' },
 };
 
 // Workflow labels per type
@@ -72,7 +72,7 @@ const PulseDetailDrawer = ({ signal, open, onOpenChange, onAction }: PulseDetail
             {signal.urgency !== 'normal' && (
               <Badge className={cn(
                 'text-xs py-0.5 px-2 border-0 font-medium',
-                signal.urgency === 'critical' ? 'bg-signal-red-bg text-signal-red' : 'bg-signal-amber-bg text-signal-amber'
+                signal.urgency === 'critical' ? 'bg-state-risk-bg text-state-risk' : 'bg-state-blocked-bg text-state-blocked'
               )}>
                 {signal.urgency === 'critical' ? 'Critical' : 'High'}
               </Badge>
@@ -93,7 +93,7 @@ const PulseDetailDrawer = ({ signal, open, onOpenChange, onAction }: PulseDetail
 
           {/* Action clarity */}
           {needsAction && (
-            <p className="text-xs font-medium text-signal-red">This requires your action.</p>
+            <p className="text-xs font-medium text-state-decision">This requires your action.</p>
           )}
         </SheetHeader>
 
@@ -171,9 +171,9 @@ const PulseDetailDrawer = ({ signal, open, onOpenChange, onAction }: PulseDetail
           {signal.flag_reason && (
             <div className="space-y-2">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <AlertTriangle className="h-3 w-3 text-signal-amber" /> Flagged
+                <AlertTriangle className="h-3 w-3 text-state-blocked" /> Flagged
               </p>
-              <p className="text-sm text-signal-amber">{signal.flag_reason}</p>
+              <p className="text-sm text-state-blocked">{signal.flag_reason}</p>
             </div>
           )}
 

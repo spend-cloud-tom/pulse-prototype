@@ -26,16 +26,16 @@ interface Notification {
 }
 
 const notifTypeConfig: Record<NotifType, { icon: typeof Check; colorClass: string }> = {
-  approval: { icon: FileText, colorClass: 'text-signal-green bg-signal-green-bg' },
-  anomaly: { icon: AlertTriangle, colorClass: 'text-signal-amber bg-signal-amber-bg' },
+  approval: { icon: FileText, colorClass: 'text-state-resolved bg-state-resolved-bg' },
+  anomaly: { icon: AlertTriangle, colorClass: 'text-state-blocked bg-state-blocked-bg' },
   info: { icon: Eye, colorClass: 'text-muted-foreground bg-secondary' },
-  action: { icon: Zap, colorClass: 'text-signal-red bg-signal-red-bg' },
-  success: { icon: ThumbsUp, colorClass: 'text-signal-green bg-signal-green-bg' },
+  action: { icon: Zap, colorClass: 'text-state-decision bg-state-decision-bg' },
+  success: { icon: ThumbsUp, colorClass: 'text-state-resolved bg-state-resolved-bg' },
 };
 
 const priorityConfig: Record<NotifPriority, { label: string; className: string }> = {
-  high: { label: 'High', className: 'bg-signal-red-bg text-signal-red' },
-  medium: { label: 'Medium', className: 'bg-signal-amber-bg text-signal-amber' },
+  high: { label: 'High', className: 'bg-state-risk-bg text-state-risk' },
+  medium: { label: 'Medium', className: 'bg-state-blocked-bg text-state-blocked' },
   low: { label: 'Low', className: 'bg-secondary text-muted-foreground' },
 };
 
@@ -115,7 +115,7 @@ const NotificationDrawer = ({ role }: NotificationDrawerProps) => {
         <Bell className="h-4 w-4 text-muted-foreground" />
         {unreadCount > 0 && (
           <motion.span
-            className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-signal-red text-[10px] font-bold text-white flex items-center justify-center"
+            className="absolute -top-0.5 -right-0.5 h-4 min-w-[16px] px-1 rounded-full bg-state-decision text-[10px] font-bold text-white flex items-center justify-center"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: 'spring', damping: 15 }}
@@ -150,7 +150,7 @@ const NotificationDrawer = ({ role }: NotificationDrawerProps) => {
                   <Bell className="h-4 w-4" />
                   <h2 className="text-sm font-semibold">Notifications</h2>
                   {unreadCount > 0 && (
-                    <Badge className="text-[10px] py-0 px-1.5 border-0 bg-signal-red-bg text-signal-red font-bold">
+                    <Badge className="text-[10px] py-0 px-1.5 border-0 bg-state-decision-bg text-state-decision font-bold">
                       {unreadCount} new
                     </Badge>
                   )}
@@ -231,7 +231,7 @@ const NotificationDrawer = ({ role }: NotificationDrawerProps) => {
                           onClick={() => setExpandedId(isExpanded ? null : notif.id)}
                           className={`w-full text-left rounded-xl p-3 transition-colors ${
                             isActed
-                              ? 'bg-signal-green-bg/50 border border-signal-green/20'
+                              ? 'bg-state-resolved-bg/50 border border-state-resolved/20'
                               : notif.read
                                 ? 'hover:bg-secondary/50'
                                 : 'bg-card border border-border hover:border-foreground/10'
@@ -240,7 +240,7 @@ const NotificationDrawer = ({ role }: NotificationDrawerProps) => {
                           <div className="flex items-start gap-2.5">
                             {/* Icon */}
                             <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 ${
-                              isActed ? 'bg-signal-green-bg' : typeConf.colorClass
+                              isActed ? 'bg-state-resolved-bg' : typeConf.colorClass
                             }`}>
                               {isActed ? (
                                 <motion.div
@@ -248,7 +248,7 @@ const NotificationDrawer = ({ role }: NotificationDrawerProps) => {
                                   animate={{ scale: 1 }}
                                   transition={{ type: 'spring', damping: 12 }}
                                 >
-                                  <Check className="h-3.5 w-3.5 text-signal-green" />
+                                  <Check className="h-3.5 w-3.5 text-state-resolved" />
                                 </motion.div>
                               ) : (
                                 <Icon className="h-3.5 w-3.5" />
@@ -262,7 +262,7 @@ const NotificationDrawer = ({ role }: NotificationDrawerProps) => {
                                   {notif.title}
                                 </p>
                                 {!notif.read && !isActed && (
-                                  <div className="h-1.5 w-1.5 rounded-full bg-signal-red shrink-0" />
+                                  <div className="h-1.5 w-1.5 rounded-full bg-state-decision shrink-0" />
                                 )}
                               </div>
                               <p className="text-xs text-muted-foreground line-clamp-2">
@@ -323,7 +323,7 @@ const NotificationDrawer = ({ role }: NotificationDrawerProps) => {
                   animate={{ opacity: 1 }}
                 >
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <ThumbsUp className="h-3.5 w-3.5 text-signal-green" />
+                    <ThumbsUp className="h-3.5 w-3.5 text-state-resolved" />
                     <span>{actedIds.size} item{actedIds.size > 1 ? 's' : ''} resolved this session</span>
                   </div>
                 </motion.div>

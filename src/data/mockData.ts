@@ -177,12 +177,13 @@ export const signalTypeConfig: Record<string, {
 };
 
 // PULSE STATE CONFIG — Unified state labels and colors
-export const pulseStateConfig: Record<string, { label: string; color: string; bgColor: string; icon: string }> = {
-  'needs-action': { label: 'Needs Action', color: 'text-signal-red', bgColor: 'bg-signal-red-bg', icon: '🔴' },
-  'in-motion': { label: 'In Motion', color: 'text-signal-amber', bgColor: 'bg-signal-amber-bg', icon: '🟡' },
-  'blocked': { label: 'Blocked', color: 'text-muted-foreground', bgColor: 'bg-secondary', icon: '⚫' },
-  'auto-handled': { label: 'Auto-Handled', color: 'text-hero-purple', bgColor: 'bg-hero-purple-soft', icon: '🟣' },
-  'resolved': { label: 'Resolved', color: 'text-signal-green', bgColor: 'bg-signal-green-bg', icon: '🟢' },
+// Four-state action palette: Decision (indigo), Blocked (amber), Risk (red), Resolved (gray)
+export const pulseStateConfig: Record<string, { label: string; color: string; bgColor: string; icon: string; iconShape: 'circle' | 'triangle' | 'diamond' | 'check' }> = {
+  'needs-action': { label: 'Needs Decision', color: 'text-state-decision', bgColor: 'bg-state-decision-bg', icon: '�', iconShape: 'circle' },
+  'in-motion': { label: 'In Motion', color: 'text-state-blocked', bgColor: 'bg-state-blocked-bg', icon: '🟡', iconShape: 'triangle' },
+  'blocked': { label: 'Blocked', color: 'text-state-blocked', bgColor: 'bg-state-blocked-bg', icon: '🟠', iconShape: 'triangle' },
+  'auto-handled': { label: 'Auto-Handled', color: 'text-state-resolved', bgColor: 'bg-state-resolved-bg', icon: '✓', iconShape: 'check' },
+  'resolved': { label: 'Resolved', color: 'text-state-resolved', bgColor: 'bg-state-resolved-bg', icon: '✓', iconShape: 'check' },
 };
 
 // TYPE-DEPENDENT LIFECYCLE CONFIG — Each Pulse type has its own workflow stages

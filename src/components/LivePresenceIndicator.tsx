@@ -14,10 +14,10 @@ interface LivePresenceIndicatorProps {
 }
 
 const eventConfig: Record<string, { icon: typeof Sparkles; color: string; label: string }> = {
-  auto_resolved: { icon: Zap, color: 'text-signal-green', label: 'Auto-resolved' },
-  approved: { icon: CheckCircle2, color: 'text-signal-green', label: 'Approved' },
-  escalated: { icon: AlertTriangle, color: 'text-signal-amber', label: 'Escalated' },
-  rejected: { icon: AlertTriangle, color: 'text-signal-red', label: 'Rejected' },
+  auto_resolved: { icon: Zap, color: 'text-state-resolved', label: 'Auto-resolved' },
+  approved: { icon: CheckCircle2, color: 'text-state-resolved', label: 'Approved' },
+  escalated: { icon: AlertTriangle, color: 'text-state-blocked', label: 'Escalated' },
+  rejected: { icon: AlertTriangle, color: 'text-state-risk', label: 'Rejected' },
   status_change: { icon: ArrowRight, color: 'text-hero-teal', label: 'Updated' },
   created: { icon: Sparkles, color: 'text-hero-purple', label: 'New' },
 };
@@ -162,16 +162,16 @@ const LivePresenceIndicator = ({ compact = false, className }: LivePresenceIndic
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-lg bg-signal-green-bg/50 px-2 py-1.5">
-          <p className="text-lg font-bold text-signal-green">{activitySummary.autoResolved}</p>
+        <div className="rounded-lg bg-state-resolved-bg/50 px-2 py-1.5">
+          <p className="text-lg font-bold text-state-resolved">{activitySummary.autoResolved}</p>
           <p className="text-[10px] text-muted-foreground">Auto-resolved</p>
         </div>
         <div className="rounded-lg bg-secondary/50 px-2 py-1.5">
           <p className="text-lg font-bold">{activitySummary.approved}</p>
           <p className="text-[10px] text-muted-foreground">Approved</p>
         </div>
-        <div className="rounded-lg bg-signal-amber-bg/50 px-2 py-1.5">
-          <p className="text-lg font-bold text-signal-amber">{activitySummary.escalated}</p>
+        <div className="rounded-lg bg-state-blocked-bg/50 px-2 py-1.5">
+          <p className="text-lg font-bold text-state-blocked">{activitySummary.escalated}</p>
           <p className="text-[10px] text-muted-foreground">Escalated</p>
         </div>
       </div>

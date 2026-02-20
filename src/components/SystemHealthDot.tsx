@@ -15,14 +15,14 @@ const healthConfig: Record<HealthLevel, { color: string; label: string; pulseCol
     pulseColor: 'rgba(16, 185, 129, 0.4)',
   },
   elevated: {
-    color: 'bg-signal-amber',
+    color: 'bg-state-blocked',
     label: 'Elevated activity',
-    pulseColor: 'rgba(245, 158, 11, 0.4)',
+    pulseColor: 'rgba(217, 119, 6, 0.4)',
   },
   critical: {
-    color: 'bg-signal-red',
+    color: 'bg-state-risk',
     label: 'Attention needed',
-    pulseColor: 'rgba(239, 68, 68, 0.4)',
+    pulseColor: 'rgba(220, 38, 38, 0.4)',
   },
 };
 
@@ -74,7 +74,7 @@ const SystemHealthDot = ({ size = 'sm', showLabel = false, className }: SystemHe
             <span className="ml-1.5 text-foreground font-medium">
               · {pendingDecisions} pending
               {criticalCount > 0 && (
-                <span className="text-signal-red ml-1">({criticalCount} critical)</span>
+                <span className="text-state-risk ml-1">({criticalCount} critical)</span>
               )}
             </span>
           )}

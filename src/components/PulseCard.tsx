@@ -21,7 +21,7 @@ interface PulseCardProps {
 const typeAccent: Record<string, string> = {
   purchase: 'border-l-blue-400',
   maintenance: 'border-l-orange-400',
-  incident: 'border-l-signal-red',
+  incident: 'border-l-state-risk',
   'shift-handover': 'border-l-violet-400',
   compliance: 'border-l-yellow-500',
   event: 'border-l-emerald-400',
@@ -29,10 +29,10 @@ const typeAccent: Record<string, string> = {
   general: 'border-l-border',
 };
 
-// Urgency badge config
+// Urgency badge config — uses action-state colors
 const urgencyBadge: Record<string, { label: string; style: string } | null> = {
-  critical: { label: 'Critical', style: 'bg-signal-red-bg text-signal-red' },
-  urgent: { label: 'High', style: 'bg-signal-amber-bg text-signal-amber' },
+  critical: { label: 'Critical', style: 'bg-state-risk-bg text-state-risk' },
+  urgent: { label: 'High', style: 'bg-state-blocked-bg text-state-blocked' },
   normal: null,
 };
 
@@ -255,7 +255,7 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
           {isAction && (
             <p className={cn(
               'text-[11px] font-medium',
-              needsAction ? 'text-signal-red' : 'text-muted-foreground/60'
+              needsAction ? 'text-state-decision' : 'text-muted-foreground/60'
             )}>
               {needsAction ? 'This requires your action.' : 'No action needed — informational.'}
             </p>
@@ -294,7 +294,7 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
                       {parseAIReasoning(signal.ai_reasoning, signal.flag_reason).map((point, i) => (
                         <div key={i} className="flex items-start gap-2 text-xs">
                           {point.startsWith('⚠️') ? (
-                            <AlertTriangle className="h-3 w-3 text-signal-amber shrink-0 mt-0.5" />
+                            <AlertTriangle className="h-3 w-3 text-state-blocked shrink-0 mt-0.5" />
                           ) : i === 0 ? (
                             <TrendingUp className="h-3 w-3 text-hero-purple shrink-0 mt-0.5" />
                           ) : (
@@ -309,7 +309,7 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
                         <div className="flex items-center gap-2 pt-1 border-t border-border/50 mt-2">
                           <div className={cn(
                             'h-1.5 w-1.5 rounded-full',
-                            signal.confidence >= 80 ? 'bg-signal-green' : signal.confidence >= 50 ? 'bg-signal-amber' : 'bg-signal-red'
+                            signal.confidence >= 80 ? 'bg-signal-green' : signal.confidence >= 50 ? 'bg-state-blocked' : 'bg-state-risk'
                           )} />
                           <span className="text-[10px] text-muted-foreground">
                             AI confidence: <span className="font-medium">{signal.confidence}%</span>
@@ -356,7 +356,7 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
 
           {/* Due/overdue indicator */}
           {isAction && classified.dueLabel && (
-            <span className="text-[10px] text-signal-red font-medium">{classified.dueLabel}</span>
+            <span className="text-[10px] text-state-risk font-medium">{classified.dueLabel}</span>
           )}
 
           {/* AI confidence — secondary, only dense finance cards */}
@@ -364,7 +364,7 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
             <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
               <div className={cn(
                 'h-1.5 w-1.5 rounded-full',
-                signal.confidence >= 80 ? 'bg-signal-green' : signal.confidence >= 50 ? 'bg-signal-amber' : 'bg-signal-red'
+                signal.confidence >= 80 ? 'bg-signal-green' : signal.confidence >= 50 ? 'bg-state-blocked' : 'bg-state-risk'
               )} />
               AI confidence {signal.confidence}%
             </div>
@@ -410,8 +410,8 @@ const PulseCard = ({ signal, variant = 'action', dense = false, onClick, actions
             {slaStatus && (
               <span className={cn(
                 'text-[10px] font-medium shrink-0 px-1.5 py-0.5 rounded',
-                slaStatus.isOverdue && 'bg-signal-red-bg text-signal-red',
-                slaStatus.isWarning && !slaStatus.isOverdue && 'bg-signal-amber-bg text-signal-amber',
+                slaStatus.isOverdue && 'bg-state-risk-bg text-state-risk',
+                slaStatus.isWarning && !slaStatus.isOverdue && 'bg-state-blocked-bg text-state-blocked',
                 !slaStatus.isOverdue && !slaStatus.isWarning && 'text-muted-foreground/60'
               )}>
                 {slaStatus.label}

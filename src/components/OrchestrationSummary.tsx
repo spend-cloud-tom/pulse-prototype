@@ -63,7 +63,7 @@ const OrchestrationSummary = ({
         {/* Requests Awaiting Action */}
         <div className="text-center">
           <motion.p 
-            className="text-3xl font-bold text-signal-red"
+            className="text-3xl font-bold text-state-decision"
             initial={{ scale: 0.5 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
@@ -72,13 +72,13 @@ const OrchestrationSummary = ({
             {decisionsNeeded}
           </motion.p>
           <p className="text-xs font-medium mt-1">Needs Action</p>
-          <p className="text-[10px] text-signal-red">Your Decision</p>
+          <p className="text-[10px] text-state-decision">Your Decision</p>
         </div>
 
         {/* Requests In Progress */}
         <div className="text-center">
           <motion.p 
-            className="text-3xl font-bold text-signal-amber"
+            className="text-3xl font-bold text-state-blocked"
             initial={{ scale: 0.5 }}
             whileInView={{ scale: 1 }}
             viewport={{ once: true }}
@@ -87,7 +87,7 @@ const OrchestrationSummary = ({
             {totalPulses - autoHandled - decisionsNeeded}
           </motion.p>
           <p className="text-xs font-medium mt-1">In Progress</p>
-          <p className="text-[10px] text-signal-amber">Being processed</p>
+          <p className="text-[10px] text-state-blocked">Being processed</p>
         </div>
 
         {/* Auto-Resolved Today */}
@@ -113,10 +113,10 @@ const OrchestrationSummary = ({
           <span className="text-xs px-2 py-1 rounded-full bg-hero-purple-soft text-hero-purple">
             🟣 {autoHandled} Auto-Handled
           </span>
-          <span className="text-xs px-2 py-1 rounded-full bg-signal-green-bg text-signal-green">
+          <span className="text-xs px-2 py-1 rounded-full bg-state-resolved-bg text-state-resolved">
             🟢 {Math.round(autoHandled * 0.3)} Resolved
           </span>
-          <span className="text-xs px-2 py-1 rounded-full bg-signal-amber-bg text-signal-amber">
+          <span className="text-xs px-2 py-1 rounded-full bg-state-blocked-bg text-state-blocked">
             🟡 {totalPulses - autoHandled - decisionsNeeded} In Motion
           </span>
         </div>

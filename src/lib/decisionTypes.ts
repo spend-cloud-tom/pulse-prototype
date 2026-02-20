@@ -184,18 +184,19 @@ export function groupByDecisionLayer(signals: Signal[]) {
 }
 
 // Urgency tier config for visual styling
+// Uses action-state colors: risk (red) for critical, blocked (amber) for high
 export const urgencyTierConfig: Record<UrgencyTier, { label: string; dotColor: string; bgColor: string; textColor: string }> = {
   critical: { 
     label: 'Critical', 
-    dotColor: 'bg-signal-red', 
-    bgColor: 'bg-signal-red-bg', 
-    textColor: 'text-signal-red' 
+    dotColor: 'bg-state-risk', 
+    bgColor: 'bg-state-risk-bg', 
+    textColor: 'text-state-risk' 
   },
   high: { 
     label: 'High', 
-    dotColor: 'bg-signal-amber', 
-    bgColor: 'bg-signal-amber-bg', 
-    textColor: 'text-signal-amber' 
+    dotColor: 'bg-state-blocked', 
+    bgColor: 'bg-state-blocked-bg', 
+    textColor: 'text-state-blocked' 
   },
   normal: { 
     label: 'Normal', 
@@ -222,8 +223,9 @@ export function getWorkflowStage(status: string): { stage: number; total: number
 }
 
 // Risk badge config
+// Uses action-state colors: risk (red) reserved for genuine risk only
 export const riskConfig = {
   low: { label: 'Low risk', style: 'bg-secondary text-muted-foreground' },
-  medium: { label: 'Medium risk', style: 'bg-signal-amber-bg text-signal-amber' },
-  high: { label: 'High risk', style: 'bg-signal-red-bg text-signal-red' },
+  medium: { label: 'Medium risk', style: 'bg-state-blocked-bg text-state-blocked' },
+  high: { label: 'High risk', style: 'bg-state-risk-bg text-state-risk' },
 };

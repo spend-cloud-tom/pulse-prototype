@@ -28,8 +28,8 @@ interface AIExplainabilityPanelProps {
 const ConfidenceGauge = ({ value }: { value: number }) => {
   const getColor = () => {
     if (value >= 80) return 'text-signal-green';
-    if (value >= 50) return 'text-signal-amber';
-    return 'text-signal-red';
+    if (value >= 50) return 'text-state-blocked';
+    return 'text-state-risk';
   };
 
   const getLabel = () => {
@@ -82,8 +82,8 @@ const ConfidenceGauge = ({ value }: { value: number }) => {
 
 const RiskFactorBadge = ({ impact }: { impact: 'high' | 'medium' | 'low' }) => {
   const config = {
-    high: { bg: 'bg-signal-red-bg', text: 'text-signal-red', label: 'High' },
-    medium: { bg: 'bg-signal-amber-bg', text: 'text-signal-amber', label: 'Medium' },
+    high: { bg: 'bg-state-risk-bg', text: 'text-state-risk', label: 'High' },
+    medium: { bg: 'bg-state-blocked-bg', text: 'text-state-blocked', label: 'Medium' },
     low: { bg: 'bg-signal-green-bg', text: 'text-signal-green', label: 'Low' },
   };
   const c = config[impact];
@@ -117,8 +117,8 @@ const AIExplainabilityPanel = ({
 }: AIExplainabilityPanelProps) => {
   const recommendationConfig = {
     approve: { icon: CheckCircle2, label: 'Recommend Approve', color: 'text-signal-green', bg: 'bg-signal-green-bg' },
-    review: { icon: AlertTriangle, label: 'Needs Review', color: 'text-signal-amber', bg: 'bg-signal-amber-bg' },
-    reject: { icon: XCircle, label: 'Recommend Reject', color: 'text-signal-red', bg: 'bg-signal-red-bg' },
+    review: { icon: AlertTriangle, label: 'Needs Review', color: 'text-state-blocked', bg: 'bg-state-blocked-bg' },
+    reject: { icon: XCircle, label: 'Recommend Reject', color: 'text-state-risk', bg: 'bg-state-risk-bg' },
   };
   const rec = recommendationConfig[recommendation];
 

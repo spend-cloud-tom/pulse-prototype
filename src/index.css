@@ -88,6 +88,17 @@
     --confidence-review: 38 88% 50%;
     --confidence-query: 0 68% 52%;
 
+    /* ─── Action-State Color System ─── */
+    /* Four-state palette: what does the user need to do? */
+    --state-decision: 239 84% 67%;       /* Indigo - human judgment required */
+    --state-decision-bg: 226 100% 97%;   /* Indigo-50 tint */
+    --state-blocked: 38 92% 44%;         /* Amber - waiting on input */
+    --state-blocked-bg: 48 100% 96%;     /* Amber-50 tint */
+    --state-risk: 0 84% 50%;             /* Red - compliance/safety breach */
+    --state-risk-bg: 0 86% 97%;          /* Red-50 tint */
+    --state-resolved: 218 11% 65%;       /* Gray - no action needed */
+    --state-resolved-bg: 220 14% 96%;    /* Gray-50 tint */
+
     /* Two-part shadow system (Refactoring UI) */
     --shadow-color: 220 20% 12%;
     --shadow-elevation-low:

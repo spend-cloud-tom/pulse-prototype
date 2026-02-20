@@ -58,17 +58,17 @@ const bottlenecks = [
 const orderStages = ['Ordered', 'Processing', 'Shipped', 'Delivered'] as const;
 
 const orderProgress: Record<string, { value: number; stageIndex: number; barColor: string; dotColor: string }> = {
-  processing: { value: 50, stageIndex: 1, barColor: 'bg-signal-amber', dotColor: 'border-signal-amber bg-signal-amber' },
+  processing: { value: 50, stageIndex: 1, barColor: 'bg-state-blocked', dotColor: 'border-state-blocked bg-state-blocked' },
   shipped:    { value: 75, stageIndex: 2, barColor: 'bg-hero-teal', dotColor: 'border-hero-teal bg-hero-teal' },
-  delivered:  { value: 100, stageIndex: 3, barColor: 'bg-signal-green', dotColor: 'border-signal-green bg-signal-green' },
+  delivered:  { value: 100, stageIndex: 3, barColor: 'bg-state-resolved', dotColor: 'border-state-resolved bg-state-resolved' },
 };
 
 /* ─── Order Status Card ─── */
 const OrderCard = ({ order }: { order: typeof activeOrders[0] }) => {
   const statusConfig = {
     shipped: { icon: Truck, color: 'text-hero-teal', bg: 'bg-hero-teal-soft', label: 'In transit' },
-    processing: { icon: Clock, color: 'text-signal-amber', bg: 'bg-signal-amber-bg', label: 'Processing' },
-    delivered: { icon: CheckCircle2, color: 'text-signal-green', bg: 'bg-signal-green-bg', label: 'Delivered' },
+    processing: { icon: Clock, color: 'text-state-blocked', bg: 'bg-state-blocked-bg', label: 'Processing' },
+    delivered: { icon: CheckCircle2, color: 'text-state-resolved', bg: 'bg-state-resolved-bg', label: 'Delivered' },
   };
   const config = statusConfig[order.status];
   const Icon = config.icon;
@@ -171,8 +171,8 @@ const ProcurementPulseCard = ({
       </div>
       
       <div className="flex items-start gap-3">
-        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-signal-amber-bg shrink-0">
-          <Package className="h-5 w-5 text-signal-amber" />
+        <div className="flex items-center justify-center h-10 w-10 rounded-xl bg-state-blocked-bg shrink-0">
+          <Package className="h-5 w-5 text-state-blocked" />
         </div>
         
         <div className="flex-1 min-w-0">
@@ -334,8 +334,8 @@ const SarahView = () => {
                 Procurement <span className="text-muted-foreground font-normal">· Your Flow</span>
               </h1>
               <p className="text-muted-foreground mt-1">
-                <span className="text-signal-red font-medium">{actionPulses.length}</span> awaiting action · 
-                <span className="text-signal-amber font-medium">{activeOrders.filter(o => o.status !== 'delivered').length}</span> in motion
+                <span className="text-state-decision font-medium">{actionPulses.length}</span> awaiting action · 
+                <span className="text-state-blocked font-medium">{activeOrders.filter(o => o.status !== 'delivered').length}</span> in motion
               </p>
             </div>
             
@@ -363,8 +363,8 @@ const SarahView = () => {
           {/* Tabs — Pulse Pipeline states */}
           <div className="flex items-center gap-1 border-b border-border -mb-px">
             {[
-              { key: 'needs-action', label: 'Needs Action', count: actionPulses.length, dot: 'bg-signal-red' },
-              { key: 'in-motion', label: 'In Motion', count: activeOrders.filter(o => o.status !== 'delivered').length, dot: 'bg-signal-amber' },
+              { key: 'needs-action', label: 'Needs Decision', count: actionPulses.length, dot: 'bg-state-decision' },
+              { key: 'in-motion', label: 'In Motion', count: activeOrders.filter(o => o.status !== 'delivered').length, dot: 'bg-state-blocked' },
               { key: 'auto-handled', label: 'Auto-Handled', count: autoPOCandidates.length, dot: 'bg-hero-purple' },
             ].map(tab => (
               <button
@@ -412,9 +412,9 @@ const SarahView = () => {
                     );
                   })
                 ) : (
-                  <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
-                    <CheckCircle2 className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                    <p className="font-semibold text-signal-green">All clear</p>
+                  <div className="rounded-2xl bg-state-resolved-bg/50 p-8 text-center">
+                    <CheckCircle2 className="h-8 w-8 text-state-resolved mx-auto mb-3" />
+                    <p className="font-semibold text-state-resolved">All clear</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       Nothing awaiting your action
                     </p>
@@ -514,7 +514,7 @@ const SarahView = () => {
                 {pendingAutoPOs.length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full bg-signal-amber" />
+                      <span className="h-2 w-2 rounded-full bg-state-blocked" />
                       <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Needs Approval First</h3>
                     </div>
                     {pendingAutoPOs.map((po, i) => (

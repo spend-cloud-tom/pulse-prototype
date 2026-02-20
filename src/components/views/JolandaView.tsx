@@ -62,8 +62,8 @@ const JudgmentCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, x: -20, transition: { duration: 0.2 } }}
       className={`rounded-2xl bg-card p-6 shadow-elevation-medium space-y-4 border-l-4 ${
-        isCritical ? 'border-l-signal-red urgency-glow' : 
-        signal.urgencyTier === 'high' ? 'border-l-signal-amber' : 'border-l-hero-teal'
+        isCritical ? 'border-l-state-risk urgency-glow' : 
+        signal.urgencyTier === 'high' ? 'border-l-state-blocked' : 'border-l-state-decision'
       }`}
     >
       {/* PULSE TYPE TAG + urgency header */}
@@ -71,12 +71,12 @@ const JudgmentCard = ({
         <PulseTypeTag type={signal.signal_type} size="sm" />
         <div className="flex items-center gap-2">
           {isCritical && (
-            <Badge className="text-[10px] bg-signal-red-bg text-signal-red border-0 shrink-0 animate-pulse">
+            <Badge className="text-[10px] bg-state-risk-bg text-state-risk border-0 shrink-0 animate-pulse">
               Critical
             </Badge>
           )}
           {signal.urgencyTier === 'high' && !isCritical && (
-            <Badge className="text-[10px] bg-signal-amber-bg text-signal-amber border-0 shrink-0">
+            <Badge className="text-[10px] bg-state-blocked-bg text-state-blocked border-0 shrink-0">
               High Priority
             </Badge>
           )}
@@ -92,7 +92,7 @@ const JudgmentCard = ({
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-lg leading-tight">{signal.description}</p>
           {signal.flag_reason && (
-            <p className="text-xs text-signal-amber mt-1">{signal.flag_reason}</p>
+            <p className="text-xs text-state-blocked mt-1">{signal.flag_reason}</p>
           )}
         </div>
         
@@ -136,7 +136,7 @@ const JudgmentCard = ({
       
       {/* EXPLICIT CTAs — Pulse-centric action language */}
       <div className="flex items-center gap-2 pt-2">
-        <Button onClick={onApprove} className="gap-1.5 flex-1 bg-signal-green hover:bg-signal-green/90">
+        <Button onClick={onApprove} className="gap-1.5 flex-1 bg-state-decision hover:bg-state-decision/90">
           <Check className="h-4 w-4" /> {pulseActions.approvePulse}
         </Button>
         <Button variant="outline" onClick={onEscalate} className="gap-1.5">
@@ -170,8 +170,8 @@ const ExceptionCard = ({
       animate={{ opacity: 1, y: 0 }}
       className="rounded-xl bg-card p-4 shadow-elevation-low flex items-center gap-4"
     >
-      <div className="flex items-center justify-center h-10 w-10 rounded-lg shrink-0 bg-signal-amber-bg">
-        <AlertTriangle className="h-5 w-5 text-signal-amber" />
+      <div className="flex items-center justify-center h-10 w-10 rounded-lg shrink-0 bg-state-blocked-bg">
+        <AlertTriangle className="h-5 w-5 text-state-blocked" />
       </div>
       
       <div className="flex-1 min-w-0">
@@ -328,7 +328,7 @@ const JolandaView = () => {
               </h1>
               <p className="text-muted-foreground mt-1 flex items-center gap-3">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-2 w-2 rounded-full bg-signal-red animate-pulse" />
+                  <span className="h-2 w-2 rounded-full bg-state-decision animate-pulse" />
                   <strong className="text-foreground">{judgmentPulses.length || 3}</strong> awaiting your decision
                 </span>
                 <span className="text-border">·</span>
@@ -339,7 +339,7 @@ const JolandaView = () => {
                 {criticalCount > 0 && (
                   <>
                     <span className="text-border">·</span>
-                    <Badge className="text-[10px] bg-signal-red-bg text-signal-red border-0">
+                    <Badge className="text-[10px] bg-state-risk-bg text-state-risk border-0">
                       {criticalCount} critical
                     </Badge>
                   </>
@@ -377,14 +377,14 @@ const JolandaView = () => {
             {/* ═══ NEEDS ACTION — Pulses requiring your decision ═══ */}
             <section>
               <div className="flex items-center gap-3 mb-4">
-                <span className="h-2.5 w-2.5 rounded-full bg-signal-red animate-pulse" />
+                <span className="h-2.5 w-2.5 rounded-full bg-state-decision animate-pulse" />
                 <div>
-                  <h2 className="font-semibold text-lg uppercase tracking-wider text-signal-red">Needs Action</h2>
+                  <h2 className="font-semibold text-lg uppercase tracking-wider text-state-decision">Needs Decision</h2>
                   <p className="text-xs text-muted-foreground">
                     Pulses above auto-approval threshold
                   </p>
                 </div>
-                <Badge className="ml-auto text-sm bg-signal-red-bg text-signal-red border-0">
+                <Badge className="ml-auto text-sm bg-state-decision-bg text-state-decision border-0">
                   {judgmentPulses.length || 3}
                 </Badge>
               </div>
@@ -405,9 +405,9 @@ const JolandaView = () => {
                 </AnimatePresence>
                 
                 {judgmentPulses.length === 0 && (
-                  <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
-                    <Check className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                    <p className="font-semibold text-signal-green">All clear</p>
+                  <div className="rounded-2xl bg-state-resolved-bg/50 p-8 text-center">
+                    <Check className="h-8 w-8 text-state-resolved mx-auto mb-3" />
+                    <p className="font-semibold text-state-resolved">All clear</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       Nothing awaiting your decision
                     </p>
@@ -424,8 +424,8 @@ const JolandaView = () => {
                   onClick={() => setExceptionsExpanded(!exceptionsExpanded)}
                   className="flex items-center gap-3 w-full text-left mb-3 group"
                 >
-                  <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-signal-amber-bg">
-                    <Shield className="h-3.5 w-3.5 text-signal-amber" />
+                  <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-state-blocked-bg">
+                    <Shield className="h-3.5 w-3.5 text-state-blocked" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium text-sm group-hover:text-foreground transition-colors">
@@ -463,8 +463,8 @@ const JolandaView = () => {
                           key={alert.id}
                           className="rounded-xl bg-card p-4 shadow-elevation-low flex items-center gap-4"
                         >
-                          <div className="flex items-center justify-center h-10 w-10 rounded-lg shrink-0 bg-signal-amber-bg">
-                            <AlertTriangle className="h-5 w-5 text-signal-amber" />
+                          <div className="flex items-center justify-center h-10 w-10 rounded-lg shrink-0 bg-state-blocked-bg">
+                            <AlertTriangle className="h-5 w-5 text-state-blocked" />
                           </div>
                           <p className="text-sm flex-1">{alert.message}</p>
                           <Button size="sm" variant="outline" className="h-8 text-xs shrink-0">

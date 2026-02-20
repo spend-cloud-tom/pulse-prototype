@@ -97,9 +97,9 @@ const AutoResolveStack = ({
       className={cn(
         "rounded-2xl border overflow-hidden transition-all",
         showSuccessGlow 
-          ? "border-signal-green/50 shadow-[0_0_20px_rgba(16,185,129,0.2)]" 
+          ? "border-state-resolved/50 shadow-[0_0_20px_rgba(156,163,175,0.2)]" 
           : "border-border/50",
-        "bg-gradient-to-br from-signal-green-bg/30 to-card"
+        "bg-gradient-to-br from-state-resolved-bg/30 to-card"
       )}
     >
       {/* Header */}
@@ -107,11 +107,11 @@ const AutoResolveStack = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <motion.div 
-              className="h-10 w-10 rounded-full bg-signal-green/10 flex items-center justify-center"
+              className="h-10 w-10 rounded-full bg-state-resolved/10 flex items-center justify-center"
               animate={isAnimating ? { scale: [1, 1.1, 1] } : {}}
               transition={{ duration: 0.3 }}
             >
-              <Zap className="h-5 w-5 text-signal-green" />
+              <Zap className="h-5 w-5 text-state-resolved" />
             </motion.div>
             <div>
               <div className="flex items-center gap-2">
@@ -120,7 +120,7 @@ const AutoResolveStack = ({
                   key={visibleItems.length}
                   initial={{ scale: 1.5, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-signal-green text-white text-xs font-bold"
+                  className="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-state-resolved text-white text-xs font-bold"
                 >
                   {visibleItems.length}
                 </motion.span>
@@ -166,7 +166,7 @@ const AutoResolveStack = ({
             >
               <div className="group/item flex items-center justify-between px-3 py-2 rounded-lg hover:bg-secondary/30 transition-colors">
                 <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0" />
+                  <CheckCircle2 className="h-4 w-4 text-state-resolved shrink-0" />
                   <div className="min-w-0 flex-1">
                     <span className="text-sm truncate block">{item.title}</span>
                     {/* Rule applied + confidence on hover/expand */}
@@ -207,7 +207,7 @@ const AutoResolveStack = ({
                         description: `"${item.title}" moved back to your queue for review.`,
                       });
                     }}
-                    className="opacity-0 group-hover/item:opacity-100 h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-signal-amber hover:bg-signal-amber/10 transition-all"
+                    className="opacity-0 group-hover/item:opacity-100 h-6 w-6 rounded flex items-center justify-center text-muted-foreground hover:text-state-blocked hover:bg-state-blocked/10 transition-all"
                     title="Undo auto-approval"
                   >
                     <RotateCcw className="h-3 w-3" />

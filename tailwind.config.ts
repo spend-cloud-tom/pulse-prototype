@@ -109,6 +109,17 @@ export default {
           "amber-bg": "hsl(var(--signal-amber-bg))",
           "red-bg": "hsl(var(--signal-red-bg))",
         },
+        /* Action-State Color System */
+        state: {
+          decision: "hsl(var(--state-decision))",
+          "decision-bg": "hsl(var(--state-decision-bg))",
+          blocked: "hsl(var(--state-blocked))",
+          "blocked-bg": "hsl(var(--state-blocked-bg))",
+          risk: "hsl(var(--state-risk))",
+          "risk-bg": "hsl(var(--state-risk-bg))",
+          resolved: "hsl(var(--state-resolved))",
+          "resolved-bg": "hsl(var(--state-resolved-bg))",
+        },
         hero: {
           teal: "hsl(var(--hero-teal))",
           purple: "hsl(var(--hero-purple))",

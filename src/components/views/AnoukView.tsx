@@ -447,9 +447,9 @@ const AnoukView = () => {
               transition={{ delay: 0.1 }}
               className="space-y-4"
             >
-              <h2 className="text-sm font-semibold text-signal-red uppercase tracking-wider flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-signal-red animate-pulse" />
-                Needs Action
+              <h2 className="text-sm font-semibold text-state-decision uppercase tracking-wider flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-state-decision animate-pulse" />
+                Needs Decision
               </h2>
               <div className="space-y-4">
                 {needsInputPulses.map((signal) => (
@@ -473,8 +473,8 @@ const AnoukView = () => {
               transition={{ delay: 0.15 }}
               className="space-y-4"
             >
-              <h2 className="text-sm font-semibold text-signal-amber uppercase tracking-wider flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-signal-amber" />
+              <h2 className="text-sm font-semibold text-state-blocked uppercase tracking-wider flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-state-blocked" />
                 In Motion
               </h2>
               <div className="space-y-4">
@@ -493,8 +493,8 @@ const AnoukView = () => {
               transition={{ delay: 0.2 }}
               className="space-y-4"
             >
-              <h2 className="text-sm font-semibold text-signal-green uppercase tracking-wider flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-signal-green" />
+              <h2 className="text-sm font-semibold text-state-resolved uppercase tracking-wider flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-state-resolved" />
                 Resolved
               </h2>
               <div className="space-y-4">

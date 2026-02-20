@@ -669,7 +669,7 @@ const DetailDrawerContent = ({
   const passedCount = complianceChecks.filter(c => c.passed).length;
   const glCode = glCodeMap[signal.signal_type] || '4900';
   const confidencePercent = signal.confidence || 0;
-  const confidenceColor = confidencePercent >= 70 ? 'bg-signal-green' : confidencePercent >= 40 ? 'bg-signal-amber' : 'bg-signal-red';
+  const confidenceColor = confidencePercent >= 70 ? 'bg-signal-green' : confidencePercent >= 40 ? 'bg-state-blocked' : 'bg-state-risk';
 
   return (
     <div className="flex flex-col h-full">
@@ -682,7 +682,7 @@ const DetailDrawerContent = ({
           </div>
           <Badge
             variant="outline"
-            className={`text-[11px] ${passedCount <= 1 ? 'border-signal-red text-signal-red' : passedCount <= 2 ? 'border-signal-amber text-signal-amber' : 'border-signal-green text-signal-green'}`}
+            className={`text-[11px] ${passedCount <= 1 ? 'border-state-risk text-state-risk' : passedCount <= 2 ? 'border-state-blocked text-state-blocked' : 'border-signal-green text-signal-green'}`}
           >
             {passedCount}/{complianceChecks.length} checks
           </Badge>
@@ -764,14 +764,14 @@ type FilterState = {
 /* ─── Three-Way Match Card (Monitoring Tab) ─── */
 const matchCardStatusConfig = {
   variance: {
-    border: 'border-signal-amber/40',
-    badgeBg: 'bg-signal-amber-bg',
-    badgeText: 'text-signal-amber',
+    border: 'border-state-blocked/40',
+    badgeBg: 'bg-state-blocked-bg',
+    badgeText: 'text-state-blocked',
   },
   'missing-po': {
-    border: 'border-signal-red/40',
-    badgeBg: 'bg-signal-red-bg',
-    badgeText: 'text-signal-red',
+    border: 'border-state-risk/40',
+    badgeBg: 'bg-state-risk-bg',
+    badgeText: 'text-state-risk',
   },
 };
 
@@ -850,7 +850,7 @@ const ThreeWayMatchCard = ({
 
         {/* AI insight */}
         {match.aiNote && (
-          <p className="text-xs text-signal-amber flex items-center gap-1.5">
+          <p className="text-xs text-state-blocked flex items-center gap-1.5">
             <Sparkles className="h-3 w-3 shrink-0" />
             <span>AI: {match.aiNote}</span>
           </p>
@@ -891,13 +891,13 @@ const ThreeWayMatchCard = ({
                   'rounded-lg py-1.5 px-2.5',
                   showConfirm && fixPreview.po
                     ? 'bg-hero-teal-soft border border-hero-teal/20'
-                    : !match.po ? 'bg-signal-red-bg border border-signal-red/20' : 'bg-slate-50'
+                    : !match.po ? 'bg-state-risk-bg border border-state-risk/20' : 'bg-slate-50'
                 )}>
                   <p className={cn(
                     'text-[10px] mb-0.5 flex items-center gap-1',
                     showConfirm && fixPreview.po
                       ? 'text-hero-teal font-medium'
-                      : !match.po ? 'text-signal-red font-medium' : 'text-muted-foreground'
+                      : !match.po ? 'text-state-risk font-medium' : 'text-muted-foreground'
                   )}>
                     PO {!match.po && !showConfirm && <AlertTriangle className="h-2.5 w-2.5" />}
                     {showConfirm && fixPreview.po && <Check className="h-2.5 w-2.5" />}
@@ -911,7 +911,7 @@ const ThreeWayMatchCard = ({
                   ) : (
                     <p className={cn(
                       'font-semibold text-xs',
-                      !match.po && 'text-signal-red'
+                      !match.po && 'text-state-risk'
                     )}>
                       {match.po ?? 'Missing'}
                     </p>
@@ -923,13 +923,13 @@ const ThreeWayMatchCard = ({
                   'rounded-lg py-1.5 px-2.5',
                   showConfirm && fixPreview.grn
                     ? 'bg-hero-teal-soft border border-hero-teal/20'
-                    : !match.grn ? 'bg-signal-amber-bg border border-signal-amber/20' : 'bg-slate-50'
+                    : !match.grn ? 'bg-state-blocked-bg border border-state-blocked/20' : 'bg-slate-50'
                 )}>
                   <p className={cn(
                     'text-[10px] mb-0.5',
                     showConfirm && fixPreview.grn
                       ? 'text-hero-teal font-medium flex items-center gap-1'
-                      : !match.grn ? 'text-signal-amber font-medium' : 'text-muted-foreground'
+                      : !match.grn ? 'text-state-blocked font-medium' : 'text-muted-foreground'
                   )}>
                     GRN {showConfirm && fixPreview.grn && <Check className="h-2.5 w-2.5" />}
                   </p>
@@ -942,7 +942,7 @@ const ThreeWayMatchCard = ({
                   ) : (
                     <p className={cn(
                       'font-semibold text-xs',
-                      !match.grn && 'text-signal-amber'
+                      !match.grn && 'text-state-blocked'
                     )}>
                       {match.grn ?? 'Missing'}
                     </p>
@@ -1003,7 +1003,7 @@ const ThreeWayMatchCard = ({
               ) : (
                 <div className="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 mb-2.5">
                   <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                    <Sparkles className="h-3 w-3 text-signal-amber shrink-0" />
+                    <Sparkles className="h-3 w-3 text-state-blocked shrink-0" />
                     <span>{match.status === 'missing-po'
                       ? 'Matches recurring grocery pattern'
                       : `Price increase of €${(match.invoiceAmount - match.poAmount).toFixed(2)} — likely freight surcharge`
@@ -1056,7 +1056,7 @@ const ReconcileDetailContent = ({
           <Badge variant="outline" className="text-[11px]">Three-way match</Badge>
           <Badge
             variant="outline"
-            className={`text-[11px] ${isVariance ? 'border-signal-amber text-signal-amber' : isMissingPO ? 'border-signal-red text-signal-red' : 'border-signal-green text-signal-green'}`}
+            className={`text-[11px] ${isVariance ? 'border-state-blocked text-state-blocked' : isMissingPO ? 'border-state-risk text-state-risk' : 'border-signal-green text-signal-green'}`}
           >
             {isVariance ? 'Variance detected' : isMissingPO ? 'Missing PO' : 'Matched'}
           </Badge>
@@ -1084,8 +1084,8 @@ const ReconcileDetailContent = ({
               <>
                 <div className="border-t border-border" />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-signal-amber">Variance</span>
-                  <span className="text-sm font-bold tabular-nums text-signal-amber">
+                  <span className="text-sm font-medium text-state-blocked">Variance</span>
+                  <span className="text-sm font-bold tabular-nums text-state-blocked">
                     +€{varianceAmount.toFixed(2)} ({variancePct}%)
                   </span>
                 </div>
@@ -1128,7 +1128,7 @@ const ReconcileDetailContent = ({
             {match.po ? (
               <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0 mt-0.5" />
             ) : (
-              <AlertTriangle className="h-4 w-4 text-signal-red shrink-0 mt-0.5" />
+              <AlertTriangle className="h-4 w-4 text-state-risk shrink-0 mt-0.5" />
             )}
             <div>
               <p className="text-sm font-medium">Purchase Order</p>
@@ -1139,7 +1139,7 @@ const ReconcileDetailContent = ({
             {match.grn ? (
               <CheckCircle2 className="h-4 w-4 text-signal-green shrink-0 mt-0.5" />
             ) : (
-              <AlertTriangle className="h-4 w-4 text-signal-red shrink-0 mt-0.5" />
+              <AlertTriangle className="h-4 w-4 text-state-risk shrink-0 mt-0.5" />
             )}
             <div>
               <p className="text-sm font-medium">Goods Receipt</p>
@@ -1155,7 +1155,7 @@ const ReconcileDetailContent = ({
           </div>
           {isVariance && (
             <div className="flex items-start gap-2">
-              <AlertTriangle className="h-4 w-4 text-signal-amber shrink-0 mt-0.5" />
+              <AlertTriangle className="h-4 w-4 text-state-blocked shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-medium">Amount Match</p>
                 <p className="text-xs text-muted-foreground">+{match.variance}% variance — vendor avg is {match.vendorAvgVariance}%</p>
@@ -1168,9 +1168,9 @@ const ReconcileDetailContent = ({
       {/* Warning banner */}
       {(isVariance || isMissingPO) && (
         <div className="px-4 py-3 border-b border-border">
-          <div className={`flex items-center gap-2 rounded-lg px-3 py-2.5 ${isMissingPO ? 'bg-signal-red-bg/50' : 'bg-signal-amber-bg/50'}`}>
-            <AlertTriangle className={`h-4 w-4 shrink-0 ${isMissingPO ? 'text-signal-red' : 'text-signal-amber'}`} />
-            <p className={`text-sm font-medium ${isMissingPO ? 'text-signal-red' : 'text-signal-amber'}`}>
+          <div className={`flex items-center gap-2 rounded-lg px-3 py-2.5 ${isMissingPO ? 'bg-state-risk-bg/50' : 'bg-state-blocked-bg/50'}`}>
+            <AlertTriangle className={`h-4 w-4 shrink-0 ${isMissingPO ? 'text-state-risk' : 'text-state-blocked'}`} />
+            <p className={`text-sm font-medium ${isMissingPO ? 'text-state-risk' : 'text-state-blocked'}`}>
               {isMissingPO 
                 ? 'No purchase order found — requires manual matching or PO creation'
                 : `Invoice exceeds PO by ${match.variance}% — review before posting to GL`}
@@ -1586,7 +1586,7 @@ const RohanView = () => {
                 {/* Shadow spend */}
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <ShieldAlert className="h-4 w-4 text-signal-amber" />
+                    <ShieldAlert className="h-4 w-4 text-state-blocked" />
                     <h3 className="text-sm font-semibold">Shadow Spend</h3>
                   </div>
                   {shadowSpendItems.map((item, i) => (
@@ -1644,9 +1644,9 @@ const RohanView = () => {
                 {actionableMatches.filter(m => !reconciledIds.has(m.id)).length > 0 && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <FileText className="h-4 w-4 text-signal-amber" />
+                      <FileText className="h-4 w-4 text-state-blocked" />
                       <h3 className="text-sm font-semibold">Three-Way Match</h3>
-                      <Badge variant="outline" className="text-[10px] bg-signal-amber-bg text-signal-amber border-0">
+                      <Badge variant="outline" className="text-[10px] bg-state-blocked-bg text-state-blocked border-0">
                         {actionableMatches.filter(m => !reconciledIds.has(m.id)).length} pending
                       </Badge>
                     </div>

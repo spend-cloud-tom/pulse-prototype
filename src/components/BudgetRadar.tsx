@@ -45,8 +45,8 @@ const BudgetRadar = ({
   };
   
   const getStatusColor = () => {
-    if (isCritical) return 'text-signal-red';
-    if (isWarning) return 'text-signal-amber';
+    if (isCritical) return 'text-state-risk';
+    if (isWarning) return 'text-state-blocked';
     return 'text-hero-teal';
   };
   
@@ -122,7 +122,7 @@ const BudgetRadar = ({
         <div className={cn(
           "flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium mt-1",
           trendUp 
-            ? "bg-signal-amber-bg text-signal-amber" 
+            ? "bg-state-blocked-bg text-state-blocked" 
             : "bg-signal-green-bg text-signal-green"
         )}>
           {trendUp ? (

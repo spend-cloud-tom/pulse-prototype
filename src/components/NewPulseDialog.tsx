@@ -218,16 +218,16 @@ const NewPulseDialog = ({ open, onOpenChange }: NewPulseDialogProps) => {
               {activeRole === 'anouk' && (
                 <button
                   onClick={() => setCopilotOpen(true)}
-                  className="flex w-full items-center gap-3 rounded-xl border-2 border-dashed border-signal-green/30 bg-signal-green-bg px-4 py-4 text-left transition-all hover:border-signal-green/50 hover:shadow-sm active:scale-[0.99]"
+                  className="flex w-full items-center gap-3 rounded-xl border-2 border-dashed border-hero-teal/30 bg-hero-teal-soft px-4 py-4 text-left transition-all hover:border-hero-teal/50 hover:shadow-sm active:scale-[0.99]"
                 >
-                  <div className="rounded-full bg-signal-green/10 p-2.5">
-                    <Mic className="h-5 w-5 text-signal-green" />
+                  <div className="rounded-full bg-hero-teal/10 p-2.5">
+                    <Mic className="h-5 w-5 text-hero-teal" />
                   </div>
                   <div>
                     <p className="text-sm font-semibold">Speak what happened</p>
                     <p className="text-xs text-muted-foreground">Voice is fastest — just describe it</p>
                   </div>
-                  <Badge variant="outline" className="text-[9px] border-0 bg-signal-green/10 text-signal-green ml-auto shrink-0">
+                  <Badge variant="outline" className="text-[9px] border-0 bg-hero-teal/10 text-hero-teal ml-auto shrink-0">
                     AI Demo
                   </Badge>
                 </button>
@@ -328,8 +328,8 @@ const NewPulseDialog = ({ open, onOpenChange }: NewPulseDialogProps) => {
           {/* Step 2: Confirmation — what happens next */}
           {step === 2 && classification && (
             <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4 pt-2">
-              <div className="rounded-xl bg-signal-green-bg p-4 space-y-2">
-                <p className="text-sm font-semibold text-signal-green flex items-center gap-1.5">
+              <div className="rounded-xl bg-state-resolved-bg p-4 space-y-2">
+                <p className="text-sm font-semibold text-state-resolved flex items-center gap-1.5">
                   <Check className="h-4 w-4" /> Ready to submit
                 </p>
                 <p className="text-xs text-muted-foreground">{classification.aiReasoning}</p>
@@ -343,7 +343,7 @@ const NewPulseDialog = ({ open, onOpenChange }: NewPulseDialogProps) => {
                 <FieldRow
                   label="Urgency"
                   value={classification.urgency}
-                  valueClass={classification.urgency === 'critical' ? 'text-signal-red' : classification.urgency === 'urgent' ? 'text-signal-amber' : ''}
+                  valueClass={classification.urgency === 'critical' ? 'text-state-risk' : classification.urgency === 'urgent' ? 'text-state-blocked' : ''}
                   hint="AI suggested — you can change this"
                 />
                 <FieldRow label="Confidence" value={`${classification.confidence}%`} />

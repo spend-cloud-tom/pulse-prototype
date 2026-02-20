@@ -56,17 +56,17 @@ const mockLocationRisks: LocationRisk[] = [
 const getRiskColor = (score: number) => {
   if (score >= 70) return { 
     bg: 'bg-card', 
-    border: 'border-signal-red/30', 
-    text: 'text-signal-red',
-    accent: 'bg-signal-red',
-    glow: 'shadow-signal-red/10'
+    border: 'border-state-risk/30', 
+    text: 'text-state-risk',
+    accent: 'bg-state-risk',
+    glow: 'shadow-state-risk/10'
   };
   if (score >= 40) return { 
     bg: 'bg-card', 
-    border: 'border-signal-amber/30', 
-    text: 'text-signal-amber',
-    accent: 'bg-signal-amber',
-    glow: 'shadow-signal-amber/10'
+    border: 'border-state-blocked/30', 
+    text: 'text-state-blocked',
+    accent: 'bg-state-blocked',
+    glow: 'shadow-state-blocked/10'
   };
   return { 
     bg: 'bg-card', 
@@ -240,7 +240,7 @@ const LocationTile = ({
           <span className="text-muted-foreground">Spend variance</span>
           <span className={cn(
             "font-medium flex items-center gap-1 tabular-nums",
-            location.spendVariance > 0 ? "text-signal-amber" : "text-signal-green"
+            location.spendVariance > 0 ? "text-state-blocked" : "text-signal-green"
           )}>
             {location.trend === 'up' && <TrendingUp className="h-3 w-3" />}
             {location.spendVariance > 0 ? '+' : ''}{location.spendVariance}%
@@ -301,7 +301,7 @@ const AnomalyHeatmap = ({ onLocationClick }: AnomalyHeatmapProps) => {
         <div className="text-right">
           <p className={cn(
             "text-lg font-bold",
-            avgRisk >= 70 ? "text-signal-red" : avgRisk >= 40 ? "text-signal-amber" : "text-signal-green"
+            avgRisk >= 70 ? "text-state-risk" : avgRisk >= 40 ? "text-state-blocked" : "text-signal-green"
           )}>
             {avgRisk}
           </p>
@@ -329,11 +329,11 @@ const AnomalyHeatmap = ({ onLocationClick }: AnomalyHeatmapProps) => {
           <span>Low (0-39)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="h-2 w-2 rounded-full bg-signal-amber" />
+          <div className="h-2 w-2 rounded-full bg-state-blocked" />
           <span>Medium (40-69)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="h-2 w-2 rounded-full bg-signal-red" />
+          <div className="h-2 w-2 rounded-full bg-state-risk" />
           <span>High (70+)</span>
         </div>
       </div>

@@ -36,6 +36,8 @@ const mockAutoResolved: AutoResolvedItem[] = [
   { id: '12', title: 'Light bulbs — Zonneweide', amount: 11.20, resolvedAt: '11:48 AM', ruleApplied: 'Maintenance supplies auto-approve', confidence: 96, timeSavedSeconds: 90 },
 ];
 
+const MAX_AUTO_ITEMS = 5;
+
 const AutoResolveStack = ({ 
   items = mockAutoResolved, 
   onExpand,
@@ -49,7 +51,7 @@ const AutoResolveStack = ({
   // Auto-demo: animate items collapsing one by one
   useEffect(() => {
     if (!autoDemo) {
-      setVisibleItems(items);
+      setVisibleItems(items.slice(0, MAX_AUTO_ITEMS));
       return;
     }
 
@@ -58,7 +60,7 @@ const AutoResolveStack = ({
     let currentIndex = 0;
 
     const addItem = () => {
-      if (currentIndex < items.length) {
+      if (currentIndex < items.length && currentIndex < MAX_AUTO_ITEMS) {
         setIsAnimating(true);
         setShowSuccessGlow(true);
         
@@ -78,7 +80,7 @@ const AutoResolveStack = ({
 
     // Then add rest with delay
     const interval = setInterval(() => {
-      if (currentIndex >= items.length) {
+      if (currentIndex >= items.length || currentIndex >= MAX_AUTO_ITEMS) {
         clearInterval(interval);
         return;
       }

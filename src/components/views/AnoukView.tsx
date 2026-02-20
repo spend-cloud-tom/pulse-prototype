@@ -4,6 +4,7 @@ import { useRole } from '@/context/RoleContext';
 import { teamSignals, demoImages, signalTypeConfig } from '@/data/mockData';
 import { Mic, Camera, ChevronRight, Package, Truck, CheckCircle2, AlertCircle, Clock, ShoppingCart, Wrench, Receipt, HelpCircle, User, MapPin } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import PulseTypeIcon from '@/components/PulseTypeIcon';
 import AICopilotOverlay from '@/components/AICopilotOverlay';
 import ImageThumbnail from '@/components/ImageThumbnail';
@@ -307,18 +308,36 @@ const StatusCard = ({
           {/* Needs input: action buttons */}
           {isNeedsInput && (
             <div className="flex items-center gap-2 mt-3">
-              <button
-                onClick={onProvideInfo}
-                className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
-              >
-                Provide info
-              </button>
-              <button
-                onClick={onAskAI}
-                className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
-              >
-                Ask AI
-              </button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={onProvideInfo}
+                      className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
+                    >
+                      Provide info
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Add missing details to this request</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={onAskAI}
+                      className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium hover:bg-slate-200 transition-colors"
+                    >
+                      Ask AI
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Get AI help with this request</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           )}
           

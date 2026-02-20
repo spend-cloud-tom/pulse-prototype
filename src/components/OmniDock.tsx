@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Camera, Send, ShoppingCart, Wrench, Receipt, HelpCircle, Package } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 /* ═══════════════════════════════════════════════════════════════════════════
    OMNI-DOCK — The "One Door" Persistent Input with Quick-Tap Gallery
@@ -308,22 +309,31 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
                 />
               )}
             </AnimatePresence>
-            <button
-              onClick={handleVoice}
-              disabled={isListening || isScanning}
-              className={`
-                relative h-11 w-11 rounded-xl
-                flex items-center justify-center 
-                transition-all duration-150 
-                ${isListening 
-                  ? 'bg-teal-500 text-white' 
-                  : 'bg-teal-50 text-teal-600 hover:bg-teal-100 active:scale-95'
-                }
-              `}
-              aria-label="Voice input"
-            >
-              <Mic className="h-5 w-5" />
-            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleVoice}
+                    disabled={isListening || isScanning}
+                    className={`
+                      relative h-11 w-11 rounded-xl
+                      flex items-center justify-center 
+                      transition-all duration-150 
+                      ${isListening 
+                        ? 'bg-teal-500 text-white' 
+                        : 'bg-teal-50 text-teal-600 hover:bg-teal-100 active:scale-95'
+                      }
+                    `}
+                    aria-label="Voice input"
+                  >
+                    <Mic className="h-5 w-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Speak your request</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           
           {/* Camera Button — Brand coral with pulsing ring when scanning */}
@@ -341,45 +351,63 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
                 />
               )}
             </AnimatePresence>
-            <button
-              onClick={handleCamera}
-              disabled={isScanning || isListening}
-              className={`
-                relative h-11 w-11 rounded-xl 
-                flex items-center justify-center 
-                transition-all duration-150 
-              `}
-              style={{
-                backgroundColor: isScanning ? 'hsl(12, 76%, 50%)' : 'hsl(12, 76%, 95%)',
-                color: isScanning ? 'white' : 'hsl(12, 76%, 50%)',
-              }}
-              aria-label="Camera input"
-            >
-              <Camera className="h-5 w-5" />
-            </button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleCamera}
+                    disabled={isScanning || isListening}
+                    className={`
+                      relative h-11 w-11 rounded-xl 
+                      flex items-center justify-center 
+                      transition-all duration-150 
+                    `}
+                    style={{
+                      backgroundColor: isScanning ? 'hsl(12, 76%, 50%)' : 'hsl(12, 76%, 95%)',
+                      color: isScanning ? 'white' : 'hsl(12, 76%, 50%)',
+                    }}
+                    aria-label="Camera input"
+                  >
+                    <Camera className="h-5 w-5" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Scan receipt or photo</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           
           {/* Send Button — appears when there's input */}
           <AnimatePresence>
             {inputValue.trim() && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                onClick={handleSubmit}
-                className="
-                  h-11 w-11 rounded-xl 
-                  bg-slate-900 text-white
-                  hover:bg-slate-800 
-                  active:scale-95
-                  flex items-center justify-center 
-                  transition-all duration-150 
-                  shrink-0
-                "
-                aria-label="Send"
-              >
-                <Send className="h-5 w-5" />
-              </motion.button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      onClick={handleSubmit}
+                      className="
+                        h-11 w-11 rounded-xl 
+                        bg-slate-900 text-white
+                        hover:bg-slate-800 
+                        active:scale-95
+                        flex items-center justify-center 
+                        transition-all duration-150 
+                        shrink-0
+                      "
+                      aria-label="Send"
+                    >
+                      <Send className="h-5 w-5" />
+                    </motion.button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Submit request</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </AnimatePresence>
         </motion.div>

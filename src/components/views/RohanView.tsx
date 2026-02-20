@@ -8,6 +8,7 @@ import SuccessCheckmark from '@/components/SuccessCheckmark';
 import ImageThumbnail from '@/components/ImageThumbnail';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { 
   Check, MessageSquare, X, Filter,
@@ -383,32 +384,59 @@ const DetailSidebar = ({
             placeholder={`Ask ${signal.submitter_name} a question...`}
             className="flex-1 px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
           />
-          <Button 
-            size="sm"
-            className="gap-1.5 bg-teal-600 hover:bg-teal-700 px-4"
-            onClick={handleSendQuestion}
-            disabled={!chatInput.trim()}
-          >
-            <Send className="h-3.5 w-3.5" />
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  size="sm"
+                  className="gap-1.5 bg-teal-600 hover:bg-teal-700 px-4"
+                  onClick={handleSendQuestion}
+                  disabled={!chatInput.trim()}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Send question to {signal.submitter_name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
         
         {/* SECONDARY: De-emphasized action buttons */}
         <div className="flex items-center gap-3 pt-1">
-          <Button 
-            variant="outline"
-            className="flex-1 gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50" 
-            size="sm"
-            onClick={onApprove}
-          >
-            <Check className="h-3.5 w-3.5" /> Approve
-          </Button>
-          <button 
-            className="text-sm text-red-500 hover:text-red-600 hover:underline px-2"
-            onClick={onReject}
-          >
-            Reject
-          </button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline"
+                  className="flex-1 gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50" 
+                  size="sm"
+                  onClick={onApprove}
+                >
+                  <Check className="h-3.5 w-3.5" /> Approve
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Approve expense and post to General Ledger</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  className="text-sm text-red-500 hover:text-red-600 hover:underline px-2"
+                  onClick={onReject}
+                >
+                  Reject
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Reject and notify {signal.submitter_name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
     </div>

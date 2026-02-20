@@ -255,13 +255,13 @@ const JolandaView = () => {
     setTimeout(() => setShowSuccessCheck(false), 800);
     setApprovedIds(prev => new Set([...prev, signal.id]));
     toast({
-      title: "✅ Pulse Approved",
-      description: `€${(signal.amount || 0).toFixed(2)} — Pulse advancing to procurement.`,
+      title: "✅ Approved",
+      description: `€${(signal.amount || 0).toFixed(2)} — moving to procurement.`,
     });
     setTimeout(() => {
       toast({
-        title: "📦 Pulse In Motion",
-        description: `Sarah is now handling this Pulse.`,
+        title: "📦 In Motion",
+        description: `Sarah is now handling this.`,
       });
     }, 2500);
   };
@@ -269,8 +269,8 @@ const JolandaView = () => {
   const handleEscalate = (signal: ClassifiedSignal) => {
     setApprovedIds(prev => new Set([...prev, signal.id]));
     toast({
-      title: "⬆️ Pulse Escalated",
-      description: `Pulse sent to regional manager for review.`,
+      title: "⬆️ Escalated",
+      description: `Sent to regional manager for review.`,
     });
   };
 
@@ -282,8 +282,8 @@ const JolandaView = () => {
   const handleReject = (signal: ClassifiedSignal) => {
     setDismissedIds(prev => new Set([...prev, signal.id]));
     toast({
-      title: "❌ Pulse Rejected",
-      description: `${signal.submitter_name} will be notified about this Pulse.`,
+      title: "❌ Rejected",
+      description: `${signal.submitter_name} will be notified.`,
     });
   };
 
@@ -324,12 +324,12 @@ const JolandaView = () => {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="font-display text-3xl font-bold tracking-tight">
-                Pulse Cockpit
+                Decisions <span className="text-muted-foreground font-normal">· Your Flow</span>
               </h1>
               <p className="text-muted-foreground mt-1 flex items-center gap-3">
                 <span className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-signal-red animate-pulse" />
-                  <strong className="text-foreground">{judgmentPulses.length || 3} Pulses</strong> awaiting your decision
+                  <strong className="text-foreground">{judgmentPulses.length || 3}</strong> awaiting your decision
                 </span>
                 <span className="text-border">·</span>
                 <span className="flex items-center gap-1">
@@ -407,9 +407,9 @@ const JolandaView = () => {
                 {judgmentPulses.length === 0 && (
                   <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
                     <Check className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                    <p className="font-semibold text-signal-green">All Pulses handled</p>
+                    <p className="font-semibold text-signal-green">All clear</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      No Pulses awaiting your decision
+                      Nothing awaiting your decision
                     </p>
                   </div>
                 )}
@@ -579,7 +579,7 @@ const JolandaView = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-2xl font-bold">{completedPulses.length + judgmentPulses.length + 38}</p>
-                  <p className="text-xs text-muted-foreground">Total Pulses</p>
+                  <p className="text-xs text-muted-foreground">Total this month</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-signal-green">94%</p>

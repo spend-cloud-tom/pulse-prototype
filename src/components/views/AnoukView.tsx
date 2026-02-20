@@ -223,7 +223,7 @@ const StatusCard = ({
     e.stopPropagation();
     toast({
       title: "Issue reported",
-      description: "Someone will look into this Pulse shortly.",
+      description: "Someone will look into this shortly.",
     });
   };
 
@@ -404,11 +404,11 @@ const AnoukView = () => {
 
   const hasNeedsInput = needsInputPulses.length > 0;
 
-  // Advance a Pulse (moves it out of "needs action")
+  // Advance item (moves it out of "needs action")
   const handleResolve = (signalId: string, description: string) => {
     setResolvedIds(prev => new Set([...prev, signalId]));
     toast({
-      title: "✅ Pulse advanced",
+      title: "✅ Submitted",
       description: `"${description?.slice(0, 35)}..." is now in motion.`,
     });
   };
@@ -420,21 +420,21 @@ const AnoukView = () => {
         {/* Constrained width container — max 680px, centered */}
         <div className="max-w-[680px] mx-auto px-5 py-8 space-y-8">
           
-          {/* ─── PULSE SUMMARY HEADER ─── */}
+          {/* ─── YOUR FLOW HEADER ─── */}
           <motion.header 
             initial={{ opacity: 0, y: 16 }} 
             animate={{ opacity: 1, y: 0 }}
             className="space-y-2"
           >
             <h1 className="text-3xl font-bold tracking-tight text-slate-900">
-              {hasNeedsInput ? 'Pulses Need You' : 'All Clear'}
+              {hasNeedsInput ? 'Needs Your Input' : 'All Clear'}
             </h1>
             <p className="text-base text-slate-500 leading-relaxed">
               {hasNeedsInput 
-                ? `${needsInputPulses.length} ${needsInputPulses.length === 1 ? 'Pulse needs' : 'Pulses need'} your input.`
+                ? `${needsInputPulses.length} ${needsInputPulses.length === 1 ? 'item needs' : 'items need'} your input.`
                 : inProgressPulses.length > 0 
-                  ? `${inProgressPulses.length} ${inProgressPulses.length === 1 ? 'Pulse is' : 'Pulses are'} in motion.`
-                  : 'All Pulses handled. Enjoy your shift!'
+                  ? `${inProgressPulses.length} in motion.`
+                  : 'All clear. Enjoy your shift!'
               }
             </p>
           </motion.header>
@@ -515,9 +515,9 @@ const AnoukView = () => {
               <div className="h-16 w-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-4">
                 <CheckCircle2 className="h-8 w-8 text-emerald-500" />
               </div>
-              <p className="text-lg font-medium text-slate-700">No Pulses</p>
+              <p className="text-lg font-medium text-slate-700">Nothing in your flow</p>
               <p className="text-sm text-slate-500 mt-1">
-                Use the input below to create a new Pulse
+                Use the input below to start something
               </p>
             </motion.div>
           )}

@@ -55,11 +55,11 @@ const MaintenancePanel = () => {
         scheduled_date: scheduledDate || null,
         status: 'assigned',
       });
-      toast.success('Owner assigned!', { description: `${contractorName} will handle this Pulse.` });
+      toast.success('Owner assigned!', { description: `${contractorName} will handle this.` });
       setAssignDialogOpen(false);
       resetForm();
     } catch {
-      toast.error('Failed to assign owner');
+      toast.error('Failed to assign');
     }
   };
 
@@ -70,9 +70,9 @@ const MaintenancePanel = () => {
         completion_date: new Date().toISOString().split('T')[0],
         resolution_notes: resolutionNotes || 'Completed',
       });
-      toast.success('Pulse resolved!', { description: 'Maintenance Pulse completed.' });
+      toast.success('Resolved!', { description: 'Maintenance completed.' });
     } catch {
-      toast.error('Failed to resolve Pulse');
+      toast.error('Failed to resolve');
     }
   };
 
@@ -107,7 +107,7 @@ const MaintenancePanel = () => {
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-orange-400" />
-          Maintenance Pulses
+          Maintenance
         </h2>
         <Badge variant="secondary" className="text-xs">{tickets.length}</Badge>
       </div>

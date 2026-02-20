@@ -16,18 +16,18 @@ export const pulseActions = {
   
   // Tooltips for actions
   tooltips: {
-    assignOwner: 'Assign someone to handle this Pulse',
-    advancePulse: 'Move this Pulse to the next stage',
-    escalatePulse: 'Escalate this Pulse to a manager',
-    resolvePulse: 'Mark this Pulse as resolved',
-    blockPulse: 'Mark this Pulse as blocked by external factors',
+    assignOwner: 'Assign someone to handle this',
+    advancePulse: 'Move to the next stage',
+    escalatePulse: 'Escalate to a manager',
+    resolvePulse: 'Mark as resolved',
+    blockPulse: 'Mark as blocked',
     requestInfo: 'Request additional information',
-    approvePulse: 'Approve this Pulse',
-    rejectPulse: 'Reject this Pulse',
+    approvePulse: 'Approve this item',
+    rejectPulse: 'Reject this item',
   },
 } as const;
 
-// PULSE PIPELINE STATES — The 5 canonical states
+// FLOW STATES — The 5 canonical states
 export const pipelineStates = [
   { key: 'needs-action', label: 'Needs Action', icon: '🔴', color: 'signal-red' },
   { key: 'in-motion', label: 'In Motion', icon: '🟡', color: 'signal-amber' },

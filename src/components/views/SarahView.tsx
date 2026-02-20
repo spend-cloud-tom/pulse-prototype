@@ -215,7 +215,7 @@ const ProcurementPulseCard = ({
             className="gap-1.5"
             onClick={() => toast({
               title: "✅ Owner Assigned",
-              description: `${suggestion.vendor} assigned. Pulse advancing...`,
+              description: `${suggestion.vendor} assigned. Moving forward...`,
             })}
           >
             <Check className="h-3.5 w-3.5" /> {pulseActions.assignOwner}
@@ -263,7 +263,7 @@ const SarahView = () => {
   const readyAutoPOs = autoPOCandidates.filter(c => c.ready && !generatedPOs.has(c.item));
   const pendingAutoPOs = autoPOCandidates.filter(c => !c.ready);
   
-  // Handle assigning an owner to a Pulse with success animation
+  // Handle assigning an owner with success animation
   const handleAssignOwner = (signalId: string, description: string, vendor: string) => {
     // Show success checkmark animation
     setShowSuccessCheck(true);
@@ -271,25 +271,25 @@ const SarahView = () => {
     
     setAssignedIds(prev => new Set([...prev, signalId]));
     toast({
-      title: "✅ Owner assigned — Pulse advancing",
+      title: "✅ Owner assigned",
       description: `${vendor} will handle "${description?.slice(0, 25)}..."`,
     });
     // Simulate order confirmation
     setTimeout(() => {
       toast({
-        title: "📧 Pulse in motion",
+        title: "📧 In motion",
         description: `${vendor} confirmed. Expected completion: Tomorrow 10:00`,
       });
     }, 2000);
   };
   
-  // Handle advancing Pulses automatically
+  // Handle advancing items automatically
   const handleAdvancePulses = () => {
     const items = readyAutoPOs.map(po => po.item);
     items.forEach(item => setGeneratedPOs(prev => new Set([...prev, item])));
     toast({
-      title: "⚡ Pulses Advanced",
-      description: `${items.length} Pulses auto-handled and moving forward.`,
+      title: "⚡ Advanced",
+      description: `${items.length} items auto-handled and moving forward.`,
     });
     // Simulate supplier responses
     setTimeout(() => {
@@ -300,19 +300,19 @@ const SarahView = () => {
     }, 1500);
   };
   
-  // Handle advancing single Pulse
+  // Handle advancing single item
   const handleAdvancePulse = (item: string, vendor: string) => {
     setGeneratedPOs(prev => new Set([...prev, item]));
     toast({
-      title: "⚡ Pulse Advanced",
+      title: "⚡ Advanced",
       description: `${item} is now in motion with ${vendor}.`,
     });
   };
   
-  // Handle escalating a blocked Pulse
+  // Handle escalating a blocked item
   const handleEscalatePulse = (item: string) => {
     toast({
-      title: "⚠️ Pulse Escalated",
+      title: "⚠️ Escalated",
       description: `${item} escalated to Jolanda for review.`,
     });
     setTimeout(() => {
@@ -325,17 +325,17 @@ const SarahView = () => {
 
   return (
     <div className="min-h-screen">
-      {/* Header — Pulse Summary */}
+      {/* Header — Your Flow */}
       <div className="border-b border-border bg-card/50">
         <div className="max-w-6xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="font-display text-3xl font-bold tracking-tight">
-                Pulse Pipeline
+                Procurement <span className="text-muted-foreground font-normal">· Your Flow</span>
               </h1>
               <p className="text-muted-foreground mt-1">
-                <span className="text-signal-red font-medium">{actionPulses.length} Pulses</span> awaiting action · 
-                <span className="text-signal-amber font-medium"> {activeOrders.filter(o => o.status !== 'delivered').length} Pulses</span> in motion
+                <span className="text-signal-red font-medium">{actionPulses.length}</span> awaiting action · 
+                <span className="text-signal-amber font-medium">{activeOrders.filter(o => o.status !== 'delivered').length}</span> in motion
               </p>
             </div>
             
@@ -414,9 +414,9 @@ const SarahView = () => {
                 ) : (
                   <div className="rounded-2xl bg-signal-green-bg/50 p-8 text-center">
                     <CheckCircle2 className="h-8 w-8 text-signal-green mx-auto mb-3" />
-                    <p className="font-semibold text-signal-green">All Pulses handled</p>
+                    <p className="font-semibold text-signal-green">All clear</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      No Pulses awaiting your action
+                      Nothing awaiting your action
                     </p>
                   </div>
                 )}
@@ -565,13 +565,13 @@ const SarahView = () => {
               ))}
             </div>
 
-            {/* Pulse Stats */}
+            {/* Flow Stats */}
             <div className="rounded-xl bg-secondary/50 p-4 space-y-3">
               <h4 className="text-sm font-medium">This Week</h4>
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <p className="text-2xl font-bold">{activeOrders.length}</p>
-                  <p className="text-xs text-muted-foreground">Pulses in motion</p>
+                  <p className="text-xs text-muted-foreground">In motion</p>
                 </div>
                 <div>
                   <p className="text-2xl font-bold text-hero-purple">{readyAutoPOs.length}</p>

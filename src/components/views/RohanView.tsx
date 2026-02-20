@@ -1224,7 +1224,7 @@ const RohanView = () => {
   const { approvals, exceptions, alerts } = useMemo(() => classifyAndGroup(actionPulses), [actionPulses]);
   const allItems = [...exceptions, ...approvals, ...alerts];
   
-  // Handle reconciling a 3-way match Pulse with success animation
+  // Handle reconciling a 3-way match with success animation
   const handleReconcile = (match: typeof threeWayMatches[0]) => {
     // Show success checkmark animation
     setShowSuccessCheck(true);
@@ -1232,12 +1232,12 @@ const RohanView = () => {
     
     setReconciledIds(prev => new Set([...prev, match.id]));
     toast({
-      title: "✅ Pulse Resolved — posting to GL",
-      description: `${match.supplier} invoice ${match.invoice} matched. Pulse advancing to GL.`,
+      title: "✅ Reconciled — posting to GL",
+      description: `${match.supplier} invoice ${match.invoice} matched.`,
     });
     setTimeout(() => {
       toast({
-        title: "📊 Pulse Complete",
+        title: "📊 Posted",
         description: `Transaction posted. Budget impact: -€${match.invoiceAmount.toFixed(2)} from Hygiene & Cleaning.`,
       });
     }, 2000);
@@ -1252,17 +1252,17 @@ const RohanView = () => {
     });
   };
   
-  // Handle bulk resolve low-risk Pulses
+  // Handle bulk resolve low-risk items
   const handleResolveLowRisk = (count: number) => {
     setResolvedLowRisk(true);
     toast({
-      title: "✅ Pulses Bulk Resolved",
-      description: `${count} low-risk Pulses auto-approved and posted to GL.`,
+      title: "✅ Bulk Resolved",
+      description: `${count} low-risk items auto-approved and posted to GL.`,
     });
     setTimeout(() => {
       toast({
         title: "📧 Audit trail created",
-        description: "All Pulses logged with AI confidence scores for compliance.",
+        description: "All items logged with AI confidence scores for compliance.",
       });
     }, 1500);
   };
@@ -1313,15 +1313,15 @@ const RohanView = () => {
 
   const handleApprove = (signal: ClassifiedSignal) => {
     toast({
-      title: "✅ Pulse Approved",
-      description: `${signal.title || signal.description} approved. Pulse advancing to GL.`,
+      title: "✅ Approved",
+      description: `${signal.title || signal.description} approved. Posting to GL.`,
     });
     setSelectedSignal(null);
   };
 
   const handleReject = (signal: ClassifiedSignal) => {
     toast({
-      title: "❌ Pulse Rejected",
+      title: "❌ Rejected",
       description: `${signal.title || signal.description} rejected. ${signal.submitter_name} notified.`,
     });
     setSelectedSignal(null);
@@ -1342,7 +1342,7 @@ const RohanView = () => {
           {/* Title row */}
           <div className="flex items-center justify-between mb-4">
             <h1 className="font-display text-2xl font-bold text-slate-900">
-              Finance Pulse Pipeline
+              Finance <span className="text-slate-400 font-normal">· Your Flow</span>
             </h1>
             {lowRiskExceptions.length > 0 && !resolvedLowRisk && (
               <Button 

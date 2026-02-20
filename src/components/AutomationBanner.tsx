@@ -11,10 +11,10 @@ const AutomationBanner = () => {
   const maintenance = signals.filter(s => s.signal_type === 'maintenance' && (s.status === 'pending' || s.status === 'needs-clarity'));
 
   const dynamicMessages: Record<string, string> = {
-    anouk: `Pulse handled <strong>${autoProcessed.length} pulses</strong> today. ${pending.filter(s => s.submitter_name === 'Anouk van Dijk').length > 0 ? `<strong>${pending.filter(s => s.submitter_name === 'Anouk van Dijk').length}</strong> need your attention.` : 'Nothing needs your attention.'}${incidents.length > 0 ? ` <strong>${incidents.length}</strong> incident${incidents.length > 1 ? 's' : ''} logged.` : ''}`,
-    rohan: `AI processed <strong>${autoProcessed.length + pending.length} pulses</strong> today. <strong>${pending.length}</strong> require review.${incidents.length > 0 ? ` ${incidents.length} incident${incidents.length > 1 ? 's' : ''}.` : ''}${maintenance.length > 0 ? ` ${maintenance.length} maintenance.` : ''}`,
-    sarah: `<strong>${signals.filter(s => s.status === 'awaiting-supplier').length} pulses</strong> awaiting action. <strong>${signals.filter(s => s.status === 'in-motion').length}</strong> in motion.${maintenance.length > 0 ? ` ${maintenance.length} maintenance coordination needed.` : ''}`,
-    jolanda: `<strong>${pending.filter(s => s.location === 'Zonneweide').length} pulses</strong> need attention across your locations.${incidents.length > 0 ? ` <strong>${incidents.length} incident${incidents.length > 1 ? 's' : ''}</strong> reported.` : ''}`,
+    anouk: `Pulse handled <strong>${autoProcessed.length} items</strong> today. ${pending.filter(s => s.submitter_name === 'Anouk van Dijk').length > 0 ? `<strong>${pending.filter(s => s.submitter_name === 'Anouk van Dijk').length}</strong> need your attention.` : 'Nothing needs your attention.'}${incidents.length > 0 ? ` <strong>${incidents.length}</strong> incident${incidents.length > 1 ? 's' : ''} logged.` : ''}`,
+    rohan: `Pulse processed <strong>${autoProcessed.length + pending.length} items</strong> today. <strong>${pending.length}</strong> require review.${incidents.length > 0 ? ` ${incidents.length} incident${incidents.length > 1 ? 's' : ''}.` : ''}${maintenance.length > 0 ? ` ${maintenance.length} maintenance.` : ''}`,
+    sarah: `<strong>${signals.filter(s => s.status === 'awaiting-supplier').length}</strong> awaiting action. <strong>${signals.filter(s => s.status === 'in-motion').length}</strong> in motion.${maintenance.length > 0 ? ` ${maintenance.length} maintenance coordination needed.` : ''}`,
+    jolanda: `<strong>${pending.filter(s => s.location === 'Zonneweide').length}</strong> need attention across your locations.${incidents.length > 0 ? ` <strong>${incidents.length} incident${incidents.length > 1 ? 's' : ''}</strong> reported.` : ''}`,
   };
 
   return (

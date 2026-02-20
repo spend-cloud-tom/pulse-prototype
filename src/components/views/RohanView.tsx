@@ -217,7 +217,7 @@ const ExceptionListRow = ({
       )}
     >
       {/* Table-like grid with fixed columns for clean vertical alignment */}
-      <div className="grid grid-cols-[90px_80px_1fr_100px_100px] items-center gap-2">
+      <div className="grid grid-cols-[70px_70px_1fr_80px] sm:grid-cols-[90px_80px_1fr_100px_100px] items-center gap-2 min-w-0">
         {/* Col 1: Confidence tag - fixed width */}
         <div className="flex justify-start">
           <ConfidenceTag level={signal.riskLevel} />
@@ -238,8 +238,8 @@ const ExceptionListRow = ({
           {formatDate(signal.created_at)}
         </p>
         
-        {/* Col 5: Submitter - right aligned */}
-        <p className="text-xs text-slate-400 truncate text-right">
+        {/* Col 5: Submitter - right aligned, hidden on small screens */}
+        <p className="text-xs text-slate-400 truncate text-right hidden sm:block">
           {signal.submitter_name}
         </p>
       </div>
@@ -274,35 +274,34 @@ const DetailSidebar = ({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* TOP: Receipt Image — taller container (h-64 = 256px) for better readability */}
-      <div className="relative h-64 bg-slate-100 overflow-hidden">
-        <img 
-          src={getSignalImage(signal)} 
-          alt="Receipt" 
-          className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-          onClick={() => {
-            toast({
-              title: "📷 Full image view",
-              description: "Opening receipt in full screen...",
-            });
-          }}
-        />
-        <div className="absolute top-3 left-3">
-          <ConfidenceTag level={signal.riskLevel} />
-        </div>
-        <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
-        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-          <p className="text-white text-lg tabular-nums drop-shadow-sm">
-            €{vatInfo.total.toFixed(2)}
-          </p>
-          <p className="text-white/80 text-xs drop-shadow-sm">
-            {signal.submitter_name}
-          </p>
-        </div>
-      </div>
-
-      {/* Scrollable content area */}
+      {/* Scrollable content area (image + details scroll together) */}
       <div className="flex-1 overflow-y-auto">
+        {/* TOP: Receipt Image */}
+        <div className="relative h-64 bg-slate-100 overflow-hidden shrink-0">
+          <img 
+            src={getSignalImage(signal)} 
+            alt="Receipt" 
+            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => {
+              toast({
+                title: "📷 Full image view",
+                description: "Opening receipt in full screen...",
+              });
+            }}
+          />
+          <div className="absolute top-3 left-3">
+            <ConfidenceTag level={signal.riskLevel} />
+          </div>
+          <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+            <p className="text-white text-lg tabular-nums drop-shadow-sm">
+              €{vatInfo.total.toFixed(2)}
+            </p>
+            <p className="text-white/80 text-xs drop-shadow-sm">
+              {signal.submitter_name}
+            </p>
+          </div>
+        </div>
         {/* Header info */}
         <div className="px-4 py-3 border-b border-slate-100">
           <h3 className="text-base font-semibold text-slate-900 leading-snug">
@@ -371,7 +370,7 @@ const DetailSidebar = ({
       </div>
 
       {/* BOTTOM: Actions — Chat-first hierarchy when AI is uncertain */}
-      <div className="border-t border-slate-200 bg-white p-4 space-y-3">
+      <div className="border-t border-slate-200 bg-white p-4 pb-36 sm:pb-40 space-y-3">
         {/* PRIMARY: Inline chat input to ask care worker (top position = primary action) */}
         <div className="flex gap-2">
           <input
@@ -464,35 +463,34 @@ const MatchSidebar = ({
 
   return (
     <div className="flex flex-col h-full bg-white">
-      {/* TOP: Invoice/Receipt Image placeholder */}
-      <div className="relative h-64 bg-slate-100 overflow-hidden flex items-center justify-center">
-        <img 
-          src={demoImages.invoice} 
-          alt="Invoice" 
-          className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
-          onClick={() => {
-            toast({
-              title: "📄 Full invoice view",
-              description: "Opening invoice in full screen...",
-            });
-          }}
-        />
-        <div className="absolute top-3 left-3">
-          <ConfidenceTag level={isMissingPO ? 'low' : 'medium'} />
-        </div>
-        <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
-        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
-          <p className="text-white text-lg tabular-nums drop-shadow-sm">
-            €{match.invoiceAmount.toFixed(2)}
-          </p>
-          <p className="text-white/80 text-xs drop-shadow-sm">
-            {match.invoice}
-          </p>
-        </div>
-      </div>
-
-      {/* Scrollable content area */}
+      {/* Scrollable content area (image + details scroll together) */}
       <div className="flex-1 overflow-y-auto">
+        {/* TOP: Invoice/Receipt Image */}
+        <div className="relative h-64 bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center">
+          <img 
+            src={demoImages.invoice} 
+            alt="Invoice" 
+            className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+            onClick={() => {
+              toast({
+                title: "📄 Full invoice view",
+                description: "Opening invoice in full screen...",
+              });
+            }}
+          />
+          <div className="absolute top-3 left-3">
+            <ConfidenceTag level={isMissingPO ? 'low' : 'medium'} />
+          </div>
+          <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
+          <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+            <p className="text-white text-lg tabular-nums drop-shadow-sm">
+              €{match.invoiceAmount.toFixed(2)}
+            </p>
+            <p className="text-white/80 text-xs drop-shadow-sm">
+              {match.invoice}
+            </p>
+          </div>
+        </div>
         {/* Header info */}
         <div className="px-4 py-3 border-b border-slate-100">
           <h3 className="text-base font-semibold text-slate-900 leading-snug">
@@ -579,7 +577,7 @@ const MatchSidebar = ({
       </div>
 
       {/* BOTTOM: Actions */}
-      <div className="border-t border-slate-200 bg-white p-4 space-y-3">
+      <div className="border-t border-slate-200 bg-white p-4 pb-36 sm:pb-40 space-y-3">
         {/* Chat input */}
         <div className="flex gap-2">
           <input
@@ -1335,8 +1333,8 @@ const RohanView = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <div className="max-w-[1400px] mx-auto w-full flex flex-col flex-1">
+    <div className="h-full bg-slate-50 flex flex-col">
+      <div className="max-w-[1400px] mx-auto w-full flex flex-col flex-1 min-h-0">
       {/* ═══ HEADER: Page Title + Condensed KPI Row ═══ */}
       <div className="bg-white border-b border-slate-200">
         <div className="px-6 py-4">
@@ -1409,9 +1407,9 @@ const RohanView = () => {
       </div>
 
       {/* ═══ ORGANIZER-WORKSPACE LAYOUT (60/40 Split) ═══ */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden min-h-0">
         {/* ─── INDEX PANE (Left, ~60%) ─── */}
-        <div className="w-[60%] flex flex-col border-r border-slate-200 bg-white">
+        <div className="w-[60%] flex flex-col border-r border-slate-200 bg-white overflow-hidden min-h-0">
           {/* Tab navigation */}
           <div className="flex items-center gap-1 px-4 pt-3 border-b border-slate-200">
             {[
@@ -1507,7 +1505,7 @@ const RohanView = () => {
                     )}
                   >
                     {/* Same grid as ExceptionListRow for vertical alignment */}
-                    <div className="grid grid-cols-[90px_80px_1fr_100px_100px] items-center gap-2">
+                    <div className="grid grid-cols-[70px_70px_1fr_80px] sm:grid-cols-[90px_80px_1fr_100px_100px] items-center gap-2 min-w-0">
                       <div className="flex justify-start">
                         <ConfidenceTag level={match.status === 'missing-po' ? 'low' : 'medium'} />
                       </div>
@@ -1520,7 +1518,7 @@ const RohanView = () => {
                       <p className="text-xs text-slate-400 text-right">
                         {match.invoice}
                       </p>
-                      <p className="text-xs text-slate-400 text-right">
+                      <p className="text-xs text-slate-400 text-right hidden sm:block">
                         {match.status === 'variance' ? `+${match.variance}%` : 'No PO'}
                       </p>
                     </div>
@@ -1583,9 +1581,9 @@ const RohanView = () => {
 
             {/* Monitoring tab */}
             {activeTab === 'monitoring' && (
-              <div className="space-y-6">
+              <div className="p-4 space-y-8">
                 {/* Shadow spend */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <ShieldAlert className="h-4 w-4 text-state-blocked" />
                     <h3 className="text-sm font-semibold">Shadow Spend</h3>
@@ -1613,7 +1611,7 @@ const RohanView = () => {
                 </div>
 
                 {/* Auto-fix suggestions */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <Zap className="h-4 w-4 text-hero-teal" />
                     <h3 className="text-sm font-semibold">Auto-fix Suggestions</h3>
@@ -1643,7 +1641,7 @@ const RohanView = () => {
 
                 {/* Three-Way Match cards */}
                 {actionableMatches.filter(m => !reconciledIds.has(m.id)).length > 0 && (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <FileText className="h-4 w-4 text-state-blocked" />
                       <h3 className="text-sm font-semibold">Three-Way Match</h3>
@@ -1670,7 +1668,7 @@ const RohanView = () => {
                 )}
 
                 {/* Auto-matched */}
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <FileCheck2 className="h-4 w-4 text-signal-green" />
                     <h3 className="text-sm font-semibold">Auto-matched</h3>
@@ -1694,7 +1692,7 @@ const RohanView = () => {
         </div>
         
         {/* ─── DETAIL SIDEBAR (Right, ~40%) — Persistent, Modeless ─── */}
-        <div className="w-[40%] bg-white border-l border-slate-200 flex flex-col">
+        <div className="w-[40%] bg-white border-l border-slate-200 flex flex-col overflow-hidden">
           {selectedSignal ? (
             <DetailSidebar
               signal={selectedSignal}

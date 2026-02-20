@@ -185,7 +185,7 @@ const ConfidenceTag = ({ level }: { level: 'high' | 'medium' | 'low' }) => {
   const c = config[level];
   return (
     <span className={cn(
-      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium',
+      'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap',
       c.bg, c.text
     )}>
       <span className="text-[10px]">{c.dot}</span> {c.label}
@@ -207,43 +207,38 @@ const ExceptionListRow = ({
     <button
       onClick={onSelect}
       className={cn(
-        'w-full text-left px-4 py-3 transition-all border-l-4',
+        'w-full text-left px-4 py-2.5 transition-all border-l-4',
         isSelected 
           ? 'bg-slate-100 border-l-teal-600' 
           : 'bg-white hover:bg-slate-50 border-l-transparent'
       )}
     >
-      <div className="flex items-center gap-4">
-        {/* Confidence tag */}
-        <ConfidenceTag level={signal.riskLevel} />
-        
-        {/* Amount - prominent */}
-        <div className="w-24 shrink-0">
-          <p className="text-sm font-bold tabular-nums text-slate-900">
-            €{(signal.amount || 0).toFixed(2)}
-          </p>
+      {/* Table-like grid with fixed columns for clean vertical alignment */}
+      <div className="grid grid-cols-[90px_80px_1fr_100px_100px] items-center gap-2">
+        {/* Col 1: Confidence tag - fixed width */}
+        <div className="flex justify-start">
+          <ConfidenceTag level={signal.riskLevel} />
         </div>
         
-        {/* Vendor/Description */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-900 truncate">
-            {signal.supplier_suggestion || signal.title || signal.description}
-          </p>
-        </div>
+        {/* Col 2: Amount - right aligned, tabular */}
+        <p className="text-sm font-bold tabular-nums text-slate-900 text-right">
+          €{(signal.amount || 0).toFixed(2)}
+        </p>
         
-        {/* Date */}
-        <div className="w-20 shrink-0 text-right">
-          <p className="text-xs text-slate-500">
-            {formatDate(signal.created_at)}
-          </p>
-        </div>
+        {/* Col 3: Vendor/Description - flexible, left aligned */}
+        <p className="text-sm font-medium text-slate-900 truncate text-left">
+          {signal.supplier_suggestion || signal.title || signal.description}
+        </p>
         
-        {/* Submitter */}
-        <div className="w-28 shrink-0 text-right">
-          <p className="text-xs text-slate-500 truncate">
-            {signal.submitter_name}
-          </p>
-        </div>
+        {/* Col 4: Date/Invoice - right aligned */}
+        <p className="text-xs text-slate-400 text-right">
+          {formatDate(signal.created_at)}
+        </p>
+        
+        {/* Col 5: Submitter - right aligned */}
+        <p className="text-xs text-slate-400 truncate text-right">
+          {signal.submitter_name}
+        </p>
       </div>
     </button>
   );
@@ -434,6 +429,219 @@ const DetailSidebar = ({
               </TooltipTrigger>
               <TooltipContent>
                 <p>Reject and notify {signal.submitter_name}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ─── Match Sidebar Content (for Three-Way Match items) ─── */
+const MatchSidebar = ({ 
+  match,
+  onReconcile,
+  onAskQuestion
+}: { 
+  match: ThreeWayMatch;
+  onReconcile: () => void;
+  onAskQuestion: (question: string) => void;
+}) => {
+  const [chatInput, setChatInput] = useState('');
+  const isVariance = match.status === 'variance';
+  const isMissingPO = match.status === 'missing-po';
+
+  const handleSendQuestion = () => {
+    if (chatInput.trim()) {
+      onAskQuestion(chatInput);
+      setChatInput('');
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-white">
+      {/* TOP: Invoice/Receipt Image placeholder */}
+      <div className="relative h-64 bg-slate-100 overflow-hidden flex items-center justify-center">
+        <img 
+          src={demoImages.invoice} 
+          alt="Invoice" 
+          className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform"
+          onClick={() => {
+            toast({
+              title: "📄 Full invoice view",
+              description: "Opening invoice in full screen...",
+            });
+          }}
+        />
+        <div className="absolute top-3 left-3">
+          <ConfidenceTag level={isMissingPO ? 'low' : 'medium'} />
+        </div>
+        <div className="absolute bottom-0 inset-x-0 h-12 bg-gradient-to-t from-black/40 to-transparent" />
+        <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+          <p className="text-white text-lg font-bold tabular-nums drop-shadow-sm">
+            €{match.invoiceAmount.toFixed(2)}
+          </p>
+          <p className="text-white/80 text-xs drop-shadow-sm">
+            {match.invoice}
+          </p>
+        </div>
+      </div>
+
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto">
+        {/* Header info */}
+        <div className="px-4 py-3 border-b border-slate-100">
+          <h3 className="text-base font-semibold text-slate-900 leading-snug">
+            {match.supplier}
+          </h3>
+          <p className="text-xs text-slate-500 mt-1">
+            {match.invoice} · {isVariance ? `+${match.variance}% variance` : isMissingPO ? 'Missing PO' : 'Matched'}
+          </p>
+        </div>
+
+        {/* AI Reasoning Panel */}
+        <div className="mx-4 my-4 rounded-lg bg-slate-50 p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Brain className="h-4 w-4 text-slate-400" />
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">AI Reasoning</p>
+          </div>
+          <p className="text-sm text-slate-700 leading-relaxed">
+            {match.aiNote || (isVariance 
+              ? `Invoice amount €${match.invoiceAmount.toFixed(2)} differs from PO amount €${match.poAmount.toFixed(2)} by ${match.variance}%. This vendor's average variance is ${match.vendorAvgVariance}%.`
+              : `No purchase order found for this invoice. Recommend creating retroactive PO or rejecting.`
+            )}
+          </p>
+          {/* Three-way match status */}
+          <div className="flex items-center gap-3 mt-3 pt-3 border-t border-slate-200">
+            <div className="flex items-center gap-1">
+              {match.po ? (
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              ) : (
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+              )}
+              <span className="text-xs text-slate-500">PO</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {match.grn ? (
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              ) : (
+                <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+              )}
+              <span className="text-xs text-slate-500">GRN</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="text-xs text-slate-500">Invoice</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Document details */}
+        <div className="px-4 pb-4">
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div>
+              <p className="text-xs text-slate-400">Purchase Order</p>
+              <p className="font-medium text-slate-700">{match.po || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Goods Receipt</p>
+              <p className="font-medium text-slate-700">{match.grn || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">PO Amount</p>
+              <p className="font-medium text-slate-700 tabular-nums">{match.poAmount ? `€${match.poAmount.toFixed(2)}` : '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-slate-400">Invoice Amount</p>
+              <p className="font-medium text-slate-700 tabular-nums">€{match.invoiceAmount.toFixed(2)}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Warning banner */}
+        {(isVariance || isMissingPO) && (
+          <div className="mx-4 mb-4">
+            <div className="flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2.5 border border-amber-200">
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
+              <p className="text-sm text-amber-700">
+                {isVariance 
+                  ? `Price variance of ${match.variance}% detected. Review before reconciling.`
+                  : 'No matching PO found. Create retroactive PO or reject invoice.'
+                }
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* BOTTOM: Actions */}
+      <div className="border-t border-slate-200 bg-white p-4 space-y-3">
+        {/* Chat input */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSendQuestion()}
+            placeholder="Ask a question about this invoice..."
+            className="flex-1 px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500"
+          />
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  size="sm"
+                  className="gap-1.5 bg-teal-600 hover:bg-teal-700 px-4"
+                  onClick={handleSendQuestion}
+                  disabled={!chatInput.trim()}
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Send question to procurement</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+        
+        {/* Action buttons */}
+        <div className="flex items-center gap-3 pt-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline"
+                  className="flex-1 gap-1.5 border-slate-300 text-slate-700 hover:bg-slate-50" 
+                  size="sm"
+                  onClick={onReconcile}
+                >
+                  <Check className="h-3.5 w-3.5" /> Reconcile
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Accept variance and post to GL</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button 
+                  className="text-sm text-red-500 hover:text-red-600 hover:underline px-2"
+                  onClick={() => {
+                    toast({
+                      title: "❌ Invoice rejected",
+                      description: `${match.invoice} has been rejected and returned to ${match.supplier}.`,
+                    });
+                  }}
+                >
+                  Reject
+                </button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Reject invoice and notify supplier</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -1282,34 +1490,35 @@ const RohanView = () => {
             {/* Exception list */}
             {activeTab === 'exceptions' && (
               <div className="space-y-2">
-                {/* Three-way match exceptions — uniform row style, no buttons/arrows */}
+                {/* Three-way match exceptions — uniform row style with table-like grid */}
                 {actionableMatches.filter(m => !reconciledIds.has(m.id)).map(match => (
                   <button
                     key={match.id}
                     onClick={() => { setSelectedMatch(match); setSelectedSignal(null); }}
                     className={cn(
-                      'w-full text-left px-4 py-3 transition-all border-l-4',
+                      'w-full text-left px-4 py-2.5 transition-all border-l-4',
                       selectedMatch?.id === match.id
                         ? 'bg-slate-100 border-l-teal-600'
                         : 'bg-white hover:bg-slate-50 border-l-transparent'
                     )}
                   >
-                    <div className="flex items-center gap-4">
-                      <ConfidenceTag level={match.status === 'missing-po' ? 'low' : 'medium'} />
-                      <div className="w-24 shrink-0">
-                        <p className="text-sm font-bold tabular-nums text-slate-900">€{match.invoiceAmount.toFixed(2)}</p>
+                    {/* Same grid as ExceptionListRow for vertical alignment */}
+                    <div className="grid grid-cols-[90px_80px_1fr_100px_100px] items-center gap-2">
+                      <div className="flex justify-start">
+                        <ConfidenceTag level={match.status === 'missing-po' ? 'low' : 'medium'} />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900 truncate">{match.supplier}</p>
-                      </div>
-                      <div className="w-28 shrink-0 text-right">
-                        <p className="text-xs text-slate-500">{match.invoice}</p>
-                      </div>
-                      <div className="w-24 shrink-0 text-right">
-                        <p className="text-xs text-slate-500">
-                          {match.status === 'variance' ? `+${match.variance}%` : 'No PO'}
-                        </p>
-                      </div>
+                      <p className="text-sm font-bold tabular-nums text-slate-900 text-right">
+                        €{match.invoiceAmount.toFixed(2)}
+                      </p>
+                      <p className="text-sm font-medium text-slate-900 truncate text-left">
+                        {match.supplier}
+                      </p>
+                      <p className="text-xs text-slate-400 text-right">
+                        {match.invoice}
+                      </p>
+                      <p className="text-xs text-slate-400 text-right">
+                        {match.status === 'variance' ? `+${match.variance}%` : 'No PO'}
+                      </p>
                     </div>
                   </button>
                 ))}
@@ -1489,6 +1698,20 @@ const RohanView = () => {
               onReject={() => handleReject(selectedSignal)}
               onAskQuestion={(q) => handleAskQuestion(selectedSignal, q)}
             />
+          ) : selectedMatch ? (
+            <MatchSidebar
+              match={selectedMatch}
+              onReconcile={() => {
+                handleReconcile(selectedMatch);
+                setSelectedMatch(null);
+              }}
+              onAskQuestion={(q) => {
+                toast({
+                  title: "💬 Question sent",
+                  description: `Message sent to procurement: "${q.slice(0, 40)}${q.length > 40 ? '...' : ''}"`,
+                });
+              }}
+            />
           ) : (
             /* Empty state when nothing selected */
             <div className="flex-1 flex items-center justify-center p-8">
@@ -1496,7 +1719,7 @@ const RohanView = () => {
                 <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-4">
                   <FileWarning className="h-8 w-8 text-slate-300" />
                 </div>
-                <p className="text-sm font-medium text-slate-500">Select an item to review</p>
+                <p className="text-sm font-medium text-slate-500">Select a Pulse to review</p>
                 <p className="text-xs text-slate-400 mt-1">Click any row in the list to see details</p>
               </div>
             </div>

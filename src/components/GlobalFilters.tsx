@@ -85,7 +85,7 @@ const GlobalFilters = ({ filters, onFiltersChange }: GlobalFiltersProps) => {
         <Switch
           checked={filters.myActionOnly}
           onCheckedChange={(checked) => onFiltersChange({ ...filters, myActionOnly: checked })}
-          className="h-4 w-7 data-[state=checked]:bg-foreground"
+          className="h-4 w-7 data-[state=checked]:bg-hero-teal"
         />
         <span className="text-[11px] text-muted-foreground font-medium whitespace-nowrap">
           <Filter className="h-3 w-3 inline mr-0.5" />

@@ -128,7 +128,7 @@ const SearchResultsView = ({ query, signals, onClose, onSelectSignal }: SearchRe
           className={cn(
             'text-[11px] px-2.5 py-1 rounded-full border transition-colors',
             actionOnly
-              ? 'bg-foreground text-background border-foreground font-medium'
+              ? 'bg-hero-teal text-white border-hero-teal font-medium'
               : 'border-border text-muted-foreground hover:bg-secondary'
           )}
         >
@@ -209,7 +209,7 @@ const FilterChip = ({ options, value, onChange }: {
         className={cn(
           'text-[11px] px-2.5 py-1 rounded-full border flex items-center gap-1 transition-colors',
           isActive
-            ? 'bg-foreground text-background border-foreground font-medium'
+            ? 'bg-hero-teal text-white border-hero-teal font-medium'
             : 'border-border text-muted-foreground hover:bg-secondary'
         )}
       >

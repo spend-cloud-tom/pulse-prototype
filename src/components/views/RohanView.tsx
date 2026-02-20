@@ -1021,7 +1021,7 @@ const ThreeWayMatchCard = ({
               {/* Edit fields button */}
               <Button
                 size="sm"
-                className="gap-1 h-7 text-xs bg-foreground text-background hover:bg-foreground/90"
+                className="gap-1 h-7 text-xs bg-hero-teal text-white hover:bg-hero-teal/90"
               >
                 <Pencil className="h-3 w-3" /> Edit fields
               </Button>
@@ -1449,7 +1449,7 @@ const RohanView = () => {
                     onClick={() => setSortMode(mode)}
                     className={`text-xs px-3 py-1.5 rounded-lg transition-colors capitalize ${
                       sortMode === mode 
-                        ? 'bg-foreground text-background font-medium' 
+                        ? 'bg-hero-teal text-white font-medium' 
                         : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
                     }`}
                   >
@@ -1463,7 +1463,7 @@ const RohanView = () => {
                   onClick={() => setShowFilters(!showFilters)}
                   className={`flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg transition-colors ${
                     showFilters || activeFilterCount > 0
-                      ? 'bg-foreground text-background font-medium'
+                      ? 'bg-hero-teal text-white font-medium'
                       : 'bg-secondary text-muted-foreground hover:bg-secondary/80'
                   }`}
                 >

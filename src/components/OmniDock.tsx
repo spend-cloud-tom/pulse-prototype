@@ -391,8 +391,8 @@ const OmniDock = ({ onSubmit, placeholder = "I need something..." }: OmniDockPro
                       onClick={handleSubmit}
                       className="
                         h-11 w-11 rounded-xl 
-                        bg-slate-900 text-white
-                        hover:bg-slate-800 
+                        bg-hero-teal text-white
+                        hover:bg-hero-teal/90 
                         active:scale-95
                         flex items-center justify-center 
                         transition-all duration-150 

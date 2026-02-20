@@ -106,7 +106,7 @@ const ProgressTracker = ({ status }: { status: string }) => {
               className={cn(
                 'flex items-center gap-1.5 text-xs whitespace-nowrap transition-colors',
                 isComplete && 'text-emerald-600',
-                isCurrent && 'bg-slate-900 text-white px-2.5 py-1 rounded-full font-medium shadow-sm',
+                isCurrent && 'bg-hero-teal text-white px-2.5 py-1 rounded-full font-medium shadow-sm',
                 isFuture && 'text-slate-400'
               )}
               aria-current={isCurrent ? 'step' : undefined}

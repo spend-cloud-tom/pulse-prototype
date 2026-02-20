@@ -1336,9 +1336,10 @@ const RohanView = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
+      <div className="max-w-[1400px] mx-auto w-full flex flex-col flex-1">
       {/* ═══ HEADER: Page Title + Condensed KPI Row ═══ */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-[1600px] mx-auto px-6 py-4">
+        <div className="px-6 py-4">
           {/* Title row */}
           <div className="flex items-center justify-between mb-4">
             <h1 className="font-display text-2xl font-bold text-slate-900">
@@ -1729,6 +1730,7 @@ const RohanView = () => {
           )}
         </div>
       </div>
+      </div>{/* close max-w-[1400px] wrapper */}
 
       {/* Edit drawer */}
       <PulseEditDrawer signal={editSignal} open={editOpen} onOpenChange={setEditOpen} />
